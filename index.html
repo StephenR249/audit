@@ -1,0 +1,701 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #f9f9f7;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2.5rem 1rem 3rem;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 2.5rem 2.5rem 2rem;
+    max-width: 620px;
+    width: 100%;
+    box-shadow: 0 2px 24px rgba(0,0,0,0.07);
+  }
+
+  .serif { font-family: 'DM Serif Display', serif; }
+
+  /* Progress bar */
+  .progress-wrap {
+    margin-bottom: 2rem;
+  }
+  .progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .progress-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #888;
+  }
+  .progress-pct {
+    font-size: 12px;
+    font-weight: 500;
+    color: #2d6a4f;
+  }
+  .progress-track {
+    height: 5px;
+    background: #e8e8e4;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: #2d6a4f;
+    border-radius: 10px;
+    transition: width 0.4s ease;
+  }
+
+  .section-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #aaa;
+    margin-bottom: 4px;
+  }
+
+  .section-heading {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: #1a1a1a;
+    margin-bottom: 1.75rem;
+    line-height: 1.3;
+  }
+
+  .question-text {
+    font-size: 15px;
+    line-height: 1.65;
+    color: #1a1a1a;
+    margin-bottom: 1.1rem;
+  }
+
+  /* Scale buttons */
+  .scale-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+
+  .scale-btn {
+    flex: 1;
+    padding: 10px 4px;
+    border: 1.5px solid #ddd;
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #555;
+    text-align: center;
+    transition: all 0.15s ease;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+  }
+
+  .scale-btn:hover {
+    border-color: #2d6a4f;
+    color: #2d6a4f;
+    background: #f0f7f4;
+  }
+
+  .scale-btn.selected {
+    background: #2d6a4f;
+    border-color: #2d6a4f;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* Nav */
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    gap: 12px;
+  }
+
+  .btn {
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    border: 1.5px solid #ddd;
+    background: #fff;
+    color: #333;
+    transition: all 0.15s ease;
+  }
+  .btn:hover { background: #f5f5f3; }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .btn-primary {
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #1a1a1a;
+  }
+  .btn-primary:hover { background: #333; }
+  .btn-primary:disabled { background: #ccc; border-color: #ccc; cursor: not-allowed; }
+
+  .btn-green {
+    background: #2d6a4f;
+    color: #fff;
+    border-color: #2d6a4f;
+  }
+  .btn-green:hover { background: #245a42; }
+
+  /* Intro */
+  .intro-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 34px;
+    line-height: 1.2;
+    color: #1a1a1a;
+    margin-bottom: 1rem;
+  }
+  .intro-sub {
+    font-size: 16px;
+    line-height: 1.75;
+    color: #555;
+    margin-bottom: 0.85rem;
+  }
+  .intro-note {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #999;
+    margin-bottom: 2rem;
+  }
+  .pill-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+  .pill {
+    padding: 8px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 100px;
+    font-size: 13px;
+    color: #666;
+  }
+
+  /* Capture */
+  .field-group { margin-bottom: 1.25rem; }
+  .field-label {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 6px;
+    display: block;
+  }
+  input[type="text"], input[type="email"] {
+    width: 100%;
+    padding: 11px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a1a;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus { border-color: #2d6a4f; }
+  .error-msg { font-size: 12px; color: #c0392b; margin-top: 5px; }
+  .submit-error { font-size: 13px; color: #c0392b; margin-top: 0.75rem; text-align: center; }
+
+  /* Results */
+  .result-band-pill {
+    display: inline-block;
+    padding: 5px 14px;
+    border-radius: 100px;
+    border: 1px solid #ddd;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 1rem;
+  }
+  .score-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 0.5rem;
+  }
+  .score-big {
+    font-size: 52px;
+    font-weight: 300;
+    color: #1a1a1a;
+    line-height: 1;
+  }
+  .score-denom { font-size: 20px; color: #aaa; }
+  .result-headline {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    line-height: 1.35;
+    color: #1a1a1a;
+    margin-bottom: 1rem;
+  }
+  .result-body {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #555;
+    margin-bottom: 1.75rem;
+  }
+  .breakdown-box {
+    border: 1px solid #ebebeb;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.75rem;
+  }
+  .breakdown-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid #ebebeb;
+  }
+  .breakdown-row:last-child { border-bottom: none; }
+  .breakdown-label { font-size: 13px; color: #555; flex: 1; }
+  .focus-tag {
+    font-size: 10px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #2d6a4f;
+    border: 1px solid #2d6a4f;
+    padding: 2px 8px;
+    border-radius: 100px;
+    flex-shrink: 0;
+  }
+  .bar-track {
+    width: 100px;
+    height: 4px;
+    background: #e8e8e4;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .bar-fill {
+    height: 100%;
+    background: #2d6a4f;
+    border-radius: 4px;
+  }
+  .breakdown-score {
+    font-size: 12px;
+    font-weight: 500;
+    color: #333;
+    min-width: 32px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .insight-box {
+    border: 1px solid #ebebeb;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.75rem;
+    background: #f9f9f7;
+  }
+  .insight-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #aaa;
+    margin-bottom: 0.5rem;
+  }
+  .insight-text {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #444;
+  }
+  .divider { height: 1px; background: #ebebeb; margin: 1.75rem 0; }
+  .cta-note { font-size: 14px; color: #555; line-height: 1.65; margin-bottom: 1.25rem; }
+  .cta-sub { font-size: 12px; color: #aaa; text-align: center; margin-top: 0.75rem; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="app"></div>
+</div>
+
+<script>
+const FORMSPREE_URL = 'https://formspree.io/f/xaqvqoyw';
+
+const SECTIONS = [
+  { id: 'performance_tax', name: 'The Performance Tax', desc: 'How much energy does showing up cost you?', questions: [
+    'Have you ever finished a sales call feeling more drained than energised, even when it went well?',
+    'Have you ever felt like you needed to be louder, more extravagant, or more "on" to be taken seriously?',
+    'Do you have a "sales voice" or "sales persona" that feels noticeably different from how you normally talk?',
+    'Have you ever gone quiet on a call and immediately worried the client thought you were weak or uncertain?'
+  ]},
+  { id: 'interruption', name: 'The Interruption Problem', desc: 'Do you get heard when it matters?', questions: [
+    'Have you ever spoken up in a meeting and someone cuts you off, and you just let it go?',
+    'Have you ever had a great point to make but held it back because the room was too loud or the moment passed?',
+    'Do you find yourself rehearsing what you\'re going to say while others are talking, because you don\'t want to sound silly?',
+    'Have you left a conversation thinking "I had the right answer, I just never got to say it"?'
+  ]},
+  { id: 'pressure', name: 'The Pressure Moment', desc: 'What happens when a deal gets hard?', questions: [
+    'When a prospect pushes back hard, do you tend to over-explain, cave on price, or go quiet?',
+    'Have you ever walked away from a deal thinking "I should have held my ground but I didn\'t want to seem pushy or salesy"?',
+    'Do you find objections more uncomfortable than most of your colleagues seem to?',
+    'Have you ever agreed to something in a sales conversation you didn\'t actually believe in, just to keep the peace?'
+  ]},
+  { id: 'followup', name: 'The Follow-Up Shame', desc: 'Does following up feel like chasing?', questions: [
+    'Have you ever delayed following up with a prospect because you didn\'t want to feel like you were chasing or annoying them?',
+    'Do you write and rewrite follow-up messages several times before sending — or even talk yourself out of sending them at all?',
+    'Have you ever assumed "if they were interested, they\'d reach out" and lost a deal because of it?'
+  ]},
+  { id: 'closer', name: 'The Closer Complex', desc: 'Does asking for the business feel unnatural?', questions: [
+    'Does asking for the sale feel like something you have to psych yourself up for rather than a natural part of the conversation?',
+    'Have you ever got to the end of a great conversation and not asked for the business because the moment didn\'t feel "right"?',
+    'Do you secretly wonder if the reason you\'re not closing more is because you\'re just not aggressive enough?'
+  ]},
+  { id: 'comparison', name: 'The Comparison Trap', desc: 'Are you measuring yourself against the wrong people?', questions: [
+    'Have you ever watched a louder colleague land a deal and thought "I could never do it that way. Maybe I\'m just not cut out for this"?',
+    'Has a manager ever told you to be more assertive, more energetic, or "bring more energy to the room" — and it landed like a criticism of who you are?',
+    'Do you ever feel like the sales playbook you\'ve been given was written by someone completely unlike you?',
+    'Have you ever outperformed a louder colleague and still felt like somehow they were the "real" salesperson?'
+  ]}
+];
+
+// Labels only — value stored is 1–5 directly (higher = more pain)
+const SCALE = [
+  { val: 1, word: 'Never' },
+  { val: 2, word: 'Rarely' },
+  { val: 3, word: 'Sometimes' },
+  { val: 4, word: 'Usually' },
+  { val: 5, word: 'Always' }
+];
+
+// Higher score = more pain = lower band
+const BANDS = [
+  {
+    min: 90, max: 110,
+    name: 'The Performer',
+    headline: 'You\'ve been handed a playbook that doesn\'t fit who you are — and you\'re running it anyway.',
+    body: 'The result is predictable: inconsistent results, high energy drain after every interaction, and a persistent feeling that sales just "isn\'t you." It is. This version of it just isn\'t. The exhaustion you\'re feeling isn\'t weakness — it\'s the cost of performing a character. Before anything else can change, you need to stop optimising the wrong approach and start building one that actually fits how you think, talk, and connect.',
+    cta: 'A 15-minute call with Stephen isn\'t about motivation. It\'s about mapping exactly where the performance is costing you deals — and what to replace it with.'
+  },
+  {
+    min: 70, max: 89,
+    name: 'The Adapter',
+    headline: 'You\'ve started finding your own way, but you\'re caught between instinct and the old playbook.',
+    body: 'Some conversations feel natural — you\'re curious, sharp, genuinely yourself. Others still feel like a performance. The gap between your best sales days and your worst is wider than it needs to be, and it\'s not a skill gap. It\'s a framework gap. You don\'t have a consistent approach you actually believe in, which means you default back to old habits under pressure. The work here is consolidation: identifying what\'s already working and building it into something repeatable.',
+    cta: 'In 15 minutes, Stephen can identify where your authentic approach breaks down and what a consistent framework looks like for someone wired like you.'
+  },
+  {
+    min: 51, max: 69,
+    name: 'The Authentic Seller (In Progress)',
+    headline: 'You\'re operating mostly from instinct — and it\'s working. But there are specific moments where the old patterns creep back.',
+    body: 'You\'ve figured out more than most. You lead with curiosity, you don\'t chase deals that aren\'t right, and you\'ve stopped trying to be someone you\'re not in most situations. But pressure moments still trip you up — objections, follow-up, asking for the close. These aren\'t character flaws. They\'re the last remnants of training that told you sales requires aggression. Targeted work on those three areas would unlock a step-change in your results without changing who you are.',
+    cta: 'Book a 15-minute call with Stephen to identify your specific pressure moments and what to do differently in them.'
+  },
+  {
+    min: 22, max: 50,
+    name: 'The Quiet Closer',
+    headline: 'You\'ve cracked it. You sell in a way that feels genuinely like you — and it\'s working.',
+    body: 'The challenge now is a different one: what you\'re doing isn\'t documented, isn\'t teachable, and isn\'t scalable yet. You\'re operating from feel rather than a framework, which means it lives in your head and dies if you try to replicate it — in a team, in a different market, or on a harder day. The next stage is turning instinct into a repeatable system you can own, articulate, and pass on.',
+    cta: 'A 15-minute call with Stephen can help you articulate and formalise what\'s already working — so it stops being luck and starts being a process.'
+  }
+];
+
+const SECTION_INSIGHTS = {
+  performance_tax: 'Your biggest leak right now is the energy cost of showing up. You\'re not failing at sales — you\'re exhausting yourself performing a version of it. Every call where you\'re "on" is a withdrawal from a finite account. The goal isn\'t to push through it. It\'s to rebuild your approach so conversations are restorative rather than draining.',
+  interruption: 'The data points to one consistent pattern: you have things worth saying, and you\'re not saying them. Not because you lack insight — because the room doesn\'t pause long enough, or you second-guess yourself before you get the chance. In sales, the person who gets heard closes more deals. Getting heard isn\'t about being louder. It\'s about knowing exactly when and how to speak so that when you do, it lands.',
+  pressure: 'Pressure moments are where most introverted salespeople lose deals they should win. You get to the hard part of a conversation — a pushback, a stall, a price objection — and the instinct is to smooth things over rather than hold the line. That instinct comes from a good place. But it costs you. Learning to stay grounded in the moments that count is the single highest-leverage shift you can make.',
+  followup: 'You\'re letting deals die quietly because you don\'t want to be the person who chases. The problem: "I don\'t want to seem pushy" and "I\'m being professional" feel identical from the inside. Externally, one of them looks like disinterest. Follow-up isn\'t chasing — it\'s the last part of a sales conversation that happens to occur in writing. Reframing it changes everything.',
+  closer: 'You\'re getting to the door and not walking through it. Great conversations, real connection, genuine interest from the prospect — and then you don\'t ask. Not because you\'re unprepared. Because asking for the sale still feels like a demand rather than a natural conclusion. It isn\'t. And it doesn\'t require aggression to do it well.',
+  comparison: 'You\'ve internalised someone else\'s definition of what a good salesperson looks like — and you don\'t fit it, so you\'ve decided the problem is you. It isn\'t. The loud closer who\'s held up as the benchmark is operating on borrowed time. Customers are more sophisticated than they\'ve ever been. The salesperson who listens, asks the right questions, and earns trust consistently wins in the long run. That\'s you.'
+};
+
+let state = {
+  screen: 'intro', sectionIdx: 0, questionIdx: 0, answers: {},
+  name: '', email: '', nameError: '', emailError: '',
+  submitting: false, submitError: ''
+};
+
+function totalQuestions() { return SECTIONS.reduce((s, sec) => s + sec.questions.length, 0); }
+function globalQIdx() { let c = 0; for (let s = 0; s < state.sectionIdx; s++) c += SECTIONS[s].questions.length; return c + state.questionIdx; }
+function currentSection() { return SECTIONS[state.sectionIdx]; }
+function answerKey(si, qi) { return si + '_' + qi; }
+
+// Raw score: 1=Never (low pain), 5=Always (high pain) — no inversion
+function sectionScore(si) {
+  let t = 0;
+  for (let qi = 0; qi < SECTIONS[si].questions.length; qi++) {
+    const v = state.answers[answerKey(si, qi)];
+    if (v) t += v;
+  }
+  return t;
+}
+function sectionMax(si) { return SECTIONS[si].questions.length * 5; }
+function totalScore() { let t = 0; for (let si = 0; si < SECTIONS.length; si++) t += sectionScore(si); return t; }
+
+// Worst section = highest pain score
+function worstSection() {
+  let worst = 0, worstScore = -1;
+  for (let si = 0; si < SECTIONS.length; si++) {
+    const s = sectionScore(si);
+    if (s > worstScore) { worstScore = s; worst = si; }
+  }
+  return worst;
+}
+
+function getBand(score) {
+  return BANDS.find(b => score >= b.min && score <= b.max) || BANDS[BANDS.length - 1];
+}
+
+function progressPct() {
+  const total = totalQuestions();
+  const answered = Object.keys(state.answers).length;
+  return Math.round((answered / total) * 100);
+}
+
+function render() {
+  const root = document.getElementById('app');
+  if (state.screen === 'intro') root.innerHTML = renderIntro();
+  else if (state.screen === 'questions') root.innerHTML = renderQuestions();
+  else if (state.screen === 'capture') root.innerHTML = renderCapture();
+  else if (state.screen === 'results') root.innerHTML = renderResults();
+  attachEvents();
+}
+
+function renderProgressBar(pct) {
+  return `<div class="progress-wrap">
+    <div class="progress-top">
+      <span class="progress-label">Progress</span>
+      <span class="progress-pct">${pct}% complete</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" style="width:${pct}%"></div>
+    </div>
+  </div>`;
+}
+
+function renderIntro() {
+  return `
+    <p style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#aaa;margin-bottom:6px;">Sell Like an Introvert</p>
+    <h1 class="intro-title">The Authentic Seller Audit</h1>
+    <p class="intro-sub">Twenty-two questions. Six areas. One honest picture of where your natural selling style is costing you — and what to do about it.</p>
+    <p class="intro-note">Answer based on how things actually are, not how you'd like them to be. The more honest you are, the more useful your results.</p>
+    <div class="pill-row">
+      <span class="pill">22 questions</span>
+      <span class="pill">~4 minutes</span>
+      <span class="pill">Personalised result</span>
+    </div>
+    <button class="btn btn-primary" id="start-btn" style="width:100%;padding:14px;font-size:15px;">Start the audit</button>`;
+}
+
+function renderQuestions() {
+  const sec = currentSection();
+  const q = sec.questions[state.questionIdx];
+  const key = answerKey(state.sectionIdx, state.questionIdx);
+  const selected = state.answers[key];
+  const total = totalQuestions();
+  const done = globalQIdx();
+  const pct = progressPct();
+  const isFirst = state.sectionIdx === 0 && state.questionIdx === 0;
+  const isLast = state.sectionIdx === SECTIONS.length - 1 && state.questionIdx === sec.questions.length - 1;
+
+  return `
+    ${renderProgressBar(pct)}
+    <p class="section-eyebrow">${sec.name}</p>
+    <p class="section-heading serif">${sec.desc}</p>
+    <p class="question-text">${q}</p>
+    <div class="scale-row">
+      ${SCALE.map(s => `
+        <button class="scale-btn ${selected === s.val ? 'selected' : ''}" data-val="${s.val}" data-key="${key}">
+          ${s.word}
+        </button>`).join('')}
+    </div>
+    <div class="nav-row">
+      ${!isFirst ? `<button class="btn" id="prev-btn">← Back</button>` : `<div></div>`}
+      <span style="font-size:13px;color:#aaa;">${done + 1} of ${total}</span>
+      <button class="btn btn-primary" id="next-btn" ${!selected ? 'disabled' : ''}>${isLast ? 'See my results →' : 'Next →'}</button>
+    </div>`;
+}
+
+function renderCapture() {
+  return `
+    ${renderProgressBar(100)}
+    <p style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#aaa;margin-bottom:6px;">Almost there</p>
+    <h2 class="serif" style="font-size:26px;color:#1a1a1a;line-height:1.3;margin-bottom:1rem;">Where should we send your results?</h2>
+    <p style="font-size:15px;line-height:1.7;color:#666;margin-bottom:1.75rem;">Your personalised breakdown — including your dominant challenge area and specific next steps — will be sent to you directly. No spam. No sequences. Just your results.</p>
+    <div class="field-group">
+      <label class="field-label" for="cap-name">First name</label>
+      <input type="text" id="cap-name" placeholder="Stephen" value="${state.name}" ${state.submitting ? 'disabled' : ''} />
+      ${state.nameError ? `<p class="error-msg">${state.nameError}</p>` : ''}
+    </div>
+    <div class="field-group">
+      <label class="field-label" for="cap-email">Email address</label>
+      <input type="email" id="cap-email" placeholder="you@example.com" value="${state.email}" ${state.submitting ? 'disabled' : ''} />
+      ${state.emailError ? `<p class="error-msg">${state.emailError}</p>` : ''}
+    </div>
+    ${state.submitError ? `<p class="submit-error">${state.submitError}</p>` : ''}
+    <div class="nav-row">
+      <button class="btn" id="back-capture-btn" ${state.submitting ? 'disabled' : ''}>← Back</button>
+      <button class="btn btn-green" id="submit-btn" ${state.submitting ? 'disabled' : ''} style="padding:10px 28px;">${state.submitting ? 'Sending...' : 'Show my results →'}</button>
+    </div>`;
+}
+
+function renderResults() {
+  const score = totalScore();
+  const maxScore = totalQuestions() * 5;
+  const band = getBand(score);
+  const worst = worstSection();
+  const worstSec = SECTIONS[worst];
+  const insight = SECTION_INSIGHTS[worstSec.id];
+
+  const breakdownRows = SECTIONS.map((sec, si) => {
+    const s = sectionScore(si);
+    const max = sectionMax(si);
+    const pct = Math.round((s / max) * 100);
+    const isWorst = si === worst;
+    return `<div class="breakdown-row">
+      <span class="breakdown-label">${sec.name}</span>
+      ${isWorst ? `<span class="focus-tag">Focus area</span>` : ''}
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <span class="breakdown-score">${s}/${max}</span>
+    </div>`;
+  }).join('');
+
+  return `
+    <p style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#aaa;margin-bottom:10px;">Your results</p>
+    <div class="result-band-pill">${band.name}</div>
+    <div class="score-row">
+      <span class="score-big">${score}</span>
+      <span class="score-denom">/ ${maxScore}</span>
+    </div>
+    <h2 class="result-headline">${band.headline}</h2>
+    <p class="result-body">${band.body}</p>
+
+    <p style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;margin-bottom:0.6rem;">Score by area</p>
+    <div class="breakdown-box">${breakdownRows}</div>
+
+    <div class="insight-box">
+      <p class="insight-eyebrow">Your primary focus area — ${worstSec.name}</p>
+      <p class="insight-text">${insight}</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <p style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;margin-bottom:0.6rem;">The next step</p>
+    <p class="cta-note">${band.cta}</p>
+    <button class="btn btn-green" id="cta-btn" style="width:100%;padding:14px;font-size:15px;">Book a free 15-minute clarity call</button>
+    <p class="cta-sub">No pitch. No pressure. Just clarity on what to do next.</p>`;
+}
+
+async function submitToFormspree(name, email, score, band, worstSectionName) {
+  const payload = {
+    name, email,
+    total_score: score,
+    max_score: totalQuestions() * 5,
+    band: band.name,
+    focus_area: worstSectionName,
+    section_scores: SECTIONS.map((sec, si) => `${sec.name}: ${sectionScore(si)}/${sectionMax(si)}`).join(' | ')
+  };
+  const res = await fetch(FORMSPREE_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.errors ? data.errors.map(e => e.message).join(' ') : 'Submission failed. Please try again.');
+  }
+  return true;
+}
+
+function attachEvents() {
+  const s = state.screen;
+
+  if (s === 'intro') {
+    document.getElementById('start-btn').onclick = () => { state.screen = 'questions'; render(); };
+  }
+
+  if (s === 'questions') {
+    document.querySelectorAll('.scale-btn').forEach(btn => {
+      btn.onclick = () => { state.answers[btn.dataset.key] = parseInt(btn.dataset.val); render(); };
+    });
+    const nextBtn = document.getElementById('next-btn');
+    if (nextBtn) nextBtn.onclick = () => {
+      const sec = currentSection();
+      const isLastQ = state.questionIdx === sec.questions.length - 1;
+      const isLastSec = state.sectionIdx === SECTIONS.length - 1;
+      if (isLastQ && isLastSec) { state.screen = 'capture'; }
+      else if (isLastQ) { state.sectionIdx++; state.questionIdx = 0; }
+      else { state.questionIdx++; }
+      render();
+    };
+    const prevBtn = document.getElementById('prev-btn');
+    if (prevBtn) prevBtn.onclick = () => {
+      if (state.questionIdx > 0) { state.questionIdx--; }
+      else if (state.sectionIdx > 0) { state.sectionIdx--; state.questionIdx = SECTIONS[state.sectionIdx].questions.length - 1; }
+      render();
+    };
+  }
+
+  if (s === 'capture') {
+    document.getElementById('cap-name').oninput = e => { state.name = e.target.value; state.nameError = ''; };
+    document.getElementById('cap-email').oninput = e => { state.email = e.target.value; state.emailError = ''; };
+    document.getElementById('back-capture-btn').onclick = () => {
+      state.screen = 'questions';
+      state.sectionIdx = SECTIONS.length - 1;
+      state.questionIdx = SECTIONS[SECTIONS.length - 1].questions.length - 1;
+      render();
+    };
+    document.getElementById('submit-btn').onclick = async () => {
+      let valid = true;
+      if (!state.name.trim()) { state.nameError = 'Please enter your first name.'; valid = false; }
+      if (!state.email.trim() || !state.email.includes('@')) { state.emailError = 'Please enter a valid email address.'; valid = false; }
+      if (!valid) { render(); return; }
+      state.submitting = true;
+      state.submitError = '';
+      render();
+      const score = totalScore();
+      const band = getBand(score);
+      const worst = worstSection();
+      const worstName = SECTIONS[worst].name;
+      try {
+        await submitToFormspree(state.name, state.email, score, band, worstName);
+        state.submitting = false;
+        state.screen = 'results';
+        render();
+      } catch (err) {
+        state.submitting = false;
+        state.submitError = err.message || 'Something went wrong. Please try again.';
+        render();
+      }
+    };
+  }
+
+  if (s === 'results') {
+    document.getElementById('cta-btn').onclick = () => {
+      window.open('https://calendly.com/stephen-sell-like-an-introvert/new-meeting', '_blank');
+    };
+  }
+}
+
+render();
+</script>
+</body>
+</html>
