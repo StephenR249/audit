@@ -1,1182 +1,1027 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PitchGym — Train like a rep. Close like a pro.</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PitchGym — Stop winging it. Start winning it.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0d0d14;
-    --surface: #16161f;
-    --surface-raised: #1e1e2a;
-    --primary: #7c6af7;
-    --primary-dim: rgba(124, 106, 247, 0.15);
-    --secondary: #ff6b35;
-    --success: #22c55e;
-    --danger: #ef4444;
-    --gold: #f59e0b;
-    --text: #f0eff8;
-    --muted: #8b8a9e;
-    --border: rgba(255, 255, 255, 0.07);
-    --radius: 16px;
-    --shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  }
+:root{
+  --bg:#050508;
+  --surface:#0d0d18;
+  --surface-raised:#141428;
+  --border:rgba(255,255,255,0.07);
+  --primary:#7b5ea7;
+  --primary-glow:#a78bfa;
+  --neon:#00e5ff;
+  --neon-glow:rgba(0,229,255,0.15);
+  --orange:#ff6b35;
+  --success:#00ff9d;
+  --danger:#ff4444;
+  --gold:#ffd700;
+  --text:#e8e6f0;
+  --muted:#6b6880;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-weight:400;
+  line-height:1.5;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+.app{position:relative;z-index:1;min-height:100vh}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+/* ---------- Screen system ---------- */
+.screen{
+  display:none;opacity:0;transform:translateY(14px);
+  transition:opacity .3s ease, transform .3s ease;min-height:100vh;
+}
+.screen.active{display:block;opacity:1;transform:translateY(0)}
 
-  html, body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    line-height: 1.5;
-    min-height: 100%;
-  }
+/* ---------- Typography ---------- */
+h1{font-weight:800;line-height:1.05;letter-spacing:-.02em}
+h2{font-weight:700;letter-spacing:-.01em}
+.glow-word{color:var(--primary-glow)}
+.muted{color:var(--muted);line-height:1.6;font-size:.95rem}
+.section-sub{color:var(--muted);line-height:1.6;margin-top:.5rem}
 
-  body { overflow-x: hidden; }
+/* ---------- Buttons ---------- */
+.btn{
+  font-family:inherit;font-weight:600;font-size:1rem;border:none;border-radius:12px;
+  padding:.85rem 1.6rem;cursor:pointer;transition:all .3s ease;color:#fff;
+  background:linear-gradient(135deg,var(--primary),var(--primary-glow));
+}
+.btn:hover{box-shadow:0 0 28px var(--primary-glow);transform:translateY(-2px)}
+.btn-lg{font-size:1.15rem;padding:1.1rem 2.2rem;border-radius:14px}
+.btn-neon{background:linear-gradient(135deg,#0095a8,var(--neon));color:#04141a}
+.btn-neon:hover{box-shadow:0 0 28px var(--neon)}
+.btn-text{background:none;border:none;color:var(--text);font-weight:500;cursor:pointer;font-family:inherit;font-size:1rem;transition:color .3s ease}
+.btn-text:hover{color:var(--primary-glow)}
+.back-btn{
+  background:none;border:1px solid var(--border);color:var(--muted);font-family:inherit;
+  cursor:pointer;border-radius:10px;padding:.5rem .9rem;font-size:.9rem;transition:all .3s ease;
+}
+.back-btn:hover{color:var(--text);border-color:var(--neon);box-shadow:0 0 16px var(--neon-glow)}
 
-  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
-  input, textarea { font-family: inherit; }
+/* ---------- Glass ---------- */
+.glass{
+  background:rgba(255,255,255,0.04);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border:1px solid var(--border);border-radius:18px;
+}
 
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--surface-raised); border-radius: 8px; }
+/* ---------- Nav ---------- */
+.nav{display:flex;align-items:center;justify-content:space-between;padding:1.3rem clamp(1rem,5vw,3.5rem);position:relative;z-index:3}
+.wordmark{font-weight:800;font-size:1.5rem;letter-spacing:-.02em;cursor:pointer}
+.nav-right{display:flex;align-items:center;gap:1rem}
 
-  /* ---------- Screen system ---------- */
-  .screen {
-    display: none;
-    opacity: 0;
-    transform: translateY(18px);
-    transition: opacity 0.45s ease, transform 0.45s ease;
-    min-height: 100vh;
-  }
-  .screen.active { display: block; }
-  .screen.shown { opacity: 1; transform: translateY(0); }
+/* ---------- Hero ---------- */
+.hero{text-align:center;padding:clamp(2rem,7vh,5rem) clamp(1rem,5vw,2rem) 3rem;max-width:880px;margin:0 auto}
+.pill{
+  display:inline-block;padding:.45rem 1rem;border-radius:999px;background:rgba(167,139,250,0.1);
+  border:1px solid rgba(167,139,250,0.3);color:var(--primary-glow);font-size:.85rem;font-weight:500;margin-bottom:1.6rem;
+}
+.hero h1{font-size:clamp(2.4rem,6.5vw,4.4rem);margin-bottom:1.4rem}
+.hero-sub{font-size:clamp(1rem,2.2vw,1.25rem);color:var(--muted);line-height:1.6;max-width:620px;margin:0 auto 2.2rem}
+.tiny-note{color:var(--muted);font-size:.85rem;margin-top:1rem}
 
-  /* ---------- Buttons ---------- */
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 14px 26px; border-radius: 12px; font-weight: 600; font-size: 15px;
-    transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
-    white-space: nowrap;
-  }
-  .btn:active { transform: translateY(1px) scale(0.99); }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--primary), #9d8dff);
-    color: #fff; box-shadow: 0 8px 24px rgba(124, 106, 247, 0.35);
-  }
-  .btn-primary:hover { box-shadow: 0 12px 30px rgba(124, 106, 247, 0.5); transform: translateY(-1px); }
-  .btn-secondary {
-    background: linear-gradient(135deg, var(--secondary), #ff8c5e);
-    color: #fff; box-shadow: 0 8px 24px rgba(255, 107, 53, 0.3);
-  }
-  .btn-secondary:hover { transform: translateY(-1px); }
-  .btn-ghost { background: var(--surface-raised); color: var(--text); border: 1px solid var(--border); }
-  .btn-ghost:hover { background: #262635; }
-  .btn-lg { padding: 18px 34px; font-size: 17px; }
-  .btn-block { width: 100%; }
+/* ---------- Feature row ---------- */
+.feature-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:1100px;margin:1rem auto 5rem;padding:0 clamp(1rem,5vw,2rem)}
+.feature-card{padding:2rem;transition:all .3s ease}
+.feature-card:hover{transform:translateY(-4px);box-shadow:0 0 30px var(--neon-glow);border-color:rgba(0,229,255,0.25)}
+.feature-card .icon{font-size:2.2rem;margin-bottom:1rem}
+.feature-card h3{font-size:1.2rem;font-weight:700;margin-bottom:.6rem}
 
-  .pill {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 9px 16px; border-radius: 999px; font-size: 14px; font-weight: 500;
-    background: var(--surface-raised); border: 1px solid var(--border);
-  }
+/* ---------- Generic container ---------- */
+.container{max-width:1100px;margin:0 auto;padding:2rem clamp(1rem,5vw,2rem) 6rem}
+.screen-head{margin:1.5rem 0 2.2rem}
+.screen-head h2{font-size:clamp(1.8rem,4vw,2.6rem)}
 
-  /* ---------- Nav ---------- */
-  .nav {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 20px clamp(20px, 5vw, 64px); position: relative; z-index: 5;
-  }
-  .logo {
-    font-weight: 800; font-size: 22px; letter-spacing: -0.5px;
-    display: inline-flex; align-items: center; gap: 9px;
-  }
-  .logo-mark {
-    width: 34px; height: 34px; border-radius: 10px;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    display: grid; place-items: center; box-shadow: 0 6px 18px rgba(124, 106, 247, 0.4); font-size: 17px;
-  }
-  .logo-grad { background: linear-gradient(135deg, #fff, #c9c1ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-  .nav-right { display: flex; align-items: center; gap: 10px; }
-  .nav-link { padding: 9px 16px; border-radius: 10px; font-weight: 500; font-size: 14px; color: var(--muted); transition: color 0.2s; cursor: pointer; }
-  .nav-link:hover { color: var(--text); }
+/* ---------- Pathway cards ---------- */
+.pathways{display:grid;grid-template-columns:1fr 1fr;gap:1.8rem;margin-top:1rem}
+.path-card{padding:2.6rem 2rem;text-align:center;cursor:pointer;transition:all .3s ease;position:relative}
+.path-card .path-icon{font-size:3rem;margin-bottom:1.2rem}
+.path-card .label{font-weight:800;letter-spacing:.06em;font-size:1.3rem;margin-bottom:.9rem}
+.path-card .tag{display:inline-block;margin-top:1.4rem;padding:.4rem 1rem;border-radius:999px;font-size:.8rem;font-weight:600}
+.path-violet{border:1.5px solid rgba(167,139,250,0.4);box-shadow:0 0 24px rgba(167,139,250,0.08)}
+.path-violet:hover{transform:scale(1.02);box-shadow:0 0 44px rgba(167,139,250,0.35);border-color:var(--primary-glow)}
+.path-violet .tag{background:rgba(167,139,250,0.15);color:var(--primary-glow)}
+.path-neon{border:1.5px solid rgba(0,229,255,0.4);box-shadow:0 0 24px var(--neon-glow)}
+.path-neon:hover{transform:scale(1.02);box-shadow:0 0 44px rgba(0,229,255,0.35);border-color:var(--neon)}
+.path-neon .tag{background:rgba(0,229,255,0.12);color:var(--neon)}
 
-  /* ---------- Landing ---------- */
-  .hero {
-    min-height: calc(100vh - 76px);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; padding: 30px clamp(20px, 5vw, 64px) 60px; position: relative;
-  }
-  .hero::before {
-    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-    background:
-      radial-gradient(60% 50% at 50% 0%, rgba(124, 106, 247, 0.22), transparent 70%),
-      radial-gradient(40% 40% at 80% 30%, rgba(255, 107, 53, 0.12), transparent 70%);
-  }
-  .hero > * { position: relative; z-index: 1; }
-  .hero-tag {
-    text-transform: uppercase; letter-spacing: 3px; font-size: 13px; font-weight: 600;
-    color: var(--secondary); margin-bottom: 20px;
-  }
-  .hero h1 {
-    font-size: clamp(40px, 7vw, 78px); font-weight: 800; line-height: 1.04; letter-spacing: -2px;
-    max-width: 14ch; margin-bottom: 22px;
-  }
-  .hero h1 .accent { background: linear-gradient(135deg, var(--primary), #b3a6ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-  .hero-sub { font-size: clamp(16px, 2vw, 20px); color: var(--muted); max-width: 56ch; margin-bottom: 34px; }
-  .feature-pills { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 40px; }
-  .feature-pills .pill { font-size: 15px; padding: 11px 20px; }
+/* ---------- Level grid ---------- */
+.level-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.1rem}
+.level-card{padding:1.3rem;cursor:pointer;transition:all .3s ease;position:relative}
+.level-card .lvl-num{font-size:.8rem;color:var(--muted);font-weight:600;letter-spacing:.05em}
+.level-card .lvl-title{font-size:1.1rem;font-weight:700;margin:.35rem 0 .3rem}
+.level-card .lvl-persona{font-size:.85rem;color:var(--muted)}
+.level-card .lvl-status{margin-top:.8rem;font-size:.78rem;font-weight:600}
+.level-card.completed{border-color:rgba(0,255,157,0.3)}
+.level-card.completed .lvl-status{color:var(--success)}
+.level-card.current{border-color:var(--neon);box-shadow:0 0 26px var(--neon-glow)}
+.level-card.current .lvl-status{color:var(--neon)}
+.level-card.current:hover{transform:translateY(-4px);box-shadow:0 0 38px rgba(0,229,255,0.3)}
+.level-card.locked{opacity:.55}
+.level-card.locked .lvl-status{color:var(--muted)}
+.level-card.locked:hover{opacity:.8}
+.pro-badge{
+  position:absolute;top:.7rem;right:.7rem;background:rgba(255,215,0,0.12);color:var(--gold);
+  border:1px solid rgba(255,215,0,0.4);font-size:.68rem;font-weight:700;padding:.2rem .5rem;border-radius:6px;
+}
+.tooltip{
+  visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  background:#000;border:1px solid var(--gold);color:var(--gold);font-size:.72rem;padding:.4rem .7rem;
+  border-radius:8px;white-space:nowrap;transition:opacity .3s ease;z-index:5;pointer-events:none;
+}
+.level-card.pro:hover .tooltip{visibility:visible;opacity:1}
 
-  .stat-cards { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; margin-top: 56px; width: 100%; max-width: 860px; }
-  .stat-card {
-    flex: 1 1 220px; background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 28px 24px; text-align: left;
-    transition: transform 0.25s ease, border-color 0.25s ease;
-  }
-  .stat-card:hover { transform: translateY(-4px); border-color: rgba(124, 106, 247, 0.4); }
-  .stat-card .big { font-size: 30px; font-weight: 800; margin-bottom: 4px; }
-  .stat-card .lbl { color: var(--muted); font-size: 14px; }
-  .stat-card .ic { font-size: 22px; margin-bottom: 14px; display: block; }
+/* ---------- Tier banner ---------- */
+.tier-banner{
+  margin:2rem 0;padding:1.6rem 1.8rem;border-radius:16px;
+  background:linear-gradient(135deg,rgba(123,94,167,0.18),rgba(0,229,255,0.08));
+  border:1px solid rgba(167,139,250,0.3);display:flex;align-items:center;justify-content:space-between;gap:1.2rem;flex-wrap:wrap;
+}
+.tier-banner p{max-width:520px}
+.tier-banner strong{color:var(--primary-glow)}
 
-  /* ---------- App shell (dashboard etc.) ---------- */
-  .app-shell { display: flex; min-height: 100vh; }
-  .sidebar {
-    width: 248px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border);
-    padding: 26px 18px; display: flex; flex-direction: column; gap: 6px; position: sticky; top: 0; height: 100vh;
-  }
-  .sidebar .logo { margin: 0 8px 26px; font-size: 20px; }
-  .side-link {
-    display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 11px;
-    color: var(--muted); font-weight: 500; font-size: 15px; transition: all 0.2s; text-align: left; width: 100%;
-  }
-  .side-link svg { width: 20px; height: 20px; flex-shrink: 0; }
-  .side-link:hover { background: var(--surface-raised); color: var(--text); }
-  .side-link.active { background: var(--primary-dim); color: #fff; }
-  .side-link.active svg { color: var(--primary); }
-  .side-link .lock { margin-left: auto; font-size: 13px; opacity: 0.7; }
-  .sidebar-spacer { flex: 1; }
-  .side-upgrade {
-    margin: 10px 6px 0; padding: 18px 16px; border-radius: 14px;
-    background: linear-gradient(135deg, rgba(124,106,247,0.2), rgba(255,107,53,0.18));
-    border: 1px solid rgba(124, 106, 247, 0.3);
-  }
-  .side-upgrade h4 { font-size: 14px; margin-bottom: 6px; }
-  .side-upgrade p { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+/* ---------- Modules ---------- */
+.module-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.3rem}
+.module-card{padding:1.8rem;display:flex;flex-direction:column;transition:all .3s ease}
+.module-card:hover{transform:translateY(-4px);box-shadow:0 0 30px var(--neon-glow);border-color:rgba(0,229,255,0.25)}
+.module-card .m-icon{font-size:2rem;margin-bottom:.8rem}
+.module-card h3{font-size:1.15rem;font-weight:700;margin-bottom:.5rem}
+.module-card .m-desc{flex:1;margin-bottom:1.1rem}
+.diff-pill{display:inline-block;padding:.25rem .7rem;border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.04em;margin-bottom:1rem;width:fit-content}
+.diff-beginner{background:rgba(0,255,157,0.12);color:var(--success)}
+.diff-intermediate{background:rgba(255,215,0,0.12);color:var(--gold)}
+.diff-advanced{background:rgba(255,68,68,0.12);color:var(--danger)}
 
-  .main { flex: 1; padding: 36px clamp(20px, 4vw, 52px); max-width: 1180px; }
-  .page-head { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 28px; }
-  .page-head h1 { font-size: clamp(26px, 4vw, 36px); font-weight: 800; letter-spacing: -1px; }
-  .page-head .date { color: var(--muted); font-size: 15px; margin-top: 4px; }
+/* ---------- Mode select ---------- */
+.center-wrap{max-width:760px;margin:0 auto;text-align:center;padding-top:2rem}
+.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:2.5rem 0 2rem}
+.mode-card{padding:2.4rem 1.8rem;cursor:pointer;transition:all .3s ease;border:1.5px solid var(--border)}
+.mode-card:hover{box-shadow:0 0 30px var(--neon-glow);border-color:rgba(0,229,255,0.3)}
+.mode-card.selected{border-color:var(--neon);box-shadow:0 0 34px rgba(0,229,255,0.35)}
+.mode-card .mode-icon{font-size:2.6rem;margin-bottom:1rem}
+.mode-card h3{font-size:1.3rem;font-weight:700;margin-bottom:.6rem}
+#mode-go{display:none}
+#mode-go.show{display:inline-block}
 
-  .free-pill {
-    display: inline-flex; align-items: center; gap: 10px; padding: 11px 18px; border-radius: 999px;
-    background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); color: var(--gold);
-    font-weight: 600; font-size: 14px;
-  }
-  .free-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 10px var(--gold); animation: pulse 2s infinite; }
-  .free-pill .timer { font-variant-numeric: tabular-nums; color: var(--text); }
+/* ---------- Briefing ---------- */
+.brief-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:1.8rem;margin-top:1.2rem}
+.ctx-badge{display:inline-block;padding:.4rem .9rem;border-radius:8px;font-size:.78rem;font-weight:700;letter-spacing:.05em;background:rgba(0,229,255,0.12);color:var(--neon);margin-bottom:1rem}
+.persona-card{padding:1.8rem;display:flex;gap:1.2rem;align-items:flex-start}
+.avatar{width:62px;height:62px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.4rem;color:#fff}
+.practice-list{list-style:none;margin-top:1rem}
+.practice-list li{padding:.7rem 0 .7rem 1.8rem;position:relative;border-bottom:1px solid var(--border);line-height:1.5}
+.practice-list li:before{content:"▸";position:absolute;left:0;color:var(--neon)}
+.diff-bar{height:8px;border-radius:999px;background:var(--surface-raised);overflow:hidden;margin:.6rem 0 0}
+.diff-bar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--success),var(--gold),var(--danger))}
 
-  .section-label { font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); font-weight: 600; margin: 34px 0 16px; }
+/* ---------- Chat ---------- */
+.chat-wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;height:calc(100vh - 40px)}
+.chat-header{display:flex;align-items:center;gap:.9rem;padding:1rem 1.2rem;border-bottom:1px solid var(--border);background:rgba(13,13,24,0.7);backdrop-filter:blur(16px);border-radius:16px 16px 0 0}
+.chat-header .avatar{width:42px;height:42px;font-size:1rem}
+.chat-header .ch-name{font-weight:700}
+.chat-header .ch-status{font-size:.78rem;color:var(--neon);height:1rem}
+.chat-body{flex:1;overflow-y:auto;padding:1.4rem 1.2rem;display:flex;flex-direction:column;gap:.9rem;background:rgba(13,13,24,0.4)}
+.msg{max-width:78%;padding:.8rem 1.1rem;border-radius:16px;line-height:1.45;font-size:.95rem;animation:popIn .3s ease}
+@keyframes popIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.ai{align-self:flex-start;background:var(--surface-raised);border:1px solid var(--border);border-bottom-left-radius:4px}
+.msg.user{align-self:flex-end;background:linear-gradient(135deg,var(--primary),var(--primary-glow));color:#fff;border-bottom-right-radius:4px}
+.typing-dots span{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin:0 2px;animation:blink 1.2s infinite}
+.typing-dots span:nth-child(2){animation-delay:.2s}
+.typing-dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,60%,100%{opacity:.2}30%{opacity:1}}
+.chat-input{display:flex;gap:.7rem;padding:1rem 1.2rem;border-top:1px solid var(--border);background:rgba(13,13,24,0.7);backdrop-filter:blur(16px);border-radius:0 0 16px 16px}
+.chat-input input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.8rem 1rem;color:var(--text);font-family:inherit;font-size:.95rem;outline:none;transition:all .3s ease}
+.chat-input input:focus{border-color:var(--neon);box-shadow:0 0 18px var(--neon-glow)}
+.icon-btn{background:linear-gradient(135deg,var(--primary),var(--primary-glow));border:none;color:#fff;width:48px;height:48px;border-radius:12px;cursor:pointer;font-size:1.2rem;transition:all .3s ease;flex-shrink:0}
+.icon-btn:hover{box-shadow:0 0 22px var(--primary-glow)}
+.finish-bar{display:flex;justify-content:flex-end;padding:.6rem 1.2rem 0}
 
-  .stat-row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; }
-  .stat-mini { flex: 1 1 160px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; }
-  .stat-mini .v { font-size: 26px; font-weight: 800; }
-  .stat-mini .k { color: var(--muted); font-size: 13px; }
+/* ---------- Voice ---------- */
+.voice-wrap{max-width:620px;margin:0 auto;text-align:center;padding-top:1.5rem}
+.waveform{display:flex;align-items:center;justify-content:center;gap:5px;height:90px;margin:1.5rem 0}
+.waveform span{width:6px;height:14px;border-radius:4px;background:var(--neon);box-shadow:0 0 12px var(--neon)}
+.waveform.speaking span{animation:wave 1s ease-in-out infinite}
+.waveform span:nth-child(2){animation-delay:.1s}
+.waveform span:nth-child(3){animation-delay:.2s}
+.waveform span:nth-child(4){animation-delay:.3s}
+.waveform span:nth-child(5){animation-delay:.4s}
+.waveform span:nth-child(6){animation-delay:.5s}
+.waveform span:nth-child(7){animation-delay:.6s}
+@keyframes wave{0%,100%{height:14px}50%{height:64px}}
+.voice-state{font-size:1.1rem;color:var(--neon);height:1.6rem;margin-bottom:1rem}
+.record-btn{width:120px;height:120px;border-radius:50%;border:none;cursor:pointer;background:radial-gradient(circle,var(--orange),#c0392b);color:#fff;font-size:.95rem;font-weight:700;transition:all .3s ease;margin:1rem auto}
+.record-btn:hover{box-shadow:0 0 34px var(--orange)}
+.record-btn.recording{animation:pulse 1.2s ease-in-out infinite;background:radial-gradient(circle,var(--danger),#a01010)}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,68,68,.6)}50%{transform:scale(1.06);box-shadow:0 0 0 22px rgba(255,68,68,0)}}
+.transcript{text-align:left;margin-top:1.8rem;padding:1.2rem;max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:.7rem}
+.t-line{font-size:.92rem;line-height:1.4}
+.t-line.ai{color:var(--text)}
+.t-line.ai b{color:var(--neon)}
+.t-line.user{color:var(--primary-glow)}
 
-  /* ---------- Level map ---------- */
-  .level-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
-  .level-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 20px; position: relative; transition: transform 0.2s, border-color 0.2s; min-height: 158px;
-    display: flex; flex-direction: column;
-  }
-  .level-card.locked { opacity: 0.5; }
-  .level-card.unlockable { cursor: pointer; }
-  .level-card.unlockable:hover { transform: translateY(-4px); border-color: rgba(124,106,247,0.5); }
-  .level-card.current { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary), 0 12px 30px rgba(124,106,247,0.2); }
-  .lvl-num { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; }
-  .level-card.current .lvl-num { color: var(--primary); }
-  .lvl-title { font-size: 18px; font-weight: 700; margin: 8px 0 6px; letter-spacing: -0.3px; }
-  .lvl-persona { font-size: 13px; color: var(--muted); flex: 1; }
-  .lvl-status { position: absolute; top: 18px; right: 18px; font-size: 18px; }
-  .lvl-badge { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 999px; align-self: flex-start; }
-  .badge-done { background: rgba(34,197,94,0.14); color: var(--success); }
-  .badge-current { background: var(--primary-dim); color: var(--primary); }
-  .badge-locked { background: var(--surface-raised); color: var(--muted); }
+/* ---------- Score ---------- */
+.score-wrap{max-width:760px;margin:0 auto;text-align:center;padding-top:1.5rem}
+.ring-wrap{position:relative;width:200px;height:200px;margin:1rem auto 1.5rem}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-num .n{font-size:3.4rem;font-weight:800;line-height:1}
+.ring-num .d{font-size:.9rem;color:var(--muted)}
+.verdict{font-size:1.6rem;font-weight:800;letter-spacing:.04em;margin-bottom:.6rem}
+.verdict.pass{color:var(--success);text-shadow:0 0 22px rgba(0,255,157,.4)}
+.verdict.fail{color:var(--danger);text-shadow:0 0 22px rgba(255,68,68,.4)}
+.score-head{font-size:1.5rem;font-weight:700;margin-bottom:.6rem}
+.score-body{color:var(--muted);line-height:1.6;max-width:560px;margin:0 auto 2rem}
+.rubric{text-align:left;padding:1.6rem;margin-bottom:1.6rem}
+.rubric-row{display:flex;align-items:center;gap:1rem;padding:.7rem 0;border-bottom:1px solid var(--border)}
+.rubric-row:last-child{border-bottom:none}
+.rubric-row .cat{flex:0 0 180px;font-weight:600;font-size:.92rem}
+.rubric-track{flex:1;height:8px;border-radius:999px;background:var(--surface-raised);overflow:hidden}
+.rubric-track span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--primary),var(--primary-glow));width:0;transition:width 1s ease}
+.rubric-row.lowscore .rubric-track span{background:linear-gradient(90deg,#a01010,var(--danger))}
+.rubric-pts{flex:0 0 60px;text-align:right;font-weight:700;font-size:.9rem}
 
-  /* ---------- Generic card ---------- */
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 26px; }
-  .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 500; margin-bottom: 22px; font-size: 15px; cursor: pointer; }
-  .back-btn:hover { color: var(--text); }
+/* ---------- Coach ---------- */
+.coach{position:relative;padding:1.6rem;text-align:left;margin-bottom:1.6rem;overflow:hidden}
+.coach h4{font-weight:700;margin-bottom:.7rem;display:flex;align-items:center;gap:.5rem}
+.coach .teaser{color:var(--text);line-height:1.6}
+.coach .blurred{filter:blur(5px);user-select:none;color:var(--muted);margin-top:.6rem;line-height:1.7}
+.coach-lock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:1.4rem;background:linear-gradient(to top,rgba(5,5,8,0.95),transparent 70%)}
+.coach-lock .lock-icon{font-size:1.6rem;margin-bottom:.5rem}
 
-  /* ---------- Level detail ---------- */
-  .detail-wrap { max-width: 920px; margin: 0 auto; padding: 36px clamp(20px,4vw,40px) 60px; }
-  .badge-level { display: inline-block; background: var(--primary-dim); color: var(--primary); font-weight: 700; font-size: 13px; letter-spacing: 2px; padding: 7px 16px; border-radius: 999px; text-transform: uppercase; }
-  .detail-title { font-size: clamp(28px, 5vw, 42px); font-weight: 800; letter-spacing: -1.2px; margin: 16px 0 24px; }
+/* ---------- Daily banner ---------- */
+.daily-banner{padding:1.4rem 1.6rem;border-radius:16px;margin-bottom:1.4rem;background:linear-gradient(135deg,rgba(0,255,157,0.12),rgba(0,229,255,0.06));border:1px solid rgba(0,255,157,0.3)}
+.daily-banner .db-btns{display:flex;gap:.8rem;justify-content:center;margin-top:1rem;flex-wrap:wrap}
 
-  .persona-card { display: flex; gap: 18px; align-items: center; }
-  .avatar { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 22px; color: #fff; flex-shrink: 0; }
-  .av-sandra { background: linear-gradient(135deg, #f472b6, #c026d3); }
-  .av-marcus { background: linear-gradient(135deg, #38bdf8, #2563eb); }
-  .persona-card .pname { font-weight: 700; font-size: 17px; }
-  .persona-card .pdesc { color: var(--muted); font-size: 14px; margin-top: 4px; }
+/* ---------- Upgrade modal ---------- */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:50;background:rgba(5,5,8,0.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{max-width:920px;width:100%;padding:2.4rem;position:relative;background:var(--surface);border:1px solid var(--border);border-radius:22px;box-shadow:0 0 60px rgba(167,139,250,0.2);max-height:94vh;overflow-y:auto}
+.modal-close{position:absolute;top:1.1rem;right:1.1rem;background:none;border:1px solid var(--border);color:var(--muted);width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:1.1rem;transition:all .3s ease}
+.modal-close:hover{color:var(--text);border-color:var(--danger)}
+.modal h2{font-size:2rem;margin-bottom:.5rem}
+.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin:1.8rem 0}
+.price-card{padding:1.8rem 1.4rem;text-align:center;position:relative;transition:all .3s ease;cursor:pointer}
+.price-card:hover{transform:translateY(-4px);box-shadow:0 0 28px var(--neon-glow)}
+.price-card.popular{border:1.5px solid var(--primary-glow);box-shadow:0 0 30px rgba(167,139,250,0.25)}
+.price-card .price{font-size:2.4rem;font-weight:800}
+.price-card .credits{color:var(--neon);font-weight:600;margin:.3rem 0}
+.price-card .blurb{color:var(--muted);font-size:.9rem;margin-top:.4rem}
+.price-tag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-size:.72rem;font-weight:700;padding:.25rem .8rem;border-radius:999px;white-space:nowrap}
+.tag-popular{background:var(--primary-glow);color:#1a1030}
+.tag-value{background:var(--orange);color:#1a0a02}
+.includes{list-style:none;margin:1.4rem 0;display:grid;gap:.6rem}
+.includes li{padding-left:.4rem;color:var(--text)}
+.email-box{display:none;gap:.6rem;margin-top:1rem}
+.email-box.show{display:flex}
+.email-box input{flex:1;background:var(--surface-raised);border:1px solid var(--border);border-radius:10px;padding:.7rem 1rem;color:var(--text);font-family:inherit;outline:none}
+.email-box input:focus{border-color:var(--neon);box-shadow:0 0 16px var(--neon-glow)}
 
-  .skill-list { list-style: none; margin-top: 8px; }
-  .skill-list li { display: flex; gap: 12px; align-items: flex-start; padding: 9px 0; font-size: 15px; }
-  .skill-list .chk { color: var(--primary); flex-shrink: 0; margin-top: 2px; }
+/* ---------- Toast ---------- */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--surface-raised);border:1px solid var(--neon);color:var(--text);padding:.9rem 1.4rem;border-radius:12px;z-index:60;box-shadow:0 0 24px var(--neon-glow);transition:transform .35s ease;max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0)}
 
-  .mode-tabs { display: flex; gap: 8px; background: var(--surface-raised); padding: 6px; border-radius: 14px; margin-bottom: 16px; flex-wrap: wrap; }
-  .mode-tab { flex: 1; min-width: 110px; padding: 12px; border-radius: 10px; font-weight: 600; font-size: 14px; color: var(--muted); transition: all 0.2s; }
-  .mode-tab.active { background: var(--surface); color: var(--text); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
-  .mode-desc { color: var(--muted); font-size: 15px; padding: 4px 2px 8px; min-height: 46px; }
-
-  /* ---------- Session generic ---------- */
-  .session-top {
-    display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
-    padding: 16px clamp(16px,4vw,32px); border-bottom: 1px solid var(--border); background: var(--surface);
-    position: sticky; top: 0; z-index: 4;
-  }
-  .live-badge { display: inline-flex; align-items: center; gap: 9px; font-weight: 700; font-size: 14px; letter-spacing: 0.3px; }
-  .live-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 10px var(--danger); animation: pulse 1.4s infinite; }
-  .session-timer { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 18px; padding: 6px 14px; border-radius: 10px; background: var(--surface-raised); }
-
-  .voice-wrap { max-width: 760px; margin: 0 auto; padding: 26px clamp(16px,4vw,28px) 140px; }
-  .call-state { text-align: center; padding: 26px 0 10px; }
-  .ring-anim { width: 96px; height: 96px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; position: relative; }
-  .ring-anim.ringing { background: var(--primary-dim); }
-  .ring-anim.connected { background: rgba(34,197,94,0.15); }
-  .ring-anim::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--primary); animation: ringPulse 1.4s infinite; }
-  .ring-anim.connected::before { border-color: var(--success); animation: none; }
-  .ring-anim svg { width: 40px; height: 40px; }
-  .call-state .cs-text { font-weight: 600; font-size: 16px; }
-  .call-state.connected .cs-text { color: var(--success); }
-
-  .transcript { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
-  .bubble { max-width: 78%; padding: 13px 18px; border-radius: 16px; font-size: 15px; line-height: 1.45; animation: bubbleIn 0.4s ease; }
-  .bubble.them { background: var(--surface-raised); border-bottom-left-radius: 5px; align-self: flex-start; }
-  .bubble.you { background: linear-gradient(135deg, var(--primary), #8d7bff); color: #fff; border-bottom-right-radius: 5px; align-self: flex-end; }
-  .bubble .who { font-size: 12px; font-weight: 700; opacity: 0.7; margin-bottom: 3px; }
-  .bubble.system { align-self: center; background: rgba(34,197,94,0.15); color: var(--success); font-weight: 600; font-size: 13px; padding: 9px 18px; border-radius: 999px; max-width: none; }
-
-  .typing { display: inline-flex; gap: 4px; padding: 4px 0; }
-  .typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: typing 1.2s infinite; }
-  .typing span:nth-child(2) { animation-delay: 0.2s; }
-  .typing span:nth-child(3) { animation-delay: 0.4s; }
-
-  .input-dock {
-    position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface);
-    border-top: 1px solid var(--border); padding: 16px clamp(16px,4vw,28px);
-    display: flex; gap: 10px; align-items: center; z-index: 6;
-  }
-  .input-dock .inner { max-width: 760px; margin: 0 auto; width: 100%; display: flex; gap: 10px; align-items: center; }
-  .chat-input { flex: 1; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; color: var(--text); font-size: 15px; outline: none; }
-  .chat-input:focus { border-color: var(--primary); }
-  .mic-btn { width: 50px; height: 50px; border-radius: 50%; background: var(--surface-raised); border: 1px solid var(--border); display: grid; place-items: center; flex-shrink: 0; transition: all 0.2s; }
-  .mic-btn svg { width: 22px; height: 22px; }
-  .mic-btn.recording { background: var(--danger); border-color: var(--danger); animation: micPulse 1.2s infinite; }
-  .send-btn { width: 50px; height: 50px; border-radius: 12px; background: var(--primary); display: grid; place-items: center; flex-shrink: 0; }
-  .send-btn svg { width: 22px; height: 22px; color: #fff; }
-  .send-btn:hover { background: #8d7bff; }
-
-  .end-call-bar { position: fixed; bottom: 86px; left: 0; right: 0; display: flex; justify-content: center; z-index: 5; padding: 0 16px; pointer-events: none; }
-  .end-call-bar .btn { pointer-events: auto; box-shadow: var(--shadow); }
-
-  /* ---------- Email / InMail ---------- */
-  .compose-wrap { max-width: 1100px; margin: 0 auto; padding: 30px clamp(16px,4vw,32px) 60px; }
-  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .compose-pane { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
-  .compose-pane h3 { font-size: 15px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-  .field { margin-bottom: 14px; }
-  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; }
-  .field input, .field textarea { width: 100%; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--text); font-size: 15px; outline: none; resize: vertical; }
-  .field input:focus, .field textarea:focus { border-color: var(--primary); }
-  .field input[readonly] { color: var(--muted); }
-  .field textarea { min-height: 150px; }
-
-  .response-pane { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; display: flex; flex-direction: column; }
-  .resp-empty { color: var(--muted); text-align: center; margin: auto; font-size: 14px; }
-  .resp-thread { display: flex; flex-direction: column; gap: 14px; }
-  .resp-msg { background: var(--surface-raised); border-radius: 12px; padding: 14px 16px; font-size: 14px; line-height: 1.55; }
-  .resp-msg.mine { background: var(--primary-dim); border: 1px solid rgba(124,106,247,0.3); }
-  .resp-msg .rm-who { font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 5px; }
-
-  .spinner { width: 26px; height: 26px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 20px auto; }
-
-  /* LinkedIn */
-  .li-profile { display: flex; gap: 14px; align-items: center; padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
-  .li-profile .pname { font-weight: 700; font-size: 16px; }
-  .li-profile .ptitle { color: var(--muted); font-size: 13px; }
-  .li-profile .li-tag { font-size: 11px; color: #38bdf8; margin-top: 3px; font-weight: 600; }
-
-  /* ---------- Scoring ---------- */
-  .score-wrap { max-width: 760px; margin: 0 auto; padding: 40px clamp(16px,4vw,32px) 80px; text-align: center; }
-  .ring-wrap { position: relative; width: 200px; height: 200px; margin: 10px auto 24px; }
-  .ring-wrap svg { transform: rotate(-90deg); }
-  .ring-bg { fill: none; stroke: var(--surface-raised); stroke-width: 14; }
-  .ring-fg { fill: none; stroke: url(#scoreGrad); stroke-width: 14; stroke-linecap: round; transition: stroke-dashoffset 1.5s cubic-bezier(.22,1,.36,1); }
-  .ring-center { position: absolute; inset: 0; display: grid; place-items: center; }
-  .ring-center .num { font-size: 52px; font-weight: 800; line-height: 1; }
-  .ring-center .den { color: var(--muted); font-size: 15px; }
-
-  .score-banner { background: rgba(255,107,53,0.12); border: 1px solid rgba(255,107,53,0.4); color: var(--secondary); font-weight: 600; padding: 14px 20px; border-radius: 12px; margin-bottom: 28px; }
-
-  .rubric { text-align: left; }
-  .rubric-row { display: flex; align-items: center; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--border); }
-  .rubric-row:last-child { border-bottom: none; }
-  .rubric-row .rname { flex: 1; font-weight: 500; font-size: 15px; }
-  .rubric-bar { width: 120px; height: 7px; border-radius: 999px; background: var(--surface-raised); overflow: hidden; flex-shrink: 0; }
-  .rubric-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--primary), #9d8dff); width: 0; transition: width 1s ease; }
-  .rubric-row .rscore { width: 56px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 14px; flex-shrink: 0; }
-
-  .score-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 30px 0; }
-  .score-actions .btn { flex: 1; min-width: 200px; }
-
-  .coach-locked { position: relative; text-align: left; overflow: hidden; }
-  .coach-teaser { filter: blur(6px); user-select: none; pointer-events: none; }
-  .coach-overlay {
-    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 14px; background: linear-gradient(180deg, rgba(22,22,31,0.65), rgba(22,22,31,0.92)); text-align: center; padding: 20px;
-  }
-  .coach-overlay .lock-ic { width: 44px; height: 44px; color: var(--gold); }
-  .coach-overlay h3 { font-size: 19px; }
-  .coach-overlay p { color: var(--muted); font-size: 14px; max-width: 36ch; }
-
-  /* ---------- Modal ---------- */
-  .modal-overlay {
-    position: fixed; inset: 0; z-index: 100; background: rgba(5,5,10,0.78); backdrop-filter: blur(8px);
-    display: none; align-items: center; justify-content: center; padding: 24px; opacity: 0; transition: opacity 0.3s;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal-overlay.shown { opacity: 1; }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 22px; padding: 34px;
-    max-width: 900px; width: 100%; max-height: 92vh; overflow-y: auto; transform: scale(0.96); transition: transform 0.3s;
-  }
-  .modal-overlay.shown .modal { transform: scale(1); }
-  .modal-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
-  .modal-head h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
-  .modal-head p { color: var(--muted); font-size: 15px; margin-top: 4px; }
-  .modal-close { width: 38px; height: 38px; border-radius: 10px; background: var(--surface-raised); display: grid; place-items: center; flex-shrink: 0; }
-  .modal-close:hover { background: #2a2a3a; }
-
-  .price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 26px 0; }
-  .price-card { background: var(--surface-raised); border: 1px solid var(--border); border-radius: 16px; padding: 24px 20px; position: relative; transition: transform 0.2s, border-color 0.2s; }
-  .price-card:hover { transform: translateY(-4px); }
-  .price-card.popular { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
-  .price-card .tag { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.6px; }
-  .price-card .price { font-size: 38px; font-weight: 800; letter-spacing: -1px; }
-  .price-card .credits { color: var(--secondary); font-weight: 700; font-size: 15px; margin: 2px 0 4px; }
-  .price-card .blurb { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
-  .price-feats { list-style: none; display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
-  .price-feats li { font-size: 13px; display: flex; gap: 8px; align-items: flex-start; }
-  .price-feats .chk { color: var(--success); flex-shrink: 0; }
-
-  /* ---------- Toast ---------- */
-  .toast {
-    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
-    background: var(--surface-raised); border: 1px solid var(--border); color: var(--text);
-    padding: 14px 22px; border-radius: 12px; font-weight: 600; font-size: 14px; z-index: 200;
-    box-shadow: var(--shadow); opacity: 0; transition: all 0.3s; display: flex; align-items: center; gap: 10px; pointer-events: none;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  /* ---------- Animations ---------- */
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-  @keyframes ringPulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.4); opacity: 0; } }
-  @keyframes micPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); } 50% { box-shadow: 0 0 0 12px rgba(239,68,68,0); } }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes typing { 0%,60%,100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-5px); opacity: 1; } }
-  @keyframes bubbleIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-  /* ---------- Responsive ---------- */
-  @media (max-width: 860px) {
-    .split { grid-template-columns: 1fr; }
-    .price-grid { grid-template-columns: 1fr; }
-    .sidebar {
-      position: fixed; bottom: 0; top: auto; left: 0; right: 0; width: 100%; height: auto;
-      flex-direction: row; border-right: none; border-top: 1px solid var(--border); padding: 8px;
-      z-index: 50; justify-content: space-around; gap: 0;
-    }
-    .sidebar .logo, .sidebar-spacer, .side-upgrade { display: none; }
-    .side-link { flex-direction: column; gap: 3px; font-size: 10px; padding: 8px 4px; flex: 1; justify-content: center; }
-    .side-link .lock { display: none; }
-    .main { padding-bottom: 90px; }
-  }
-  @media (max-width: 520px) {
-    .nav-link.upgrade-nav { display: none; }
-    .bubble { max-width: 88%; }
-  }
+/* ---------- Mobile ---------- */
+@media(max-width:780px){
+  .feature-row{grid-template-columns:1fr}
+  .pathways{grid-template-columns:1fr}
+  .mode-cards{grid-template-columns:1fr}
+  .brief-grid{grid-template-columns:1fr}
+  .pricing{grid-template-columns:1fr}
+  .rubric-row .cat{flex:0 0 130px;font-size:.85rem}
+  .nav{padding:1rem 1.2rem}
+  .nav .btn{padding:.6rem 1rem;font-size:.9rem}
+  .hero h1{font-size:2.2rem}
+  .chat-wrap{height:calc(100vh - 16px)}
+  .modal{padding:1.6rem}
+}
 </style>
 </head>
 <body>
+<canvas id="bg-canvas"></canvas>
+<div class="app">
 
 <!-- ============ SCREEN 1: LANDING ============ -->
-<section class="screen active shown" id="screen-landing">
+<section id="screen-landing" class="screen active">
   <nav class="nav">
-    <div class="logo"><span class="logo-mark">🏋️</span><span class="logo-grad">PitchGym</span></div>
+    <div class="wordmark" onclick="showScreen('screen-landing')"><span>Pitch</span><span class="glow-word">Gym</span></div>
     <div class="nav-right">
-      <span class="nav-link" onclick="toast('Login coming soon')">Login</span>
-      <button class="btn btn-ghost nav-link upgrade-nav" onclick="openUpgrade()" style="padding:9px 18px">Upgrade</button>
+      <button class="btn-text" onclick="toast('Log in coming soon — for now, just jump in.')">Log in</button>
+      <button class="btn" onclick="showScreen('screen-path')">Start for free →</button>
     </div>
   </nav>
-
   <div class="hero">
-    <div class="hero-tag">Train like a rep. Close like a pro.</div>
-    <h1>The AI cold-call <span class="accent">training arena</span> for sales reps.</h1>
-    <p class="hero-sub">Voice, Email &amp; LinkedIn — all in one gym. Run live AI roleplays as an SDR or AE, get scored on every call, and level up from opener to close.</p>
+    <span class="pill">🧠 AI-Powered Sales Training</span>
+    <h1>Stop winging it.<br>Start <span class="glow-word">winning</span> it.</h1>
+    <p class="hero-sub">PitchGym puts you in the room with real objections, real pressure, and an AI that doesn't go easy on you. Practice until it's muscle memory.</p>
+    <button class="btn btn-lg" onclick="showScreen('screen-path')">Jump in — it's free →</button>
+    <p class="tiny-note">No signup needed. No credit card. Just reps.</p>
+  </div>
+  <div class="feature-row">
+    <div class="glass feature-card"><div class="icon">🎯</div><h3>25 levels of chaos</h3><p class="muted">From your first warm call to a full hostile negotiation. Each level teaches one skill.</p></div>
+    <div class="glass feature-card"><div class="icon">🎓</div><h3>A library of scenarios</h3><p class="muted">Gatekeepers. Price wars. Time objections. We've got the whole playbook.</p></div>
+    <div class="glass feature-card"><div class="icon">🤖</div><h3>An AI coach that doesn't sugarcoat</h3><p class="muted">Get real feedback. Know exactly what to fix. Upgrade to unlock.</p></div>
+  </div>
+</section>
 
-    <div class="feature-pills">
-      <span class="pill">🎙️ Voice Agent</span>
-      <span class="pill">📧 Email Agent</span>
-      <span class="pill">💼 LinkedIn InMail</span>
+<!-- ============ SCREEN 2: CHOOSE PATH ============ -->
+<section id="screen-path" class="screen">
+  <div class="container">
+    <button class="back-btn" onclick="showScreen('screen-landing')">← Back</button>
+    <div class="screen-head">
+      <h2>Where do you want to <span class="glow-word">start</span>?</h2>
+      <p class="section-sub">You can switch between these any time.</p>
     </div>
-
-    <button class="btn btn-primary btn-lg" onclick="goTo('dashboard')">
-      Start Training Free — No signup needed
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-    </button>
-
-    <div class="stat-cards">
-      <div class="stat-card">
-        <span class="ic">🎯</span>
-        <div class="big">10</div>
-        <div class="lbl">Progressive levels</div>
+    <div class="pathways">
+      <div class="glass path-card path-violet" onclick="showScreen('screen-levelmap')">
+        <div class="path-icon">🎮</div>
+        <div class="label">NEW ROLE PLAY</div>
+        <p class="muted">Work your way up from warm leads to absolute gatekeepers. 25 levels. One skill per level. 90% gets you through.</p>
+        <span class="tag">FREE — Levels 1–10</span>
       </div>
-      <div class="stat-card">
-        <span class="ic">🏆</span>
-        <div class="big">90%</div>
-        <div class="lbl">Pass threshold to advance</div>
-      </div>
-      <div class="stat-card">
-        <span class="ic">🧠</span>
-        <div class="big">AI</div>
-        <div class="lbl">Coaching feedback on every rep</div>
+      <div class="glass path-card path-neon" onclick="showScreen('screen-learning')">
+        <div class="path-icon">📚</div>
+        <div class="label">LEARNING OPPORTUNITIES</div>
+        <p class="muted">Know what you're working on? Jump straight into a specific scenario — price objections, gatekeepers, trial closes, all of it.</p>
+        <span class="tag">6 modules available</span>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ SCREEN 2: DASHBOARD ============ -->
-<section class="screen" id="screen-dashboard">
-  <div class="app-shell">
-    <aside class="sidebar" id="sidebar"></aside>
-    <main class="main">
-      <div class="page-head">
-        <div>
-          <h1>Welcome back, Trainee</h1>
-          <div class="date" id="dash-date"></div>
-        </div>
-        <div class="free-pill">
-          <span class="dot"></span>
-          1 free session today — resets in <span class="timer" id="reset-timer">18:42:33</span>
-        </div>
-      </div>
-
-      <div class="section-label">Your stats</div>
-      <div class="stat-row">
-        <div class="stat-mini"><div class="v">3</div><div class="k">Sessions completed</div></div>
-        <div class="stat-mini"><div class="v">82%</div><div class="k">Average score</div></div>
-        <div class="stat-mini"><div class="v" style="color:var(--gold)">94%</div><div class="k">Best score</div></div>
-      </div>
-
-      <div class="section-label">Level progression map</div>
-      <div class="level-grid" id="level-grid"></div>
-    </main>
+<!-- ============ SCREEN 3a: LEVEL MAP ============ -->
+<section id="screen-levelmap" class="screen">
+  <div class="container">
+    <button class="back-btn" onclick="showScreen('screen-path')">← Back</button>
+    <div class="screen-head">
+      <h2>Pick your <span class="glow-word">level</span></h2>
+      <p class="section-sub">Each one teaches you something new. 90% to pass. Real talk.</p>
+    </div>
+    <div class="level-grid" id="level-grid"></div>
+    <div class="tier-banner">
+      <p><strong>You've hit the free limit.</strong> Unlock levels 11–25 + get AI coach feedback — upgrade for less than a coffee a day.</p>
+      <button class="btn" onclick="openUpgrade()">Upgrade →</button>
+    </div>
   </div>
 </section>
 
-<!-- ============ SCREEN 3: LEVEL DETAIL ============ -->
-<section class="screen" id="screen-detail">
-  <nav class="nav">
-    <div class="logo"><span class="logo-mark">🏋️</span><span class="logo-grad">PitchGym</span></div>
-    <div class="free-pill"><span class="dot"></span>1 free session today</div>
-  </nav>
-  <div class="detail-wrap">
-    <span class="back-btn" onclick="goTo('dashboard')">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
-      Back to dashboard
-    </span>
-    <div><span class="badge-level">Level 2</span></div>
-    <h1 class="detail-title">Get Past the Gatekeeper</h1>
+<!-- ============ SCREEN 3b: LEARNING OPPORTUNITIES ============ -->
+<section id="screen-learning" class="screen">
+  <div class="container">
+    <button class="back-btn" onclick="showScreen('screen-path')">← Back</button>
+    <div class="screen-head">
+      <h2>What do you want to get <span class="glow-word">better</span> at?</h2>
+      <p class="section-sub">Pick a scenario. Practice it as much as you want.</p>
+    </div>
+    <div class="module-grid" id="module-grid"></div>
+  </div>
+</section>
 
-    <div class="card" style="margin-bottom:20px">
-      <div class="persona-card">
-        <div class="avatar av-sandra">SD</div>
-        <div>
-          <div class="pname">Sandra — Office Manager at TechFlow Pty Ltd</div>
-          <div class="pdesc">Sandra has been screening calls for 6 years. She's heard every pitch. Her job is to protect the decision-maker's time.</div>
+<!-- ============ SCREEN 4: VOICE OR TEXT ============ -->
+<section id="screen-mode" class="screen">
+  <div class="container">
+    <button class="back-btn" onclick="goBackFromMode()">← Back</button>
+    <div class="center-wrap">
+      <h2>How do you want to <span class="glow-word">run</span> this?</h2>
+      <p class="section-sub">You can switch this any time — whatever feels natural.</p>
+      <div class="mode-cards">
+        <div class="glass mode-card" id="mode-voice" onclick="selectMode('voice')">
+          <div class="mode-icon">🎙️</div><h3>Voice</h3>
+          <p class="muted">Speak your way through it. The AI talks back. Most realistic way to practice.</p>
+        </div>
+        <div class="glass mode-card" id="mode-text" onclick="selectMode('text')">
+          <div class="mode-icon">✏️</div><h3>Text</h3>
+          <p class="muted">Type it out. Great for email pitches and if you're not in a place you can talk.</p>
         </div>
       </div>
-    </div>
-
-    <div class="card" style="margin-bottom:20px">
-      <div class="section-label" style="margin:0 0 6px">What you're practicing</div>
-      <ul class="skill-list">
-        <li><span class="chk">✓</span> Building instant rapport with a screener without sounding salesy</li>
-        <li><span class="chk">✓</span> Giving a reason-to-call that earns a transfer, not a brush-off</li>
-        <li><span class="chk">✓</span> Reading buying signals and handling the "what's it regarding?" objection</li>
-      </ul>
-    </div>
-
-    <div class="card">
-      <div class="section-label" style="margin:0 0 12px">Choose your agent mode</div>
-      <div class="mode-tabs" id="mode-tabs">
-        <button class="mode-tab active" data-mode="voice" onclick="selectMode('voice')">🎙️ Voice</button>
-        <button class="mode-tab" data-mode="email" onclick="selectMode('email')">📧 Email</button>
-        <button class="mode-tab" data-mode="inmail" onclick="selectMode('inmail')">💼 LinkedIn InMail</button>
-      </div>
-      <p class="mode-desc" id="mode-desc">Speak your cold call in real time. AI responds as Sandra.</p>
-      <button class="btn btn-primary btn-lg btn-block" onclick="startSession()">
-        Start Session
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </button>
+      <button class="btn btn-lg" id="mode-go" onclick="showScreen('screen-brief')">Let's go →</button>
     </div>
   </div>
 </section>
 
-<!-- ============ SCREEN 4a: VOICE ============ -->
-<section class="screen" id="screen-voice">
-  <div class="session-top">
-    <div class="live-badge"><span class="live-dot"></span>LIVE SESSION — Level 2: Get Past the Gatekeeper</div>
-    <div class="session-timer" id="voice-timer">00:00</div>
-  </div>
-  <div class="voice-wrap">
-    <div class="card" style="display:flex;gap:14px;align-items:center;margin-bottom:8px">
-      <div class="avatar av-sandra" style="width:48px;height:48px;font-size:17px">SD</div>
-      <div><div class="pname" style="font-weight:700">Sandra</div><div class="pdesc" style="font-size:13px;color:var(--muted)">Office Manager · TechFlow Pty Ltd</div></div>
+<!-- ============ SCREEN 5: PRE-SESSION BRIEFING ============ -->
+<section id="screen-brief" class="screen">
+  <div class="container">
+    <button class="back-btn" onclick="showScreen('screen-mode')">← Back</button>
+    <div class="screen-head">
+      <span class="ctx-badge" id="brief-ctx">LEVEL 1</span>
+      <h2 id="brief-title">The Agreeable Buyer</h2>
     </div>
-
-    <div class="call-state" id="call-state">
-      <div class="ring-anim ringing" id="ring-anim">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--primary)"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-      </div>
-      <div class="cs-text" id="cs-text">Dialing TechFlow…</div>
-    </div>
-
-    <div class="transcript" id="transcript"></div>
-  </div>
-
-  <div class="end-call-bar" id="voice-end-bar" style="display:none">
-    <button class="btn btn-secondary" onclick="goTo('scoring')">End Call + Get Score</button>
-  </div>
-
-  <div class="input-dock" id="voice-dock" style="display:none">
-    <div class="inner">
-      <input class="chat-input" id="voice-input" placeholder="Type your line, or tap the mic to speak…" onkeydown="if(event.key==='Enter')sendVoiceLine()" />
-      <button class="mic-btn" id="mic-btn" onclick="toggleMic()" aria-label="Toggle microphone">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
-      </button>
-      <button class="send-btn" onclick="sendVoiceLine()" aria-label="Send">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-      </button>
-    </div>
-  </div>
-</section>
-
-<!-- ============ SCREEN 4b: EMAIL ============ -->
-<section class="screen" id="screen-email">
-  <div class="session-top">
-    <div class="live-badge"><span class="live-dot"></span>EMAIL SESSION — Level 2: Get Past the Gatekeeper</div>
-    <span class="back-btn" style="margin:0" onclick="goTo('detail')">Exit</span>
-  </div>
-  <div class="compose-wrap">
-    <div class="split">
-      <div class="compose-pane">
-        <h3>📧 Compose cold email</h3>
-        <div class="field"><label>To</label><input value="sandra@techflow.com.au — Office Manager" readonly /></div>
-        <div class="field"><label>Subject</label><input id="email-subject" placeholder="Quick question for Marcus" value="Quick question re: TechFlow's ops workflow" /></div>
-        <div class="field"><label>Body</label><textarea id="email-body" placeholder="Write a cold email to get Sandra to forward it to the decision-maker…">Hi Sandra,
-
-I know you're the gatekeeper for Marcus's time, so I'll be brief. We've helped 3 other Aussie ops teams cut manual reporting by ~9 hrs/week. Worth a 10-min look for Marcus?
-
-Could you point me to the best way to reach him?
-
-Cheers,
-Alex</textarea></div>
-        <button class="btn btn-primary btn-block" id="email-send" onclick="sendEmail()">Send email</button>
-      </div>
-      <div class="response-pane">
-        <h3>💬 Sandra's responses</h3>
-        <div id="email-thread" style="flex:1;display:flex;flex-direction:column">
-          <div class="resp-empty" id="email-empty">Send your email to see how Sandra replies…</div>
-          <div class="resp-thread" id="email-msgs"></div>
+    <div class="brief-grid">
+      <div>
+        <div class="glass persona-card">
+          <div class="avatar" id="brief-avatar" style="background:linear-gradient(135deg,#ff6b35,#7b5ea7)">AX</div>
+          <div>
+            <h3 id="brief-name" style="font-size:1.25rem;font-weight:700">Alex</h3>
+            <p class="muted" id="brief-role" style="margin:.2rem 0 .6rem">Marketing Manager, Coastal Digital</p>
+            <p class="muted" id="brief-desc">Alex is actually interested. They've got a problem that sounds like your product solves it. There's just one thing — they're going to ask about price. Don't drop it.</p>
+          </div>
         </div>
-        <button class="btn btn-secondary btn-block" id="email-finish" style="display:none;margin-top:16px" onclick="goTo('scoring')">Finish &amp; Get Score</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ SCREEN 4c: LINKEDIN INMAIL ============ -->
-<section class="screen" id="screen-inmail">
-  <div class="session-top">
-    <div class="live-badge"><span class="live-dot"></span>INMAIL SESSION — Level 2: Reach the DM</div>
-    <span class="back-btn" style="margin:0" onclick="goTo('detail')">Exit</span>
-  </div>
-  <div class="compose-wrap" style="max-width:680px">
-    <div class="compose-pane">
-      <div class="li-profile">
-        <div class="avatar av-marcus" style="width:56px;height:56px;font-size:19px">MC</div>
-        <div>
-          <div class="pname">Marcus Chen</div>
-          <div class="ptitle">Head of Operations at TechFlow</div>
-          <div class="li-tag">💼 InMail · Out of network</div>
+        <div style="margin-top:1.4rem">
+          <h4 style="font-weight:700;margin-bottom:.4rem">What you're practicing</h4>
+          <ul class="practice-list" id="brief-practice"></ul>
         </div>
       </div>
-      <div class="field"><label>InMail to Marcus</label><textarea id="inmail-body" placeholder="Write an InMail to reach past Sandra directly to the DM…" style="min-height:170px">Hi Marcus — saw TechFlow is scaling the ops team fast. We help ops leaders kill manual reporting; one client (similar size to you) clawed back 9 hrs/week. Open to a quick 15-min next week to see if it's relevant?</textarea></div>
-      <button class="btn btn-primary btn-block" id="inmail-send" onclick="sendInmail()">Send InMail</button>
-
-      <div class="resp-thread" id="inmail-msgs" style="margin-top:20px"></div>
-      <button class="btn btn-secondary btn-block" id="inmail-finish" style="display:none;margin-top:16px" onclick="goTo('scoring')">Finish &amp; Get Score</button>
-    </div>
-  </div>
-</section>
-
-<!-- ============ SCREEN 5: SCORING ============ -->
-<section class="screen" id="screen-scoring">
-  <nav class="nav">
-    <div class="logo"><span class="logo-mark">🏋️</span><span class="logo-grad">PitchGym</span></div>
-    <span class="back-btn" style="margin:0" onclick="goTo('dashboard')">Dashboard</span>
-  </nav>
-  <div class="score-wrap">
-    <div class="section-label" style="margin-bottom:0">Session results · Level 2</div>
-    <div class="ring-wrap">
-      <svg width="200" height="200" viewBox="0 0 200 200">
-        <defs>
-          <linearGradient id="scoreGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#7c6af7" />
-            <stop offset="100%" stop-color="#ff6b35" />
-          </linearGradient>
-        </defs>
-        <circle class="ring-bg" cx="100" cy="100" r="86" />
-        <circle class="ring-fg" id="ring-fg" cx="100" cy="100" r="86" stroke-dasharray="540.4" stroke-dashoffset="540.4" />
-      </svg>
-      <div class="ring-center">
-        <div class="num" id="score-num">0</div>
-        <div class="den">/ 100</div>
-      </div>
-    </div>
-
-    <div class="score-banner">⚡ Almost there! Need 90+ to advance to Level 3.</div>
-
-    <div class="card rubric" id="rubric"></div>
-
-    <div class="score-actions">
-      <button class="btn btn-ghost" onclick="tryAgain()">↻ Try Again (1 credit)</button>
-      <button class="btn btn-primary" onclick="openUpgrade()">🔓 Unlock AI Coach Feedback</button>
-    </div>
-
-    <div class="card coach-locked">
-      <div class="section-label" style="margin:0 0 12px">🧠 AI Coach feedback</div>
-      <div class="coach-teaser">
-        <p style="font-size:15px;line-height:1.7">Your opener was strong but you missed Sandra's buying signal at <b>0:42</b> when she said "what is it regarding" — that's your door. Here's how to walk through it: instead of re-pitching, name the business outcome in one line and ask permission to be transferred. You also spoke ~18% too fast in the first 20 seconds; slowing your pace builds trust with screeners. Three reframes that would've earned the transfer faster…</p>
-      </div>
-      <div class="coach-overlay">
-        <svg class="lock-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <h3>Unlock your AI Coach breakdown</h3>
-        <p>Get line-by-line feedback, your exact missed signals, and a tailored drill plan to hit 90+.</p>
-        <button class="btn btn-secondary" onclick="openUpgrade()">Unlock AI Coach — $10 for 2 credits</button>
+      <div class="glass" style="padding:1.6rem;align-self:start">
+        <h4 style="font-weight:700;margin-bottom:.3rem">Difficulty</h4>
+        <p class="muted" id="brief-diff-label" style="font-size:.85rem">Warm and friendly — a gentle start.</p>
+        <div class="diff-bar"><span id="brief-diff-fill" style="width:25%"></span></div>
+        <button class="btn btn-lg" style="width:100%;margin-top:1.8rem" onclick="startSession()">I'm ready — start it →</button>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ============ SCREEN 6: UPGRADE MODAL ============ -->
+<!-- ============ SCREEN 6a: TEXT ROLEPLAY ============ -->
+<section id="screen-chat" class="screen">
+  <div class="container" style="padding-top:1rem;padding-bottom:1rem">
+    <div class="chat-wrap glass" style="overflow:hidden">
+      <div class="chat-header">
+        <div class="avatar" style="background:linear-gradient(135deg,#ff6b35,#7b5ea7)">AX</div>
+        <div><div class="ch-name">Alex</div><div class="ch-status" id="chat-status"></div></div>
+      </div>
+      <div class="chat-body" id="chat-body"></div>
+      <div class="finish-bar"><button class="back-btn" onclick="finishChat()">Finish &amp; Score</button></div>
+      <div class="chat-input">
+        <input type="text" id="chat-input" placeholder="Type your reply…" onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="icon-btn" onclick="sendChat()">➤</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 6b: VOICE ROLEPLAY ============ -->
+<section id="screen-voice" class="screen">
+  <div class="container">
+    <button class="back-btn" onclick="showScreen('screen-brief')">← Back</button>
+    <div class="voice-wrap">
+      <div class="glass" style="padding:2rem 1.6rem">
+        <div style="display:flex;align-items:center;gap:.8rem;justify-content:center;margin-bottom:.4rem">
+          <div class="avatar" style="width:44px;height:44px;font-size:1rem;background:linear-gradient(135deg,#ff6b35,#7b5ea7)">AX</div>
+          <div style="text-align:left"><div style="font-weight:700">Alex</div><div class="muted" style="font-size:.8rem">Coastal Digital</div></div>
+        </div>
+        <div class="waveform" id="waveform"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="voice-state" id="voice-state">Tap to start talking</div>
+        <button class="record-btn" id="record-btn" onclick="toggleRecord()">🎙️<br>Hold to talk</button>
+        <div class="transcript glass" id="transcript"></div>
+        <button class="back-btn" style="margin-top:1.4rem" onclick="finishChat()">End &amp; Score</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 7: SCORE ============ -->
+<section id="screen-score" class="screen">
+  <div class="container">
+    <div class="score-wrap">
+      <div class="verdict" id="verdict"></div>
+      <div class="ring-wrap">
+        <svg width="200" height="200" viewBox="0 0 200 200">
+          <circle cx="100" cy="100" r="88" fill="none" stroke="var(--surface-raised)" stroke-width="12"/>
+          <circle id="ring-fg" cx="100" cy="100" r="88" fill="none" stroke="var(--success)" stroke-width="12" stroke-linecap="round" stroke-dasharray="552.9" stroke-dashoffset="552.9"/>
+        </svg>
+        <div class="ring-num"><span class="n" id="score-num">0</span><span class="d">out of 100</span></div>
+      </div>
+      <div class="score-head" id="score-head"></div>
+      <p class="score-body" id="score-body"></p>
+      <div class="glass rubric" id="rubric"></div>
+      <div class="glass coach">
+        <h4>🤖 AI Coach Feedback</h4>
+        <p class="teaser">Your opener was solid, but when Alex asked about price you hesitated for a beat before recovering…</p>
+        <p class="blurred">…and that hesitation is the tell. When you let the silence sit, you signal the price might be negotiable before they've even pushed. Next time, answer the price question with total confidence and immediately tie it back to the outcome you uncovered. You also missed a chance to quantify the value — Alex mentioned a problem worth real money, and you never put a number on what solving it is worth. Anchor high, anchor on outcomes, and the price stops feeling like the conversation.</p>
+        <div class="coach-lock">
+          <div class="lock-icon">🔒</div>
+          <button class="btn" onclick="openUpgrade()">Unlock AI Coach Feedback</button>
+        </div>
+      </div>
+      <div class="daily-banner" id="daily-banner" style="display:none">
+        <p><strong>Nice!</strong> Come back tomorrow for the next level — or upgrade to keep going right now.</p>
+        <div class="db-btns">
+          <button class="back-btn" onclick="showScreen('screen-levelmap')">I'll come back tomorrow</button>
+          <button class="btn" onclick="openUpgrade()">Keep going — upgrade →</button>
+        </div>
+      </div>
+      <div id="retry-bar" style="display:none;margin-top:.5rem">
+        <button class="btn btn-lg" onclick="retrySession()">Try again →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /app -->
+
+<!-- ============ SCREEN 8: UPGRADE MODAL ============ -->
 <div class="modal-overlay" id="upgrade-modal">
   <div class="modal">
-    <div class="modal-head">
-      <div>
-        <h2>Power up your training</h2>
-        <p>Credits unlock the AI Coach, unlimited replays, and every level.</p>
+    <button class="modal-close" onclick="closeUpgrade()">✕</button>
+    <h2>Unlock the full <span class="glow-word">gym</span>.</h2>
+    <p class="muted">You're doing the work. Let the AI coach make it count.</p>
+    <div class="pricing">
+      <div class="glass price-card" onclick="selectPlan(this)">
+        <div class="price">$10</div><div class="credits">2 Credits</div>
+        <div class="blurb">Dip your toe in. AI coach on 2 sessions, skip the daily limit twice.</div>
       </div>
-      <button class="modal-close" onclick="closeUpgrade()" aria-label="Close">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
-      </button>
-    </div>
-
-    <div class="price-grid">
-      <div class="price-card">
-        <div class="price">$10</div>
-        <div class="credits">2 Credits</div>
-        <div class="blurb">Try it out</div>
-        <ul class="price-feats">
-          <li><span class="chk">✓</span> 2 scored sessions</li>
-          <li><span class="chk">✓</span> AI Coach access</li>
-          <li><span class="chk">✓</span> Unlimited replay on those</li>
-        </ul>
-        <button class="btn btn-ghost btn-block" onclick="stripe()">Continue with Stripe →</button>
+      <div class="glass price-card popular" onclick="selectPlan(this)">
+        <span class="price-tag tag-popular">Most Popular ⭐</span>
+        <div class="price">$20</div><div class="credits">5 Credits</div>
+        <div class="blurb">AI coach on 5 sessions, plus all 25 levels.</div>
       </div>
-      <div class="price-card popular">
-        <span class="tag">Most Popular</span>
-        <div class="price">$20</div>
-        <div class="credits">5 Credits</div>
-        <div class="blurb">Best for weekly drills</div>
-        <ul class="price-feats">
-          <li><span class="chk">✓</span> 5 scored sessions</li>
-          <li><span class="chk">✓</span> Full AI Coach access</li>
-          <li><span class="chk">✓</span> Unlimited replay</li>
-          <li><span class="chk">✓</span> All 10 levels</li>
-        </ul>
-        <button class="btn btn-primary btn-block" onclick="stripe()">Continue with Stripe →</button>
-      </div>
-      <div class="price-card">
-        <div class="price">$50</div>
-        <div class="credits">15 Credits</div>
-        <div class="blurb">Best value</div>
-        <ul class="price-feats">
-          <li><span class="chk">✓</span> 15 scored sessions</li>
-          <li><span class="chk">✓</span> Full AI Coach access</li>
-          <li><span class="chk">✓</span> Unlimited replay</li>
-          <li><span class="chk">✓</span> All 10 levels + new drops</li>
-        </ul>
-        <button class="btn btn-ghost btn-block" onclick="stripe()">Continue with Stripe →</button>
+      <div class="glass price-card" onclick="selectPlan(this)">
+        <span class="price-tag tag-value">Best Value 🔥</span>
+        <div class="price">$50</div><div class="credits">15 Credits</div>
+        <div class="blurb">AI coach on 15 sessions, all 25 levels, priority features.</div>
       </div>
     </div>
-    <p style="text-align:center;color:var(--muted);font-size:13px">Secure checkout · Cancel anytime · GST included for AU customers</p>
+    <ul class="includes">
+      <li>✅ All 25 levels</li>
+      <li>✅ AI coach feedback after every session</li>
+      <li>✅ Unlimited daily sessions</li>
+      <li>✅ Learning Opportunities library (all modules)</li>
+    </ul>
+    <button class="btn btn-lg" style="width:100%" onclick="continueStripe()">Continue with Stripe →</button>
+    <div class="email-box" id="email-box">
+      <input type="email" id="notify-email" placeholder="your@email.com">
+      <button class="btn btn-neon" onclick="submitEmail()">Notify me</button>
+    </div>
   </div>
 </div>
 
-<!-- ============ TOAST ============ -->
 <div class="toast" id="toast"></div>
 
 <script>
-/* ===================== State & data ===================== */
-var selectedMode = 'voice';
-
-var levels = [
-  { n: 1, title: 'Pattern Interrupt Opener', persona: 'Eager Curious Buyer', state: 'done' },
-  { n: 2, title: 'Get Past the Gatekeeper', persona: 'Friendly Receptionist', state: 'current' },
-  { n: 3, title: 'Handle the Brush-Off', persona: 'Busy Skeptical Manager', state: 'locked' },
-  { n: 4, title: 'Discovery Deep-Dive', persona: 'Guarded Operations Lead', state: 'locked' },
-  { n: 5, title: 'The Price Objection', persona: 'Budget-Focused CFO', state: 'locked' },
-  { n: 6, title: '"We Already Use a Competitor"', persona: 'Loyal Existing Customer', state: 'locked' },
-  { n: 7, title: 'Multi-Threading the Deal', persona: 'Champion + Blocker Duo', state: 'locked' },
-  { n: 8, title: 'Re-Engage a Ghost', persona: 'Cold Lapsed Prospect', state: 'locked' },
-  { n: 9, title: 'Negotiate the Close', persona: 'Hardball Procurement', state: 'locked' },
-  { n: 10, title: 'The Boardroom Pitch', persona: 'Skeptical Exec Panel', state: 'locked' }
+/* ============================== DATA ============================== */
+const LEVELS = [
+  {n:1,  title:"The Agreeable Buyer",   persona:"Warm, Curious Customer",   state:"completed"},
+  {n:2,  title:"The Gatekeeper",        persona:"Friendly Receptionist",    state:"current"},
+  {n:3,  title:"The Busy Executive",    persona:"Rushed Decision-Maker",    state:"locked"},
+  {n:4,  title:"The Budget Holder",     persona:"Cautious Manager",         state:"locked"},
+  {n:5,  title:"The Competitor Lover",  persona:"Loyal Incumbent User",     state:"locked"},
+  {n:6,  title:"The Trial Close",       persona:"Interested But Hesitant",  state:"locked"},
+  {n:7,  title:"The Rapport Builder",   persona:"Guarded Stranger",         state:"locked"},
+  {n:8,  title:"The Cold Inbound",      persona:"Curious But Wary Lead",    state:"locked"},
+  {n:9,  title:"The Feature Skeptic",   persona:"Show-Me Buyer",            state:"locked"},
+  {n:10, title:"The Board Approver",    persona:"Committee Spokesperson",   state:"locked"},
+  {n:11, title:"The Ghoster",           persona:"Went Quiet After Demo",    state:"pro"},
+  {n:12, title:"The Lowballer",         persona:"Aggressive Negotiator",    state:"pro"},
+  {n:13, title:"The Renewal Risk",      persona:"Unhappy Existing Client",  state:"pro"},
+  {n:14, title:"The Procurement Wall",  persona:"By-the-Book Buyer",        state:"pro"},
+  {n:15, title:"The Tyre Kicker",       persona:"Questions, Never a Yes",   state:"pro"},
+  {n:16, title:"The Champion's Boss",   persona:"Skeptical Final Approver", state:"pro"},
+  {n:17, title:"The Discount Addict",   persona:"Trained to Always Ask",    state:"pro"},
+  {n:18, title:"The Multi-Threat",      persona:"Three People, One Call",   state:"pro"},
+  {n:19, title:"The Burned Buyer",      persona:"Got Stung Last Vendor",    state:"pro"},
+  {n:20, title:"The Status Quo King",   persona:"Happy Doing Nothing",      state:"pro"},
+  {n:21, title:"The Technical Grilling",persona:"Engineer With a Checklist",state:"pro"},
+  {n:22, title:"The Power Play",        persona:"C-Suite, Zero Patience",   state:"pro"},
+  {n:23, title:"The Land Grab",         persona:"Wants It All for Free",    state:"pro"},
+  {n:24, title:"The Final Boss",        persona:"Hostile, Skeptical, Tough",state:"pro"},
+  {n:25, title:"The Closer's Gauntlet", persona:"Every Objection at Once",  state:"pro"}
 ];
 
-var rubric = [
-  { name: 'Opening / Pattern Interrupt', score: 12, max: 15 },
-  { name: 'Tone, Pace, Confidence', score: 13, max: 15 },
-  { name: 'Discovery Questions', score: 11, max: 15 },
-  { name: 'Active Listening', score: 13, max: 15 },
-  { name: 'Objection Handling', score: 16, max: 20 },
-  { name: 'Value Articulation', score: 8, max: 10 },
-  { name: 'Close / Clear CTA', score: 10, max: 10 }
+const MODULES = [
+  {icon:"🚪", title:"Getting Through the Gatekeeper", desc:"The gatekeeper is not your enemy. Learn to make them your ally.", diff:"intermediate"},
+  {icon:"💰", title:"Price Objection", desc:"When they say 'can we get a discount?' — this is where most reps fold. Don't fold.", diff:"beginner"},
+  {icon:"⏰", title:"Time Objection", desc:"'I'm too busy right now' — the classic brush-off. Here's how to get through it.", diff:"beginner"},
+  {icon:"👤", title:"Authority Objection", desc:"'I need to check with my manager' — not the end, just a bend in the road.", diff:"intermediate"},
+  {icon:"🎯", title:"Trial Close", desc:"Ask for the small yes to get to the big yes. This is the art of the soft close.", diff:"advanced"},
+  {icon:"🤝", title:"Rapport Building", desc:"People buy from people they like. Build the connection first.", diff:"beginner"}
 ];
 
-var modeDesc = {
-  voice: 'Speak your cold call in real time. AI responds as Sandra.',
-  email: 'Craft a cold email to get Sandra to forward it to the decision-maker.',
-  inmail: 'Write an InMail to reach past Sandra directly to the DM.'
-};
+const PRACTICE_LV1 = [
+  "Demonstrate value before (and instead of) discounting",
+  "Ask discovery questions to understand what Alex actually values",
+  "Handle a price-probe without folding"
+];
 
-/* ===================== Screen routing ===================== */
-var screens = {
-  landing: 'screen-landing', dashboard: 'screen-dashboard', detail: 'screen-detail',
-  voice: 'screen-voice', email: 'screen-email', inmail: 'screen-inmail', scoring: 'screen-scoring'
+/* ============================== STATE ============================== */
+const state = {
+  mode:"text", pathway:"level", contextLabel:"LEVEL 1",
+  scenarioTitle:"The Agreeable Buyer", chatStep:0,
+  failed:false, finished:false, voiceTurn:0
 };
+let modeBackTarget = "screen-levelmap";
 
-function goTo(name) {
-  var current = document.querySelector('.screen.active');
-  var next = document.getElementById(screens[name]);
-  if (current === next) return;
-  if (current) {
-    current.classList.remove('shown');
-    setTimeout(function () { current.classList.remove('active'); }, 280);
-  }
-  setTimeout(function () {
-    next.classList.add('active');
-    window.scrollTo(0, 0);
-    requestAnimationFrame(function () { requestAnimationFrame(function () { next.classList.add('shown'); }); });
-    onEnter(name);
-  }, current ? 290 : 0);
+/* ============================== NAVIGATION ============================== */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if(el) el.classList.add('active');
+  if(id==='screen-brief') populateBrief();
+  window.scrollTo({top:0,behavior:'auto'});
 }
 
-function onEnter(name) {
-  if (name === 'dashboard') initDashboard();
-  if (name === 'voice') startVoice();
-  if (name === 'email') resetEmail();
-  if (name === 'inmail') resetInmail();
-  if (name === 'scoring') runScoring();
-}
+/* ============================== LEVEL MAP ============================== */
+function buildLevelMap(){
+  const grid = document.getElementById('level-grid');
+  grid.innerHTML = '';
+  LEVELS.forEach(lv=>{
+    const card = document.createElement('div');
+    card.className = 'glass level-card ' + lv.state;
+    let statusTxt = '';
+    if(lv.state==='completed') statusTxt='✅ COMPLETED';
+    else if(lv.state==='current') statusTxt='🔓 CURRENT';
+    else statusTxt='🔒 LOCKED';
 
-/* ===================== Sidebar ===================== */
-function buildSidebar() {
-  var items = [
-    { label: 'Dashboard', active: true, icon: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>' },
-    { label: 'My Progress', icon: '<path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>' },
-    { label: 'AI Coach', locked: true, icon: '<circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3"/>' },
-    { label: 'Upgrade', upgrade: true, icon: '<path d="m12 2 2.4 7.4H22l-6 4.6 2.3 7.4-6.3-4.6L5.7 21.4 8 14 2 9.4h7.6z"/>' }
-  ];
-  var html = '<div class="logo"><span class="logo-mark">🏋️</span><span class="logo-grad">PitchGym</span></div>';
-  items.forEach(function (it) {
-    var click = it.label === 'Dashboard' ? "goTo('dashboard')" :
-                it.upgrade ? 'openUpgrade()' :
-                it.locked ? "toast('AI Coach is a premium feature 🔒')" :
-                "toast('" + it.label + " coming soon')";
-    html += '<button class="side-link ' + (it.active ? 'active' : '') + '" onclick="' + click + '">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + it.icon + '</svg>' +
-      '<span>' + it.label + '</span>' +
-      (it.locked ? '<span class="lock">🔒</span>' : '') + '</button>';
+    let inner = '';
+    if(lv.state==='pro') inner += '<span class="pro-badge">⭐ Pro</span>';
+    inner += '<div class="lvl-num">LEVEL ' + lv.n + '</div>';
+    inner += '<div class="lvl-title">' + lv.title + '</div>';
+    inner += '<div class="lvl-persona">' + lv.persona + '</div>';
+    inner += '<div class="lvl-status">' + statusTxt + '</div>';
+    if(lv.state==='pro') inner += '<span class="tooltip">Upgrade to access levels 11–25</span>';
+    card.innerHTML = inner;
+
+    if(lv.state==='current' || lv.state==='completed') card.onclick = ()=> openLevel(lv);
+    else if(lv.state==='pro') card.onclick = ()=> openUpgrade();
+    else card.onclick = ()=> toast('Finish the level before this one to unlock it.');
+
+    grid.appendChild(card);
   });
-  html += '<div class="sidebar-spacer"></div>';
-  html += '<div class="side-upgrade"><h4>⚡ Go Premium</h4><p>Unlock the AI Coach and all 10 levels.</p>' +
-          '<button class="btn btn-primary btn-block" style="padding:10px;font-size:13px" onclick="openUpgrade()">Upgrade</button></div>';
-  document.getElementById('sidebar').innerHTML = html;
 }
 
-/* ===================== Dashboard ===================== */
-function initDashboard() {
-  buildSidebar();
-  var d = new Date();
-  var opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  document.getElementById('dash-date').textContent = d.toLocaleDateString('en-AU', opts);
-  buildLevels();
+function openLevel(lv){
+  state.pathway = 'level';
+  state.contextLabel = 'LEVEL ' + lv.n;
+  state.scenarioTitle = lv.title;
+  modeBackTarget = 'screen-levelmap';
+  showScreen('screen-mode');
 }
 
-function buildLevels() {
-  var html = '';
-  levels.forEach(function (lv) {
-    var cls = 'level-card';
-    var badge, status, click = '';
-    if (lv.state === 'done') {
-      cls += ' done unlockable'; status = '✅';
-      badge = '<span class="lvl-badge badge-done">Completed</span>';
-      click = "toast('Level 1 already cleared — nice work!')";
-    } else if (lv.state === 'current') {
-      cls += ' current unlockable'; status = '🔓';
-      badge = '<span class="lvl-badge badge-current">Current · Tap to start</span>';
-      click = "goTo('detail')";
+/* ============================== MODULES ============================== */
+function buildModules(){
+  const grid = document.getElementById('module-grid');
+  grid.innerHTML = '';
+  MODULES.forEach(m=>{
+    const diffLabel = m.diff.charAt(0).toUpperCase() + m.diff.slice(1);
+    const card = document.createElement('div');
+    card.className = 'glass module-card';
+    card.innerHTML =
+      '<div class="m-icon">' + m.icon + '</div>' +
+      '<span class="diff-pill diff-' + m.diff + '">' + diffLabel + '</span>' +
+      '<h3>' + m.title + '</h3>' +
+      '<p class="muted m-desc">' + m.desc + '</p>' +
+      '<button class="btn">Start Scenario →</button>';
+    card.querySelector('button').onclick = ()=> openModule(m);
+    grid.appendChild(card);
+  });
+}
+
+function openModule(m){
+  state.pathway = 'module';
+  state.contextLabel = m.title.toUpperCase();
+  state.scenarioTitle = m.title;
+  modeBackTarget = 'screen-learning';
+  showScreen('screen-mode');
+}
+
+/* ============================== MODE SELECT ============================== */
+function goBackFromMode(){ showScreen(modeBackTarget); }
+function selectMode(mode){
+  state.mode = mode;
+  document.getElementById('mode-voice').classList.toggle('selected', mode==='voice');
+  document.getElementById('mode-text').classList.toggle('selected', mode==='text');
+  document.getElementById('mode-go').classList.add('show');
+}
+
+/* ============================== BRIEFING ============================== */
+function populateBrief(){
+  document.getElementById('brief-ctx').textContent = state.contextLabel;
+  document.getElementById('brief-title').textContent = state.scenarioTitle;
+  const list = document.getElementById('brief-practice');
+  list.innerHTML = '';
+  PRACTICE_LV1.forEach(p=>{
+    const li = document.createElement('li');
+    li.textContent = p;
+    list.appendChild(li);
+  });
+}
+
+/* ============================== SESSION ============================== */
+function startSession(){
+  state.chatStep = 0; state.failed = false; state.finished = false; state.voiceTurn = 0;
+  if(state.mode==='voice'){ setupVoice(); showScreen('screen-voice'); }
+  else { setupChat(); showScreen('screen-chat'); }
+}
+function retrySession(){
+  document.getElementById('retry-bar').style.display='none';
+  document.getElementById('daily-banner').style.display='none';
+  startSession();
+}
+
+/* ============================== TEXT CHAT ============================== */
+const FAIL_KEYWORDS = ["discount","deal","% off","percent off","reduce","lower","cheaper","cheap","save","special price","negotiate","flexibility on price","knock off","drop the price","price down"];
+
+function setupChat(){
+  const body = document.getElementById('chat-body');
+  body.innerHTML = '';
+  const input = document.getElementById('chat-input');
+  input.value=''; input.disabled = false;
+  state.chatStep = 0;
+  aiMessage("Hey! I checked out your site — honestly pretty interesting. Tell me more about what you do?");
+}
+function addBubble(text, who){
+  const body = document.getElementById('chat-body');
+  const div = document.createElement('div');
+  div.className = 'msg ' + who;
+  div.textContent = text;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+function showTyping(){
+  const body = document.getElementById('chat-body');
+  document.getElementById('chat-status').textContent = 'typing…';
+  const div = document.createElement('div');
+  div.className = 'msg ai'; div.id = 'typing-bubble';
+  div.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span>';
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+function clearTyping(){
+  const t = document.getElementById('typing-bubble');
+  if(t) t.remove();
+  document.getElementById('chat-status').textContent = '';
+}
+function aiMessage(text, delay){
+  delay = delay || 900;
+  showTyping();
+  setTimeout(function(){ clearTyping(); addBubble(text,'ai'); }, delay);
+}
+function detectFail(txt){
+  const t = txt.toLowerCase();
+  return FAIL_KEYWORDS.some(function(k){ return t.indexOf(k) !== -1; });
+}
+function sendChat(){
+  const input = document.getElementById('chat-input');
+  const txt = input.value.trim();
+  if(!txt || state.finished) return;
+  addBubble(txt,'user');
+  input.value='';
+  if(state.chatStep===0){
+    state.chatStep = 1;
+    aiMessage("Yeah, that actually sounds like it could help us. We've been struggling to keep our campaigns consistent across channels. How does it work exactly?");
+  } else if(state.chatStep===1){
+    state.chatStep = 2;
+    aiMessage("Okay I like it. What does it cost?");
+  } else if(state.chatStep===2){
+    state.chatStep = 3;
+    aiMessage("Got it. Any chance you could do a bit of a deal for us to try it out?");
+  } else if(state.chatStep===3){
+    state.chatStep = 99;
+    if(detectFail(txt)){
+      state.failed = true;
+      aiMessage("Oh great, thanks! Send the discounted quote over and we'll get it sorted.", 1000);
+      setTimeout(endChatAuto, 2400);
     } else {
-      cls += ' locked'; status = '🔒';
-      badge = '<span class="lvl-badge badge-locked">Locked</span>';
-      click = "toast('Clear Level 2 with 90+ to unlock 🔒')";
+      state.failed = false;
+      aiMessage("You know what — the price is fair if it does what you're saying. Let's do it. Send the contract over.", 1000);
+      setTimeout(endChatAuto, 2400);
     }
-    html += '<div class="' + cls + '" onclick="' + click + '">' +
-      '<div class="lvl-status">' + status + '</div>' +
-      '<div class="lvl-num">Level ' + lv.n + '</div>' +
-      '<div class="lvl-title">' + lv.title + '</div>' +
-      '<div class="lvl-persona">' + lv.persona + '</div>' +
-      badge + '</div>';
-  });
-  document.getElementById('level-grid').innerHTML = html;
+  } else {
+    aiMessage("Sounds good — let's get the paperwork moving. 🙌");
+  }
+}
+function endChatAuto(){ if(!state.finished) finishChat(); }
+function finishChat(){
+  if(state.finished) return;
+  state.finished = true;
+  goToScore();
 }
 
-/* ===================== Countdown timer ===================== */
-var resetSecs = 18 * 3600 + 42 * 60 + 33;
-function tickReset() {
-  resetSecs = resetSecs > 0 ? resetSecs - 1 : 24 * 3600;
-  var h = Math.floor(resetSecs / 3600);
-  var m = Math.floor((resetSecs % 3600) / 60);
-  var s = resetSecs % 60;
-  var pad = function (x) { return (x < 10 ? '0' : '') + x; };
-  var el = document.getElementById('reset-timer');
-  if (el) el.textContent = pad(h) + ':' + pad(m) + ':' + pad(s);
-}
-setInterval(tickReset, 1000);
-
-/* ===================== Level detail ===================== */
-function selectMode(mode) {
-  selectedMode = mode;
-  document.querySelectorAll('#mode-tabs .mode-tab').forEach(function (t) {
-    t.classList.toggle('active', t.dataset.mode === mode);
-  });
-  document.getElementById('mode-desc').textContent = modeDesc[mode];
-}
-
-function startSession() {
-  if (selectedMode === 'voice') goTo('voice');
-  else if (selectedMode === 'email') goTo('email');
-  else goTo('inmail');
-}
-
-/* ===================== Voice session ===================== */
-var voiceTimerInt = null, voiceSecs = 0, micRecording = false;
-var voiceScript = [
-  { who: 'them', text: 'TechFlow, Sandra speaking, how can I help?' },
-  { who: 'you' },
-  { who: 'them', text: "I'm sorry, who are you with?" },
-  { who: 'you' },
-  { who: 'them', text: "I'm afraid he's in meetings all day. Can I take a message?" },
-  { who: 'you' },
-  { who: 'them', text: 'Hmm… let me see if he has a moment. Can I ask what it’s regarding?' },
-  { who: 'you' },
-  { who: 'them', text: 'One moment please.' },
-  { who: 'system', text: '📞 CALL TRANSFERRED — success! You earned the handoff.' }
+/* ============================== VOICE ============================== */
+const VOICE_SCRIPT = [
+  "Hey! I checked out your site — honestly pretty interesting. Tell me more about what you do?",
+  "Yeah, that could really help us. We've been struggling to keep campaigns consistent. How does it work?",
+  "Okay, I like it. What does it cost?",
+  "Got it. Any chance you could do a bit of a deal for us to try it out?",
+  "You know what — the price is fair if it does what you're saying. Let's do it."
 ];
-var voiceStep = 0;
-var youPlaceholders = [
-  "Hi Sandra! Honestly hoping you can help me — I'm trying to reach Marcus, is this the right line?",
-  "I'm Alex with FlowMetrics — we help ops teams cut manual reporting time.",
-  "Totally get it. Quick one — could you let him know we saved a similar Aussie team 9 hours a week? Worth 10 minutes?",
-  "We help his ops team automate the weekly reporting that's eating Thursdays. That's the whole reason for the call."
-];
-
-function startVoice() {
-  voiceSecs = 0; voiceStep = 0; micRecording = false;
-  document.getElementById('transcript').innerHTML = '';
-  document.getElementById('voice-dock').style.display = 'none';
-  document.getElementById('voice-end-bar').style.display = 'none';
-  document.getElementById('voice-input').value = '';
-  document.getElementById('mic-btn').classList.remove('recording');
-  document.getElementById('voice-timer').textContent = '00:00';
-  var ring = document.getElementById('ring-anim');
-  var csText = document.getElementById('cs-text');
-  var csWrap = document.getElementById('call-state');
-  ring.className = 'ring-anim ringing';
-  csWrap.className = 'call-state';
-  csText.textContent = 'Dialing TechFlow…';
-
-  if (voiceTimerInt) clearInterval(voiceTimerInt);
-
-  setTimeout(function () { csText.textContent = 'Ringing…'; }, 700);
-  setTimeout(function () {
-    if (document.getElementById('screen-voice').classList.contains('active') === false) return;
-    ring.className = 'ring-anim connected';
-    csWrap.className = 'call-state connected';
-    csText.textContent = '🟢 Connected';
-    voiceTimerInt = setInterval(function () {
-      voiceSecs++;
-      var m = Math.floor(voiceSecs / 60), s = voiceSecs % 60;
-      document.getElementById('voice-timer').textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
-    }, 1000);
+function setupVoice(){
+  document.getElementById('transcript').innerHTML='';
+  document.getElementById('voice-state').textContent='Tap to start talking';
+  document.getElementById('waveform').classList.remove('speaking');
+  const btn = document.getElementById('record-btn');
+  btn.classList.remove('recording'); btn.innerHTML='🎙️<br>Hold to talk';
+  recording = false;
+  state.voiceTurn = 0;
+  voiceAISpeak(VOICE_SCRIPT[0]);
+  state.voiceTurn = 1;
+}
+function addTranscript(text, who){
+  const t = document.getElementById('transcript');
+  const div = document.createElement('div');
+  div.className = 't-line ' + who;
+  div.innerHTML = who==='ai' ? ('<b>Alex:</b> ' + text) : ('<b>You:</b> ' + text);
+  t.appendChild(div);
+  t.scrollTop = t.scrollHeight;
+}
+function voiceAISpeak(text){
+  const wf = document.getElementById('waveform');
+  document.getElementById('voice-state').textContent='Speaking…';
+  wf.classList.add('speaking');
+  setTimeout(function(){
+    addTranscript(text,'ai');
+    wf.classList.remove('speaking');
+    document.getElementById('voice-state').textContent='Your turn — tap to talk';
+  }, 1100);
+}
+let recording = false;
+function toggleRecord(){
+  if(state.finished) return;
+  const btn = document.getElementById('record-btn');
+  if(!recording){
+    recording = true;
+    btn.classList.add('recording');
+    btn.innerHTML = '⏺<br>Listening…';
+    document.getElementById('voice-state').textContent='Listening…';
+  } else {
+    recording = false;
+    btn.classList.remove('recording');
+    btn.innerHTML = '🎙️<br>Hold to talk';
+    addTranscript("(your response captured)", 'user');
     advanceVoice();
-  }, 1900);
-}
-
-function advanceVoice() {
-  if (voiceStep >= voiceScript.length) {
-    document.getElementById('voice-dock').style.display = 'none';
-    document.getElementById('voice-end-bar').style.display = 'flex';
-    return;
   }
-  var step = voiceScript[voiceStep];
-  if (step.who === 'them' || step.who === 'system') {
-    if (step.who === 'them') {
-      showTyping(function () {
-        addBubble('them', step.text, 'Sandra');
-        voiceStep++;
-        handleVoiceNext();
-      });
-    } else {
-      addBubble('system', step.text, '');
-      voiceStep++;
-      handleVoiceNext();
+}
+function advanceVoice(){
+  if(state.voiceTurn < VOICE_SCRIPT.length){
+    const line = VOICE_SCRIPT[state.voiceTurn];
+    state.voiceTurn++;
+    voiceAISpeak(line);
+    if(state.voiceTurn >= VOICE_SCRIPT.length){
+      setTimeout(function(){ document.getElementById('voice-state').textContent='Wrap it up — tap End & Score'; }, 1200);
     }
   } else {
-    document.getElementById('voice-dock').style.display = 'flex';
+    document.getElementById('voice-state').textContent='Tap End & Score';
   }
 }
 
-function handleVoiceNext() {
-  var nxt = voiceScript[voiceStep];
-  if (nxt && nxt.who === 'you') {
-    document.getElementById('voice-dock').style.display = 'flex';
-    var inp = document.getElementById('voice-input');
-    var idx = Math.min(Math.floor((voiceStep - 1) / 2), youPlaceholders.length - 1);
-    inp.placeholder = youPlaceholders[idx] || 'Type your line…';
+/* ============================== SCORE ============================== */
+const RUBRIC_CATS = [
+  {cat:"Opener / Engagement", max:15},
+  {cat:"Discovery Questions", max:20},
+  {cat:"Value Demonstration", max:25},
+  {cat:"Objection Handling", max:25},
+  {cat:"Close / Next Step", max:15}
+];
+const PASS_BREAKDOWN = [13,18,23,24,13]; // 91
+const FAIL_BREAKDOWN = [11,9,9,5,8];     // 42
+
+function goToScore(){
+  const failed = state.failed;
+  const total = failed ? 42 : 91;
+  const breakdown = failed ? FAIL_BREAKDOWN : PASS_BREAKDOWN;
+  const verdict = document.getElementById('verdict');
+  const head = document.getElementById('score-head');
+  const body = document.getElementById('score-body');
+
+  if(failed){
+    verdict.textContent = 'NOT PASSED'; verdict.className = 'verdict fail';
+    head.textContent = "You dropped the price. The deal's gone.";
+    body.textContent = "The moment you offered a discount, you lost the frame. Alex didn't need a cheaper price — they needed a reason to believe. That's the skill we're building here.";
+    document.getElementById('ring-fg').setAttribute('stroke','var(--danger)');
+    document.getElementById('retry-bar').style.display='block';
+    document.getElementById('daily-banner').style.display='none';
   } else {
-    setTimeout(advanceVoice, 800);
+    verdict.textContent = 'PASSED'; verdict.className = 'verdict pass';
+    head.textContent = "You held the line. Nice work.";
+    body.textContent = "Alex tested you on price and you didn't flinch. That's the move. Here's the breakdown.";
+    document.getElementById('ring-fg').setAttribute('stroke','var(--success)');
+    document.getElementById('retry-bar').style.display='none';
+    document.getElementById('daily-banner').style.display='block';
   }
-}
 
-function showTyping(done) {
-  var t = document.getElementById('transcript');
-  var el = document.createElement('div');
-  el.className = 'bubble them';
-  el.innerHTML = '<div class="who">Sandra</div><div class="typing"><span></span><span></span><span></span></div>';
-  t.appendChild(el);
-  scrollVoice();
-  setTimeout(function () { el.remove(); done(); }, 850);
-}
-
-function addBubble(who, text, name) {
-  var t = document.getElementById('transcript');
-  var el = document.createElement('div');
-  el.className = 'bubble ' + who;
-  if (who === 'system') el.textContent = text;
-  else el.innerHTML = (name ? '<div class="who">' + name + '</div>' : '') + '<div>' + escapeHtml(text) + '</div>';
-  t.appendChild(el);
-  scrollVoice();
-}
-
-function scrollVoice() {
-  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-}
-
-function sendVoiceLine() {
-  if (!document.getElementById('screen-voice').classList.contains('active')) return;
-  var nxt = voiceScript[voiceStep];
-  if (!nxt || nxt.who !== 'you') return;
-  var inp = document.getElementById('voice-input');
-  var text = inp.value.trim() || inp.placeholder;
-  if (!text) return;
-  if (micRecording) toggleMic();
-  addBubble('you', text, 'You');
-  inp.value = '';
-  document.getElementById('voice-dock').style.display = 'none';
-  voiceStep++;
-  setTimeout(advanceVoice, 600);
-}
-
-function toggleMic() {
-  micRecording = !micRecording;
-  var btn = document.getElementById('mic-btn');
-  btn.classList.toggle('recording', micRecording);
-  if (micRecording) {
-    toast('🔴 Recording… (demo)');
-    var inp = document.getElementById('voice-input');
-    setTimeout(function () { if (micRecording) inp.value = inp.placeholder; }, 1200);
-  }
-}
-
-/* ===================== Email session ===================== */
-function resetEmail() {
-  document.getElementById('email-msgs').innerHTML = '';
-  document.getElementById('email-empty').style.display = 'block';
-  document.getElementById('email-finish').style.display = 'none';
-  document.getElementById('email-send').disabled = false;
-  document.getElementById('email-send').textContent = 'Send email';
-}
-
-function sendEmail() {
-  var body = document.getElementById('email-body').value.trim();
-  if (!body) { toast('Write your email first'); return; }
-  document.getElementById('email-empty').style.display = 'none';
-  var msgs = document.getElementById('email-msgs');
-  msgs.innerHTML += '<div class="resp-msg mine"><div class="rm-who">You → Sandra</div>' + escapeHtml(body).replace(/\n/g, '<br>') + '</div>';
-  var btn = document.getElementById('email-send');
-  btn.disabled = true; btn.textContent = 'Sending…';
-  var sp = document.createElement('div'); sp.className = 'spinner'; sp.id = 'email-spin';
-  msgs.appendChild(sp);
-  setTimeout(function () {
-    var spin = document.getElementById('email-spin'); if (spin) spin.remove();
-    msgs.innerHTML += '<div class="resp-msg"><div class="rm-who">Sandra · Office Manager</div>Thanks for reaching out. Marcus is very busy — could you share more about what this is regarding before I forward this on?</div>';
-    btn.disabled = false; btn.textContent = 'Send reply';
-    document.getElementById('email-finish').style.display = 'flex';
-    document.getElementById('email-body').value = '';
-    document.getElementById('email-body').placeholder = 'Reply to Sandra — give her the one-line reason to forward it…';
-  }, 1400);
-}
-
-/* ===================== InMail session ===================== */
-function resetInmail() {
-  document.getElementById('inmail-msgs').innerHTML = '';
-  document.getElementById('inmail-finish').style.display = 'none';
-  document.getElementById('inmail-send').disabled = false;
-  document.getElementById('inmail-send').textContent = 'Send InMail';
-}
-
-function sendInmail() {
-  var body = document.getElementById('inmail-body').value.trim();
-  if (!body) { toast('Write your InMail first'); return; }
-  var msgs = document.getElementById('inmail-msgs');
-  msgs.innerHTML += '<div class="resp-msg mine"><div class="rm-who">You → Marcus Chen</div>' + escapeHtml(body).replace(/\n/g, '<br>') + '</div>';
-  var btn = document.getElementById('inmail-send');
-  btn.disabled = true; btn.textContent = 'Sending…';
-  var sp = document.createElement('div'); sp.className = 'spinner'; sp.id = 'inmail-spin';
-  msgs.appendChild(sp);
-  setTimeout(function () {
-    var spin = document.getElementById('inmail-spin'); if (spin) spin.remove();
-    msgs.innerHTML += '<div class="resp-msg"><div class="rm-who">Marcus Chen · Head of Operations</div>Hi, interesting. What kind of results are you getting for similar businesses? Happy to grab 15 min Thursday.</div>';
-    btn.disabled = false; btn.textContent = 'Send reply';
-    document.getElementById('inmail-finish').style.display = 'flex';
-    document.getElementById('inmail-body').value = '';
-    document.getElementById('inmail-body').placeholder = 'Reply to Marcus — lock in that Thursday slot…';
-  }, 1400);
-}
-
-/* ===================== Scoring ===================== */
-function runScoring() {
-  var html = '';
-  rubric.forEach(function (r, i) {
-    html += '<div class="rubric-row">' +
-      '<div class="rname">' + r.name + '</div>' +
-      '<div class="rubric-bar"><i data-i="' + i + '"></i></div>' +
-      '<div class="rscore"><span class="rs-v" data-i="' + i + '">0</span>/' + r.max + '</div>' +
-      '</div>';
+  const rubric = document.getElementById('rubric');
+  rubric.innerHTML = '';
+  RUBRIC_CATS.forEach(function(c,i){
+    const pts = breakdown[i];
+    const low = (pts / c.max) < 0.6;
+    const row = document.createElement('div');
+    row.className = 'rubric-row' + (low ? ' lowscore' : '');
+    row.innerHTML =
+      '<div class="cat">' + c.cat + '</div>' +
+      '<div class="rubric-track"><span data-pct="' + Math.round(pts/c.max*100) + '"></span></div>' +
+      '<div class="rubric-pts">' + pts + '/' + c.max + '</div>';
+    rubric.appendChild(row);
   });
-  document.getElementById('rubric').innerHTML = html;
 
-  var ring = document.getElementById('ring-fg');
-  ring.style.transition = 'none';
-  ring.style.strokeDashoffset = '540.4';
-  document.getElementById('score-num').textContent = '0';
+  showScreen('screen-score');
 
-  var target = 87;
-  setTimeout(function () {
-    ring.style.transition = 'stroke-dashoffset 1.5s cubic-bezier(.22,1,.36,1)';
-    ring.style.strokeDashoffset = (540.4 * (1 - target / 100)).toFixed(1);
-    countUp(document.getElementById('score-num'), 0, target, 1500);
-    rubric.forEach(function (r, i) {
-      var bar = document.querySelector('.rubric-bar i[data-i="' + i + '"]');
-      var v = document.querySelector('.rs-v[data-i="' + i + '"]');
-      setTimeout(function () {
-        if (bar) bar.style.width = (r.score / r.max * 100) + '%';
-        if (v) countUp(v, 0, r.score, 900);
-      }, 200 + i * 120);
+  setTimeout(function(){
+    animateRing(total);
+    countUp(total);
+    document.querySelectorAll('#rubric .rubric-track span').forEach(function(s){
+      s.style.width = s.getAttribute('data-pct') + '%';
     });
-  }, 300);
+  }, 250);
 }
-
-function countUp(el, from, to, dur) {
-  var start = null;
-  function frame(ts) {
-    if (!start) start = ts;
-    var p = Math.min((ts - start) / dur, 1);
-    var eased = 1 - Math.pow(1 - p, 3);
-    el.textContent = Math.round(from + (to - from) * eased);
-    if (p < 1) requestAnimationFrame(frame);
+function animateRing(score){
+  const ring = document.getElementById('ring-fg');
+  const C = 552.9;
+  ring.style.transition = 'stroke-dashoffset 1.5s ease';
+  ring.style.strokeDashoffset = C - (score/100)*C;
+}
+function countUp(target){
+  const el = document.getElementById('score-num');
+  const dur = 1500;
+  const start = performance.now();
+  function frame(now){
+    const p = Math.min((now-start)/dur, 1);
+    const eased = 1 - Math.pow(1-p, 3);
+    el.textContent = Math.round(eased*target);
+    if(p<1) requestAnimationFrame(frame);
+    else el.textContent = target;
   }
   requestAnimationFrame(frame);
 }
 
-function tryAgain() {
-  toast('🔄 Re-running Level 2…');
-  setTimeout(function () { goTo('detail'); }, 700);
+/* ============================== UPGRADE ============================== */
+function openUpgrade(){ document.getElementById('upgrade-modal').classList.add('open'); }
+function closeUpgrade(){
+  document.getElementById('upgrade-modal').classList.remove('open');
+  document.getElementById('email-box').classList.remove('show');
+}
+function selectPlan(el){
+  document.querySelectorAll('.price-card').forEach(function(c){ c.style.outline=''; });
+  el.style.outline = '2px solid var(--neon)';
+}
+function continueStripe(){
+  document.getElementById('email-box').classList.add('show');
+  toast("Stripe integration coming soon — drop your email and we'll notify you.");
+}
+function submitEmail(){
+  const v = document.getElementById('notify-email').value.trim();
+  if(!v || v.indexOf('@')===-1){ toast("Pop in a valid email and we'll let you know."); return; }
+  document.getElementById('notify-email').value='';
+  closeUpgrade();
+  toast("You're on the list — we'll be in touch. 🙌");
 }
 
-/* ===================== Upgrade modal ===================== */
-function openUpgrade() {
-  var m = document.getElementById('upgrade-modal');
-  m.classList.add('open');
-  requestAnimationFrame(function () { requestAnimationFrame(function () { m.classList.add('shown'); }); });
-}
-function closeUpgrade() {
-  var m = document.getElementById('upgrade-modal');
-  m.classList.remove('shown');
-  setTimeout(function () { m.classList.remove('open'); }, 300);
-}
-document.getElementById('upgrade-modal').addEventListener('click', function (e) {
-  if (e.target === this) closeUpgrade();
-});
-function stripe() {
-  toast('✓ Stripe integration ready');
-  setTimeout(closeUpgrade, 900);
-}
-
-/* ===================== Toast + utils ===================== */
-var toastTimer = null;
-function toast(msg) {
-  var t = document.getElementById('toast');
-  t.innerHTML = msg;
+/* ============================== TOAST ============================== */
+let toastTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
   t.classList.add('show');
-  if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2400);
-}
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"]/g, function (c) {
-    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
-  });
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 3800);
 }
 
-/* ===================== Init ===================== */
-buildSidebar();
+/* ============================== BACKGROUND MESH ============================== */
+(function(){
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles=[];
+  const COUNT = 64, LINK_DIST = 120;
+  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  function init(){
+    particles = [];
+    for(let i=0;i<COUNT;i++){
+      particles.push({ x:Math.random()*W, y:Math.random()*H, vx:(Math.random()-0.5)*0.25, vy:(Math.random()-0.5)*0.25 });
+    }
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(const p of particles){
+      p.x += p.vx; p.y += p.vy;
+      if(p.x<0||p.x>W) p.vx*=-1;
+      if(p.y<0||p.y>H) p.vy*=-1;
+    }
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const a=particles[i], b=particles[j];
+        const dx=a.x-b.x, dy=a.y-b.y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<LINK_DIST){
+          const alpha = (1 - d/LINK_DIST)*0.25;
+          ctx.strokeStyle = 'rgba(0,229,255,' + alpha + ')';
+          ctx.lineWidth = 0.6;
+          ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+        }
+      }
+    }
+    for(const p of particles){
+      ctx.fillStyle = 'rgba(167,139,250,0.7)';
+      ctx.beginPath(); ctx.arc(p.x,p.y,1.3,0,Math.PI*2); ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', function(){ resize(); init(); });
+  resize(); init(); draw();
+})();
+
+/* ============================== INIT ============================== */
+buildLevelMap();
+buildModules();
+selectMode('text');
 </script>
 </body>
 </html>
