@@ -1,701 +1,1182 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PitchGym — Train like a rep. Close like a pro.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap');
+  :root {
+    --bg: #0d0d14;
+    --surface: #16161f;
+    --surface-raised: #1e1e2a;
+    --primary: #7c6af7;
+    --primary-dim: rgba(124, 106, 247, 0.15);
+    --secondary: #ff6b35;
+    --success: #22c55e;
+    --danger: #ef4444;
+    --gold: #f59e0b;
+    --text: #f0eff8;
+    --muted: #8b8a9e;
+    --border: rgba(255, 255, 255, 0.07);
+    --radius: 16px;
+    --shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: #f9f9f7;
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    min-height: 100%;
+  }
+
+  body { overflow-x: hidden; }
+
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, textarea { font-family: inherit; }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface-raised); border-radius: 8px; }
+
+  /* ---------- Screen system ---------- */
+  .screen {
+    display: none;
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.45s ease, transform 0.45s ease;
     min-height: 100vh;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding: 2.5rem 1rem 3rem;
   }
+  .screen.active { display: block; }
+  .screen.shown { opacity: 1; transform: translateY(0); }
 
-  .card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 2.5rem 2.5rem 2rem;
-    max-width: 620px;
-    width: 100%;
-    box-shadow: 0 2px 24px rgba(0,0,0,0.07);
-  }
-
-  .serif { font-family: 'DM Serif Display', serif; }
-
-  /* Progress bar */
-  .progress-wrap {
-    margin-bottom: 2rem;
-  }
-  .progress-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-  .progress-label {
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #888;
-  }
-  .progress-pct {
-    font-size: 12px;
-    font-weight: 500;
-    color: #2d6a4f;
-  }
-  .progress-track {
-    height: 5px;
-    background: #e8e8e4;
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: #2d6a4f;
-    border-radius: 10px;
-    transition: width 0.4s ease;
-  }
-
-  .section-eyebrow {
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #aaa;
-    margin-bottom: 4px;
-  }
-
-  .section-heading {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    color: #1a1a1a;
-    margin-bottom: 1.75rem;
-    line-height: 1.3;
-  }
-
-  .question-text {
-    font-size: 15px;
-    line-height: 1.65;
-    color: #1a1a1a;
-    margin-bottom: 1.1rem;
-  }
-
-  /* Scale buttons */
-  .scale-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: nowrap;
-  }
-
-  .scale-btn {
-    flex: 1;
-    padding: 10px 4px;
-    border: 1.5px solid #ddd;
-    border-radius: 10px;
-    background: #fff;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11.5px;
-    font-weight: 500;
-    color: #555;
-    text-align: center;
-    transition: all 0.15s ease;
-    min-height: 52px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1.2;
-  }
-
-  .scale-btn:hover {
-    border-color: #2d6a4f;
-    color: #2d6a4f;
-    background: #f0f7f4;
-  }
-
-  .scale-btn.selected {
-    background: #2d6a4f;
-    border-color: #2d6a4f;
-    color: #fff;
-    font-weight: 600;
-  }
-
-  /* Nav */
-  .nav-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 2rem;
-    gap: 12px;
-  }
-
+  /* ---------- Buttons ---------- */
   .btn {
-    padding: 10px 22px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    border: 1.5px solid #ddd;
-    background: #fff;
-    color: #333;
-    transition: all 0.15s ease;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 14px 26px; border-radius: 12px; font-weight: 600; font-size: 15px;
+    transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+    white-space: nowrap;
   }
-  .btn:hover { background: #f5f5f3; }
-  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
+  .btn:active { transform: translateY(1px) scale(0.99); }
   .btn-primary {
-    background: #1a1a1a;
-    color: #fff;
-    border-color: #1a1a1a;
+    background: linear-gradient(135deg, var(--primary), #9d8dff);
+    color: #fff; box-shadow: 0 8px 24px rgba(124, 106, 247, 0.35);
   }
-  .btn-primary:hover { background: #333; }
-  .btn-primary:disabled { background: #ccc; border-color: #ccc; cursor: not-allowed; }
+  .btn-primary:hover { box-shadow: 0 12px 30px rgba(124, 106, 247, 0.5); transform: translateY(-1px); }
+  .btn-secondary {
+    background: linear-gradient(135deg, var(--secondary), #ff8c5e);
+    color: #fff; box-shadow: 0 8px 24px rgba(255, 107, 53, 0.3);
+  }
+  .btn-secondary:hover { transform: translateY(-1px); }
+  .btn-ghost { background: var(--surface-raised); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: #262635; }
+  .btn-lg { padding: 18px 34px; font-size: 17px; }
+  .btn-block { width: 100%; }
 
-  .btn-green {
-    background: #2d6a4f;
-    color: #fff;
-    border-color: #2d6a4f;
-  }
-  .btn-green:hover { background: #245a42; }
-
-  /* Intro */
-  .intro-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 34px;
-    line-height: 1.2;
-    color: #1a1a1a;
-    margin-bottom: 1rem;
-  }
-  .intro-sub {
-    font-size: 16px;
-    line-height: 1.75;
-    color: #555;
-    margin-bottom: 0.85rem;
-  }
-  .intro-note {
-    font-size: 14px;
-    line-height: 1.7;
-    color: #999;
-    margin-bottom: 2rem;
-  }
-  .pill-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 2rem;
-  }
   .pill {
-    padding: 8px 16px;
-    border: 1px solid #e0e0e0;
-    border-radius: 100px;
-    font-size: 13px;
-    color: #666;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 16px; border-radius: 999px; font-size: 14px; font-weight: 500;
+    background: var(--surface-raised); border: 1px solid var(--border);
   }
 
-  /* Capture */
-  .field-group { margin-bottom: 1.25rem; }
-  .field-label {
-    font-size: 12px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #888;
-    margin-bottom: 6px;
-    display: block;
+  /* ---------- Nav ---------- */
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px clamp(20px, 5vw, 64px); position: relative; z-index: 5;
   }
-  input[type="text"], input[type="email"] {
-    width: 100%;
-    padding: 11px 14px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    border: 1.5px solid #ddd;
-    border-radius: 8px;
-    background: #fff;
-    color: #1a1a1a;
-    outline: none;
-    transition: border-color 0.15s;
+  .logo {
+    font-weight: 800; font-size: 22px; letter-spacing: -0.5px;
+    display: inline-flex; align-items: center; gap: 9px;
   }
-  input:focus { border-color: #2d6a4f; }
-  .error-msg { font-size: 12px; color: #c0392b; margin-top: 5px; }
-  .submit-error { font-size: 13px; color: #c0392b; margin-top: 0.75rem; text-align: center; }
+  .logo-mark {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    display: grid; place-items: center; box-shadow: 0 6px 18px rgba(124, 106, 247, 0.4); font-size: 17px;
+  }
+  .logo-grad { background: linear-gradient(135deg, #fff, #c9c1ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+  .nav-link { padding: 9px 16px; border-radius: 10px; font-weight: 500; font-size: 14px; color: var(--muted); transition: color 0.2s; cursor: pointer; }
+  .nav-link:hover { color: var(--text); }
 
-  /* Results */
-  .result-band-pill {
-    display: inline-block;
-    padding: 5px 14px;
-    border-radius: 100px;
-    border: 1px solid #ddd;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #666;
-    margin-bottom: 1rem;
+  /* ---------- Landing ---------- */
+  .hero {
+    min-height: calc(100vh - 76px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 30px clamp(20px, 5vw, 64px) 60px; position: relative;
   }
-  .score-row {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-    margin-bottom: 0.5rem;
+  .hero::before {
+    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(60% 50% at 50% 0%, rgba(124, 106, 247, 0.22), transparent 70%),
+      radial-gradient(40% 40% at 80% 30%, rgba(255, 107, 53, 0.12), transparent 70%);
   }
-  .score-big {
-    font-size: 52px;
-    font-weight: 300;
-    color: #1a1a1a;
-    line-height: 1;
+  .hero > * { position: relative; z-index: 1; }
+  .hero-tag {
+    text-transform: uppercase; letter-spacing: 3px; font-size: 13px; font-weight: 600;
+    color: var(--secondary); margin-bottom: 20px;
   }
-  .score-denom { font-size: 20px; color: #aaa; }
-  .result-headline {
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    line-height: 1.35;
-    color: #1a1a1a;
-    margin-bottom: 1rem;
+  .hero h1 {
+    font-size: clamp(40px, 7vw, 78px); font-weight: 800; line-height: 1.04; letter-spacing: -2px;
+    max-width: 14ch; margin-bottom: 22px;
   }
-  .result-body {
-    font-size: 15px;
-    line-height: 1.8;
-    color: #555;
-    margin-bottom: 1.75rem;
+  .hero h1 .accent { background: linear-gradient(135deg, var(--primary), #b3a6ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero-sub { font-size: clamp(16px, 2vw, 20px); color: var(--muted); max-width: 56ch; margin-bottom: 34px; }
+  .feature-pills { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 40px; }
+  .feature-pills .pill { font-size: 15px; padding: 11px 20px; }
+
+  .stat-cards { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; margin-top: 56px; width: 100%; max-width: 860px; }
+  .stat-card {
+    flex: 1 1 220px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px 24px; text-align: left;
+    transition: transform 0.25s ease, border-color 0.25s ease;
   }
-  .breakdown-box {
-    border: 1px solid #ebebeb;
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 1.75rem;
+  .stat-card:hover { transform: translateY(-4px); border-color: rgba(124, 106, 247, 0.4); }
+  .stat-card .big { font-size: 30px; font-weight: 800; margin-bottom: 4px; }
+  .stat-card .lbl { color: var(--muted); font-size: 14px; }
+  .stat-card .ic { font-size: 22px; margin-bottom: 14px; display: block; }
+
+  /* ---------- App shell (dashboard etc.) ---------- */
+  .app-shell { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 248px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border);
+    padding: 26px 18px; display: flex; flex-direction: column; gap: 6px; position: sticky; top: 0; height: 100vh;
   }
-  .breakdown-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
-    border-bottom: 1px solid #ebebeb;
+  .sidebar .logo { margin: 0 8px 26px; font-size: 20px; }
+  .side-link {
+    display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 11px;
+    color: var(--muted); font-weight: 500; font-size: 15px; transition: all 0.2s; text-align: left; width: 100%;
   }
-  .breakdown-row:last-child { border-bottom: none; }
-  .breakdown-label { font-size: 13px; color: #555; flex: 1; }
-  .focus-tag {
-    font-size: 10px;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    color: #2d6a4f;
-    border: 1px solid #2d6a4f;
-    padding: 2px 8px;
-    border-radius: 100px;
-    flex-shrink: 0;
+  .side-link svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .side-link:hover { background: var(--surface-raised); color: var(--text); }
+  .side-link.active { background: var(--primary-dim); color: #fff; }
+  .side-link.active svg { color: var(--primary); }
+  .side-link .lock { margin-left: auto; font-size: 13px; opacity: 0.7; }
+  .sidebar-spacer { flex: 1; }
+  .side-upgrade {
+    margin: 10px 6px 0; padding: 18px 16px; border-radius: 14px;
+    background: linear-gradient(135deg, rgba(124,106,247,0.2), rgba(255,107,53,0.18));
+    border: 1px solid rgba(124, 106, 247, 0.3);
   }
-  .bar-track {
-    width: 100px;
-    height: 4px;
-    background: #e8e8e4;
-    border-radius: 4px;
-    overflow: hidden;
-    flex-shrink: 0;
+  .side-upgrade h4 { font-size: 14px; margin-bottom: 6px; }
+  .side-upgrade p { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+
+  .main { flex: 1; padding: 36px clamp(20px, 4vw, 52px); max-width: 1180px; }
+  .page-head { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 28px; }
+  .page-head h1 { font-size: clamp(26px, 4vw, 36px); font-weight: 800; letter-spacing: -1px; }
+  .page-head .date { color: var(--muted); font-size: 15px; margin-top: 4px; }
+
+  .free-pill {
+    display: inline-flex; align-items: center; gap: 10px; padding: 11px 18px; border-radius: 999px;
+    background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); color: var(--gold);
+    font-weight: 600; font-size: 14px;
   }
-  .bar-fill {
-    height: 100%;
-    background: #2d6a4f;
-    border-radius: 4px;
+  .free-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 10px var(--gold); animation: pulse 2s infinite; }
+  .free-pill .timer { font-variant-numeric: tabular-nums; color: var(--text); }
+
+  .section-label { font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); font-weight: 600; margin: 34px 0 16px; }
+
+  .stat-row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; }
+  .stat-mini { flex: 1 1 160px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; }
+  .stat-mini .v { font-size: 26px; font-weight: 800; }
+  .stat-mini .k { color: var(--muted); font-size: 13px; }
+
+  /* ---------- Level map ---------- */
+  .level-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+  .level-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; position: relative; transition: transform 0.2s, border-color 0.2s; min-height: 158px;
+    display: flex; flex-direction: column;
   }
-  .breakdown-score {
-    font-size: 12px;
-    font-weight: 500;
-    color: #333;
-    min-width: 32px;
-    text-align: right;
-    flex-shrink: 0;
+  .level-card.locked { opacity: 0.5; }
+  .level-card.unlockable { cursor: pointer; }
+  .level-card.unlockable:hover { transform: translateY(-4px); border-color: rgba(124,106,247,0.5); }
+  .level-card.current { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary), 0 12px 30px rgba(124,106,247,0.2); }
+  .lvl-num { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; }
+  .level-card.current .lvl-num { color: var(--primary); }
+  .lvl-title { font-size: 18px; font-weight: 700; margin: 8px 0 6px; letter-spacing: -0.3px; }
+  .lvl-persona { font-size: 13px; color: var(--muted); flex: 1; }
+  .lvl-status { position: absolute; top: 18px; right: 18px; font-size: 18px; }
+  .lvl-badge { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 999px; align-self: flex-start; }
+  .badge-done { background: rgba(34,197,94,0.14); color: var(--success); }
+  .badge-current { background: var(--primary-dim); color: var(--primary); }
+  .badge-locked { background: var(--surface-raised); color: var(--muted); }
+
+  /* ---------- Generic card ---------- */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 26px; }
+  .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-weight: 500; margin-bottom: 22px; font-size: 15px; cursor: pointer; }
+  .back-btn:hover { color: var(--text); }
+
+  /* ---------- Level detail ---------- */
+  .detail-wrap { max-width: 920px; margin: 0 auto; padding: 36px clamp(20px,4vw,40px) 60px; }
+  .badge-level { display: inline-block; background: var(--primary-dim); color: var(--primary); font-weight: 700; font-size: 13px; letter-spacing: 2px; padding: 7px 16px; border-radius: 999px; text-transform: uppercase; }
+  .detail-title { font-size: clamp(28px, 5vw, 42px); font-weight: 800; letter-spacing: -1.2px; margin: 16px 0 24px; }
+
+  .persona-card { display: flex; gap: 18px; align-items: center; }
+  .avatar { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 22px; color: #fff; flex-shrink: 0; }
+  .av-sandra { background: linear-gradient(135deg, #f472b6, #c026d3); }
+  .av-marcus { background: linear-gradient(135deg, #38bdf8, #2563eb); }
+  .persona-card .pname { font-weight: 700; font-size: 17px; }
+  .persona-card .pdesc { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+  .skill-list { list-style: none; margin-top: 8px; }
+  .skill-list li { display: flex; gap: 12px; align-items: flex-start; padding: 9px 0; font-size: 15px; }
+  .skill-list .chk { color: var(--primary); flex-shrink: 0; margin-top: 2px; }
+
+  .mode-tabs { display: flex; gap: 8px; background: var(--surface-raised); padding: 6px; border-radius: 14px; margin-bottom: 16px; flex-wrap: wrap; }
+  .mode-tab { flex: 1; min-width: 110px; padding: 12px; border-radius: 10px; font-weight: 600; font-size: 14px; color: var(--muted); transition: all 0.2s; }
+  .mode-tab.active { background: var(--surface); color: var(--text); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
+  .mode-desc { color: var(--muted); font-size: 15px; padding: 4px 2px 8px; min-height: 46px; }
+
+  /* ---------- Session generic ---------- */
+  .session-top {
+    display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+    padding: 16px clamp(16px,4vw,32px); border-bottom: 1px solid var(--border); background: var(--surface);
+    position: sticky; top: 0; z-index: 4;
   }
-  .insight-box {
-    border: 1px solid #ebebeb;
-    border-radius: 12px;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1.75rem;
-    background: #f9f9f7;
+  .live-badge { display: inline-flex; align-items: center; gap: 9px; font-weight: 700; font-size: 14px; letter-spacing: 0.3px; }
+  .live-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--danger); box-shadow: 0 0 10px var(--danger); animation: pulse 1.4s infinite; }
+  .session-timer { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 18px; padding: 6px 14px; border-radius: 10px; background: var(--surface-raised); }
+
+  .voice-wrap { max-width: 760px; margin: 0 auto; padding: 26px clamp(16px,4vw,28px) 140px; }
+  .call-state { text-align: center; padding: 26px 0 10px; }
+  .ring-anim { width: 96px; height: 96px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; position: relative; }
+  .ring-anim.ringing { background: var(--primary-dim); }
+  .ring-anim.connected { background: rgba(34,197,94,0.15); }
+  .ring-anim::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--primary); animation: ringPulse 1.4s infinite; }
+  .ring-anim.connected::before { border-color: var(--success); animation: none; }
+  .ring-anim svg { width: 40px; height: 40px; }
+  .call-state .cs-text { font-weight: 600; font-size: 16px; }
+  .call-state.connected .cs-text { color: var(--success); }
+
+  .transcript { display: flex; flex-direction: column; gap: 14px; margin-top: 20px; }
+  .bubble { max-width: 78%; padding: 13px 18px; border-radius: 16px; font-size: 15px; line-height: 1.45; animation: bubbleIn 0.4s ease; }
+  .bubble.them { background: var(--surface-raised); border-bottom-left-radius: 5px; align-self: flex-start; }
+  .bubble.you { background: linear-gradient(135deg, var(--primary), #8d7bff); color: #fff; border-bottom-right-radius: 5px; align-self: flex-end; }
+  .bubble .who { font-size: 12px; font-weight: 700; opacity: 0.7; margin-bottom: 3px; }
+  .bubble.system { align-self: center; background: rgba(34,197,94,0.15); color: var(--success); font-weight: 600; font-size: 13px; padding: 9px 18px; border-radius: 999px; max-width: none; }
+
+  .typing { display: inline-flex; gap: 4px; padding: 4px 0; }
+  .typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: typing 1.2s infinite; }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+  .input-dock {
+    position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface);
+    border-top: 1px solid var(--border); padding: 16px clamp(16px,4vw,28px);
+    display: flex; gap: 10px; align-items: center; z-index: 6;
   }
-  .insight-eyebrow {
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #aaa;
-    margin-bottom: 0.5rem;
+  .input-dock .inner { max-width: 760px; margin: 0 auto; width: 100%; display: flex; gap: 10px; align-items: center; }
+  .chat-input { flex: 1; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; color: var(--text); font-size: 15px; outline: none; }
+  .chat-input:focus { border-color: var(--primary); }
+  .mic-btn { width: 50px; height: 50px; border-radius: 50%; background: var(--surface-raised); border: 1px solid var(--border); display: grid; place-items: center; flex-shrink: 0; transition: all 0.2s; }
+  .mic-btn svg { width: 22px; height: 22px; }
+  .mic-btn.recording { background: var(--danger); border-color: var(--danger); animation: micPulse 1.2s infinite; }
+  .send-btn { width: 50px; height: 50px; border-radius: 12px; background: var(--primary); display: grid; place-items: center; flex-shrink: 0; }
+  .send-btn svg { width: 22px; height: 22px; color: #fff; }
+  .send-btn:hover { background: #8d7bff; }
+
+  .end-call-bar { position: fixed; bottom: 86px; left: 0; right: 0; display: flex; justify-content: center; z-index: 5; padding: 0 16px; pointer-events: none; }
+  .end-call-bar .btn { pointer-events: auto; box-shadow: var(--shadow); }
+
+  /* ---------- Email / InMail ---------- */
+  .compose-wrap { max-width: 1100px; margin: 0 auto; padding: 30px clamp(16px,4vw,32px) 60px; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .compose-pane { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
+  .compose-pane h3 { font-size: 15px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; }
+  .field input, .field textarea { width: 100%; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--text); font-size: 15px; outline: none; resize: vertical; }
+  .field input:focus, .field textarea:focus { border-color: var(--primary); }
+  .field input[readonly] { color: var(--muted); }
+  .field textarea { min-height: 150px; }
+
+  .response-pane { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; display: flex; flex-direction: column; }
+  .resp-empty { color: var(--muted); text-align: center; margin: auto; font-size: 14px; }
+  .resp-thread { display: flex; flex-direction: column; gap: 14px; }
+  .resp-msg { background: var(--surface-raised); border-radius: 12px; padding: 14px 16px; font-size: 14px; line-height: 1.55; }
+  .resp-msg.mine { background: var(--primary-dim); border: 1px solid rgba(124,106,247,0.3); }
+  .resp-msg .rm-who { font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 5px; }
+
+  .spinner { width: 26px; height: 26px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 20px auto; }
+
+  /* LinkedIn */
+  .li-profile { display: flex; gap: 14px; align-items: center; padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--border); }
+  .li-profile .pname { font-weight: 700; font-size: 16px; }
+  .li-profile .ptitle { color: var(--muted); font-size: 13px; }
+  .li-profile .li-tag { font-size: 11px; color: #38bdf8; margin-top: 3px; font-weight: 600; }
+
+  /* ---------- Scoring ---------- */
+  .score-wrap { max-width: 760px; margin: 0 auto; padding: 40px clamp(16px,4vw,32px) 80px; text-align: center; }
+  .ring-wrap { position: relative; width: 200px; height: 200px; margin: 10px auto 24px; }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--surface-raised); stroke-width: 14; }
+  .ring-fg { fill: none; stroke: url(#scoreGrad); stroke-width: 14; stroke-linecap: round; transition: stroke-dashoffset 1.5s cubic-bezier(.22,1,.36,1); }
+  .ring-center { position: absolute; inset: 0; display: grid; place-items: center; }
+  .ring-center .num { font-size: 52px; font-weight: 800; line-height: 1; }
+  .ring-center .den { color: var(--muted); font-size: 15px; }
+
+  .score-banner { background: rgba(255,107,53,0.12); border: 1px solid rgba(255,107,53,0.4); color: var(--secondary); font-weight: 600; padding: 14px 20px; border-radius: 12px; margin-bottom: 28px; }
+
+  .rubric { text-align: left; }
+  .rubric-row { display: flex; align-items: center; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--border); }
+  .rubric-row:last-child { border-bottom: none; }
+  .rubric-row .rname { flex: 1; font-weight: 500; font-size: 15px; }
+  .rubric-bar { width: 120px; height: 7px; border-radius: 999px; background: var(--surface-raised); overflow: hidden; flex-shrink: 0; }
+  .rubric-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--primary), #9d8dff); width: 0; transition: width 1s ease; }
+  .rubric-row .rscore { width: 56px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 14px; flex-shrink: 0; }
+
+  .score-actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 30px 0; }
+  .score-actions .btn { flex: 1; min-width: 200px; }
+
+  .coach-locked { position: relative; text-align: left; overflow: hidden; }
+  .coach-teaser { filter: blur(6px); user-select: none; pointer-events: none; }
+  .coach-overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; background: linear-gradient(180deg, rgba(22,22,31,0.65), rgba(22,22,31,0.92)); text-align: center; padding: 20px;
   }
-  .insight-text {
-    font-size: 15px;
-    line-height: 1.8;
-    color: #444;
+  .coach-overlay .lock-ic { width: 44px; height: 44px; color: var(--gold); }
+  .coach-overlay h3 { font-size: 19px; }
+  .coach-overlay p { color: var(--muted); font-size: 14px; max-width: 36ch; }
+
+  /* ---------- Modal ---------- */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 100; background: rgba(5,5,10,0.78); backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center; padding: 24px; opacity: 0; transition: opacity 0.3s;
   }
-  .divider { height: 1px; background: #ebebeb; margin: 1.75rem 0; }
-  .cta-note { font-size: 14px; color: #555; line-height: 1.65; margin-bottom: 1.25rem; }
-  .cta-sub { font-size: 12px; color: #aaa; text-align: center; margin-top: 0.75rem; }
+  .modal-overlay.open { display: flex; }
+  .modal-overlay.shown { opacity: 1; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 22px; padding: 34px;
+    max-width: 900px; width: 100%; max-height: 92vh; overflow-y: auto; transform: scale(0.96); transition: transform 0.3s;
+  }
+  .modal-overlay.shown .modal { transform: scale(1); }
+  .modal-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+  .modal-head h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+  .modal-head p { color: var(--muted); font-size: 15px; margin-top: 4px; }
+  .modal-close { width: 38px; height: 38px; border-radius: 10px; background: var(--surface-raised); display: grid; place-items: center; flex-shrink: 0; }
+  .modal-close:hover { background: #2a2a3a; }
+
+  .price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 26px 0; }
+  .price-card { background: var(--surface-raised); border: 1px solid var(--border); border-radius: 16px; padding: 24px 20px; position: relative; transition: transform 0.2s, border-color 0.2s; }
+  .price-card:hover { transform: translateY(-4px); }
+  .price-card.popular { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+  .price-card .tag { position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.6px; }
+  .price-card .price { font-size: 38px; font-weight: 800; letter-spacing: -1px; }
+  .price-card .credits { color: var(--secondary); font-weight: 700; font-size: 15px; margin: 2px 0 4px; }
+  .price-card .blurb { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+  .price-feats { list-style: none; display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
+  .price-feats li { font-size: 13px; display: flex; gap: 8px; align-items: flex-start; }
+  .price-feats .chk { color: var(--success); flex-shrink: 0; }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--surface-raised); border: 1px solid var(--border); color: var(--text);
+    padding: 14px 22px; border-radius: 12px; font-weight: 600; font-size: 14px; z-index: 200;
+    box-shadow: var(--shadow); opacity: 0; transition: all 0.3s; display: flex; align-items: center; gap: 10px; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---------- Animations ---------- */
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  @keyframes ringPulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.4); opacity: 0; } }
+  @keyframes micPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); } 50% { box-shadow: 0 0 0 12px rgba(239,68,68,0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes typing { 0%,60%,100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-5px); opacity: 1; } }
+  @keyframes bubbleIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 860px) {
+    .split { grid-template-columns: 1fr; }
+    .price-grid { grid-template-columns: 1fr; }
+    .sidebar {
+      position: fixed; bottom: 0; top: auto; left: 0; right: 0; width: 100%; height: auto;
+      flex-direction: row; border-right: none; border-top: 1px solid var(--border); padding: 8px;
+      z-index: 50; justify-content: space-around; gap: 0;
+    }
+    .sidebar .logo, .sidebar-spacer, .side-upgrade { display: none; }
+    .side-link { flex-direction: column; gap: 3px; font-size: 10px; padding: 8px 4px; flex: 1; justify-content: center; }
+    .side-link .lock { display: none; }
+    .main { padding-bottom: 90px; }
+  }
+  @media (max-width: 520px) {
+    .nav-link.upgrade-nav { display: none; }
+    .bubble { max-width: 88%; }
+  }
 </style>
 </head>
 <body>
-<div class="card">
-  <div id="app"></div>
+
+<!-- ============ SCREEN 1: LANDING ============ -->
+<section class="screen active shown" id="screen-landing">
+  <nav class="nav">
+    <div class="logo"><span class="logo-mark">🏋️</span><span class="logo-grad">PitchGym</span></div>
+    <div class="nav-right">
+      <span class="nav-link" onclick="toast('Login coming soon')">Login</span>
+      <button class="btn btn-ghost nav-link upgrade-nav" onclick="openUpgrade()" style="padding:9px 18px">Upgrade</button>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-tag">Train like a rep. Close like a pro.</div>
+    <h1>The AI cold-call <span class="accent">training arena</span> for sales reps.</h1>
+    <p class="hero-sub">Voice, Email &amp; LinkedIn — all in one gym. Run live AI roleplays as an SDR or AE, get scored on every call, and level up from opener to close.</p>
+
+    <div class="feature-pills">
+      <span class="pill">🎙️ Voice Agent</span>
+      <span class="pill">📧 Email Agent</span>
+      <span class="pill">💼 LinkedIn InMail</span>
+    </div>
+
+    <button class="btn btn-primary btn-lg" onclick="goTo('dashboard')">
+      Start Training Free — No signup needed
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+
+    <div class="stat-cards">
+      <div class="stat-card">
+        <span class="ic">🎯</span>
+        <div class="big">10</div>
+        <div class="lbl">Progressive levels</div>
+      </div>
+      <div class="stat-card">
+        <span class="ic">🏆</span>
+        <div class="big">90%</div>
+        <div class="lbl">Pass threshold to advance</div>
+      </div>
+      <div class="stat-card">
+        <span class="ic">🧠</span>
+        <div class="big">AI</div>
+        <div class="lbl">Coaching feedback on every rep</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 2: DASHBOARD ============ -->
+<section class="screen" id="screen-dashboard">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1>Welcome back, Trainee</h1>
+          <div class="date" id="dash-date"></div>
+        </div>
+        <div class="free-pill">
+          <span class="dot"></span>
+          1 free session today — resets in <span class="timer" id="reset-timer">18:42:33</span>
+        </div>
+      </div>
+
+      <div class="section-label">Your stats</div>
+      <div class="stat-row">
+        <div class="stat-mini"><div class="v">3</div><div class="k">Sessions completed</div></div>
+        <div class="stat-mini"><div class="v">82%</div><div class="k">Average score</div></div>
+        <div class="stat-mini"><div class="v" style="color:var(--gold)">94%</div><div class="k">Best score</div></div>
+      </div>
+
+      <div class="section-label">Level progression map</div>
+      <div class="level-grid" id="level-grid"></div>
+    </main>
+  </div>
+</section>
+
+<!-- ============ SCREEN 3: LEVEL DETAIL ============ -->
+<section class="screen" id="screen-detail">
+  <nav class="nav">
+    <div class="logo"><span class="logo-mark">🏋️</span><span class="logo-grad">PitchGym</span></div>
+    <div class="free-pill"><span class="dot"></span>1 free session today</div>
+  </nav>
+  <div class="detail-wrap">
+    <span class="back-btn" onclick="goTo('dashboard')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+      Back to dashboard
+    </span>
+    <div><span class="badge-level">Level 2</span></div>
+    <h1 class="detail-title">Get Past the Gatekeeper</h1>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="persona-card">
+        <div class="avatar av-sandra">SD</div>
+        <div>
+          <div class="pname">Sandra — Office Manager at TechFlow Pty Ltd</div>
+          <div class="pdesc">Sandra has been screening calls for 6 years. She's heard every pitch. Her job is to protect the decision-maker's time.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <div class="section-label" style="margin:0 0 6px">What you're practicing</div>
+      <ul class="skill-list">
+        <li><span class="chk">✓</span> Building instant rapport with a screener without sounding salesy</li>
+        <li><span class="chk">✓</span> Giving a reason-to-call that earns a transfer, not a brush-off</li>
+        <li><span class="chk">✓</span> Reading buying signals and handling the "what's it regarding?" objection</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="section-label" style="margin:0 0 12px">Choose your agent mode</div>
+      <div class="mode-tabs" id="mode-tabs">
+        <button class="mode-tab active" data-mode="voice" onclick="selectMode('voice')">🎙️ Voice</button>
+        <button class="mode-tab" data-mode="email" onclick="selectMode('email')">📧 Email</button>
+        <button class="mode-tab" data-mode="inmail" onclick="selectMode('inmail')">💼 LinkedIn InMail</button>
+      </div>
+      <p class="mode-desc" id="mode-desc">Speak your cold call in real time. AI responds as Sandra.</p>
+      <button class="btn btn-primary btn-lg btn-block" onclick="startSession()">
+        Start Session
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 4a: VOICE ============ -->
+<section class="screen" id="screen-voice">
+  <div class="session-top">
+    <div class="live-badge"><span class="live-dot"></span>LIVE SESSION — Level 2: Get Past the Gatekeeper</div>
+    <div class="session-timer" id="voice-timer">00:00</div>
+  </div>
+  <div class="voice-wrap">
+    <div class="card" style="display:flex;gap:14px;align-items:center;margin-bottom:8px">
+      <div class="avatar av-sandra" style="width:48px;height:48px;font-size:17px">SD</div>
+      <div><div class="pname" style="font-weight:700">Sandra</div><div class="pdesc" style="font-size:13px;color:var(--muted)">Office Manager · TechFlow Pty Ltd</div></div>
+    </div>
+
+    <div class="call-state" id="call-state">
+      <div class="ring-anim ringing" id="ring-anim">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--primary)"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </div>
+      <div class="cs-text" id="cs-text">Dialing TechFlow…</div>
+    </div>
+
+    <div class="transcript" id="transcript"></div>
+  </div>
+
+  <div class="end-call-bar" id="voice-end-bar" style="display:none">
+    <button class="btn btn-secondary" onclick="goTo('scoring')">End Call + Get Score</button>
+  </div>
+
+  <div class="input-dock" id="voice-dock" style="display:none">
+    <div class="inner">
+      <input class="chat-input" id="voice-input" placeholder="Type your line, or tap the mic to speak…" onkeydown="if(event.key==='Enter')sendVoiceLine()" />
+      <button class="mic-btn" id="mic-btn" onclick="toggleMic()" aria-label="Toggle microphone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+      </button>
+      <button class="send-btn" onclick="sendVoiceLine()" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 4b: EMAIL ============ -->
+<section class="screen" id="screen-email">
+  <div class="session-top">
+    <div class="live-badge"><span class="live-dot"></span>EMAIL SESSION — Level 2: Get Past the Gatekeeper</div>
+    <span class="back-btn" style="margin:0" onclick="goTo('detail')">Exit</span>
+  </div>
+  <div class="compose-wrap">
+    <div class="split">
+      <div class="compose-pane">
+        <h3>📧 Compose cold email</h3>
+        <div class="field"><label>To</label><input value="sandra@techflow.com.au — Office Manager" readonly /></div>
+        <div class="field"><label>Subject</label><input id="email-subject" placeholder="Quick question for Marcus" value="Quick question re: TechFlow's ops workflow" /></div>
+        <div class="field"><label>Body</label><textarea id="email-body" placeholder="Write a cold email to get Sandra to forward it to the decision-maker…">Hi Sandra,
+
+I know you're the gatekeeper for Marcus's time, so I'll be brief. We've helped 3 other Aussie ops teams cut manual reporting by ~9 hrs/week. Worth a 10-min look for Marcus?
+
+Could you point me to the best way to reach him?
+
+Cheers,
+Alex</textarea></div>
+        <button class="btn btn-primary btn-block" id="email-send" onclick="sendEmail()">Send email</button>
+      </div>
+      <div class="response-pane">
+        <h3>💬 Sandra's responses</h3>
+        <div id="email-thread" style="flex:1;display:flex;flex-direction:column">
+          <div class="resp-empty" id="email-empty">Send your email to see how Sandra replies…</div>
+          <div class="resp-thread" id="email-msgs"></div>
+        </div>
+        <button class="btn btn-secondary btn-block" id="email-finish" style="display:none;margin-top:16px" onclick="goTo('scoring')">Finish &amp; Get Score</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 4c: LINKEDIN INMAIL ============ -->
+<section class="screen" id="screen-inmail">
+  <div class="session-top">
+    <div class="live-badge"><span class="live-dot"></span>INMAIL SESSION — Level 2: Reach the DM</div>
+    <span class="back-btn" style="margin:0" onclick="goTo('detail')">Exit</span>
+  </div>
+  <div class="compose-wrap" style="max-width:680px">
+    <div class="compose-pane">
+      <div class="li-profile">
+        <div class="avatar av-marcus" style="width:56px;height:56px;font-size:19px">MC</div>
+        <div>
+          <div class="pname">Marcus Chen</div>
+          <div class="ptitle">Head of Operations at TechFlow</div>
+          <div class="li-tag">💼 InMail · Out of network</div>
+        </div>
+      </div>
+      <div class="field"><label>InMail to Marcus</label><textarea id="inmail-body" placeholder="Write an InMail to reach past Sandra directly to the DM…" style="min-height:170px">Hi Marcus — saw TechFlow is scaling the ops team fast. We help ops leaders kill manual reporting; one client (similar size to you) clawed back 9 hrs/week. Open to a quick 15-min next week to see if it's relevant?</textarea></div>
+      <button class="btn btn-primary btn-block" id="inmail-send" onclick="sendInmail()">Send InMail</button>
+
+      <div class="resp-thread" id="inmail-msgs" style="margin-top:20px"></div>
+      <button class="btn btn-secondary btn-block" id="inmail-finish" style="display:none;margin-top:16px" onclick="goTo('scoring')">Finish &amp; Get Score</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 5: SCORING ============ -->
+<section class="screen" id="screen-scoring">
+  <nav class="nav">
+    <div class="logo"><span class="logo-mark">🏋️</span><span class="logo-grad">PitchGym</span></div>
+    <span class="back-btn" style="margin:0" onclick="goTo('dashboard')">Dashboard</span>
+  </nav>
+  <div class="score-wrap">
+    <div class="section-label" style="margin-bottom:0">Session results · Level 2</div>
+    <div class="ring-wrap">
+      <svg width="200" height="200" viewBox="0 0 200 200">
+        <defs>
+          <linearGradient id="scoreGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7c6af7" />
+            <stop offset="100%" stop-color="#ff6b35" />
+          </linearGradient>
+        </defs>
+        <circle class="ring-bg" cx="100" cy="100" r="86" />
+        <circle class="ring-fg" id="ring-fg" cx="100" cy="100" r="86" stroke-dasharray="540.4" stroke-dashoffset="540.4" />
+      </svg>
+      <div class="ring-center">
+        <div class="num" id="score-num">0</div>
+        <div class="den">/ 100</div>
+      </div>
+    </div>
+
+    <div class="score-banner">⚡ Almost there! Need 90+ to advance to Level 3.</div>
+
+    <div class="card rubric" id="rubric"></div>
+
+    <div class="score-actions">
+      <button class="btn btn-ghost" onclick="tryAgain()">↻ Try Again (1 credit)</button>
+      <button class="btn btn-primary" onclick="openUpgrade()">🔓 Unlock AI Coach Feedback</button>
+    </div>
+
+    <div class="card coach-locked">
+      <div class="section-label" style="margin:0 0 12px">🧠 AI Coach feedback</div>
+      <div class="coach-teaser">
+        <p style="font-size:15px;line-height:1.7">Your opener was strong but you missed Sandra's buying signal at <b>0:42</b> when she said "what is it regarding" — that's your door. Here's how to walk through it: instead of re-pitching, name the business outcome in one line and ask permission to be transferred. You also spoke ~18% too fast in the first 20 seconds; slowing your pace builds trust with screeners. Three reframes that would've earned the transfer faster…</p>
+      </div>
+      <div class="coach-overlay">
+        <svg class="lock-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <h3>Unlock your AI Coach breakdown</h3>
+        <p>Get line-by-line feedback, your exact missed signals, and a tailored drill plan to hit 90+.</p>
+        <button class="btn btn-secondary" onclick="openUpgrade()">Unlock AI Coach — $10 for 2 credits</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 6: UPGRADE MODAL ============ -->
+<div class="modal-overlay" id="upgrade-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2>Power up your training</h2>
+        <p>Credits unlock the AI Coach, unlimited replays, and every level.</p>
+      </div>
+      <button class="modal-close" onclick="closeUpgrade()" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="price-grid">
+      <div class="price-card">
+        <div class="price">$10</div>
+        <div class="credits">2 Credits</div>
+        <div class="blurb">Try it out</div>
+        <ul class="price-feats">
+          <li><span class="chk">✓</span> 2 scored sessions</li>
+          <li><span class="chk">✓</span> AI Coach access</li>
+          <li><span class="chk">✓</span> Unlimited replay on those</li>
+        </ul>
+        <button class="btn btn-ghost btn-block" onclick="stripe()">Continue with Stripe →</button>
+      </div>
+      <div class="price-card popular">
+        <span class="tag">Most Popular</span>
+        <div class="price">$20</div>
+        <div class="credits">5 Credits</div>
+        <div class="blurb">Best for weekly drills</div>
+        <ul class="price-feats">
+          <li><span class="chk">✓</span> 5 scored sessions</li>
+          <li><span class="chk">✓</span> Full AI Coach access</li>
+          <li><span class="chk">✓</span> Unlimited replay</li>
+          <li><span class="chk">✓</span> All 10 levels</li>
+        </ul>
+        <button class="btn btn-primary btn-block" onclick="stripe()">Continue with Stripe →</button>
+      </div>
+      <div class="price-card">
+        <div class="price">$50</div>
+        <div class="credits">15 Credits</div>
+        <div class="blurb">Best value</div>
+        <ul class="price-feats">
+          <li><span class="chk">✓</span> 15 scored sessions</li>
+          <li><span class="chk">✓</span> Full AI Coach access</li>
+          <li><span class="chk">✓</span> Unlimited replay</li>
+          <li><span class="chk">✓</span> All 10 levels + new drops</li>
+        </ul>
+        <button class="btn btn-ghost btn-block" onclick="stripe()">Continue with Stripe →</button>
+      </div>
+    </div>
+    <p style="text-align:center;color:var(--muted);font-size:13px">Secure checkout · Cancel anytime · GST included for AU customers</p>
+  </div>
 </div>
 
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toast"></div>
+
 <script>
-const FORMSPREE_URL = 'https://formspree.io/f/xaqvqoyw';
+/* ===================== State & data ===================== */
+var selectedMode = 'voice';
 
-const SECTIONS = [
-  { id: 'performance_tax', name: 'The Performance Tax', desc: 'How much energy does showing up cost you?', questions: [
-    'Have you ever finished a sales call feeling more drained than energised, even when it went well?',
-    'Have you ever felt like you needed to be louder, more extravagant, or more "on" to be taken seriously?',
-    'Do you have a "sales voice" or "sales persona" that feels noticeably different from how you normally talk?',
-    'Have you ever gone quiet on a call and immediately worried the client thought you were weak or uncertain?'
-  ]},
-  { id: 'interruption', name: 'The Interruption Problem', desc: 'Do you get heard when it matters?', questions: [
-    'Have you ever spoken up in a meeting and someone cuts you off, and you just let it go?',
-    'Have you ever had a great point to make but held it back because the room was too loud or the moment passed?',
-    'Do you find yourself rehearsing what you\'re going to say while others are talking, because you don\'t want to sound silly?',
-    'Have you left a conversation thinking "I had the right answer, I just never got to say it"?'
-  ]},
-  { id: 'pressure', name: 'The Pressure Moment', desc: 'What happens when a deal gets hard?', questions: [
-    'When a prospect pushes back hard, do you tend to over-explain, cave on price, or go quiet?',
-    'Have you ever walked away from a deal thinking "I should have held my ground but I didn\'t want to seem pushy or salesy"?',
-    'Do you find objections more uncomfortable than most of your colleagues seem to?',
-    'Have you ever agreed to something in a sales conversation you didn\'t actually believe in, just to keep the peace?'
-  ]},
-  { id: 'followup', name: 'The Follow-Up Shame', desc: 'Does following up feel like chasing?', questions: [
-    'Have you ever delayed following up with a prospect because you didn\'t want to feel like you were chasing or annoying them?',
-    'Do you write and rewrite follow-up messages several times before sending — or even talk yourself out of sending them at all?',
-    'Have you ever assumed "if they were interested, they\'d reach out" and lost a deal because of it?'
-  ]},
-  { id: 'closer', name: 'The Closer Complex', desc: 'Does asking for the business feel unnatural?', questions: [
-    'Does asking for the sale feel like something you have to psych yourself up for rather than a natural part of the conversation?',
-    'Have you ever got to the end of a great conversation and not asked for the business because the moment didn\'t feel "right"?',
-    'Do you secretly wonder if the reason you\'re not closing more is because you\'re just not aggressive enough?'
-  ]},
-  { id: 'comparison', name: 'The Comparison Trap', desc: 'Are you measuring yourself against the wrong people?', questions: [
-    'Have you ever watched a louder colleague land a deal and thought "I could never do it that way. Maybe I\'m just not cut out for this"?',
-    'Has a manager ever told you to be more assertive, more energetic, or "bring more energy to the room" — and it landed like a criticism of who you are?',
-    'Do you ever feel like the sales playbook you\'ve been given was written by someone completely unlike you?',
-    'Have you ever outperformed a louder colleague and still felt like somehow they were the "real" salesperson?'
-  ]}
+var levels = [
+  { n: 1, title: 'Pattern Interrupt Opener', persona: 'Eager Curious Buyer', state: 'done' },
+  { n: 2, title: 'Get Past the Gatekeeper', persona: 'Friendly Receptionist', state: 'current' },
+  { n: 3, title: 'Handle the Brush-Off', persona: 'Busy Skeptical Manager', state: 'locked' },
+  { n: 4, title: 'Discovery Deep-Dive', persona: 'Guarded Operations Lead', state: 'locked' },
+  { n: 5, title: 'The Price Objection', persona: 'Budget-Focused CFO', state: 'locked' },
+  { n: 6, title: '"We Already Use a Competitor"', persona: 'Loyal Existing Customer', state: 'locked' },
+  { n: 7, title: 'Multi-Threading the Deal', persona: 'Champion + Blocker Duo', state: 'locked' },
+  { n: 8, title: 'Re-Engage a Ghost', persona: 'Cold Lapsed Prospect', state: 'locked' },
+  { n: 9, title: 'Negotiate the Close', persona: 'Hardball Procurement', state: 'locked' },
+  { n: 10, title: 'The Boardroom Pitch', persona: 'Skeptical Exec Panel', state: 'locked' }
 ];
 
-// Labels only — value stored is 1–5 directly (higher = more pain)
-const SCALE = [
-  { val: 1, word: 'Never' },
-  { val: 2, word: 'Rarely' },
-  { val: 3, word: 'Sometimes' },
-  { val: 4, word: 'Usually' },
-  { val: 5, word: 'Always' }
+var rubric = [
+  { name: 'Opening / Pattern Interrupt', score: 12, max: 15 },
+  { name: 'Tone, Pace, Confidence', score: 13, max: 15 },
+  { name: 'Discovery Questions', score: 11, max: 15 },
+  { name: 'Active Listening', score: 13, max: 15 },
+  { name: 'Objection Handling', score: 16, max: 20 },
+  { name: 'Value Articulation', score: 8, max: 10 },
+  { name: 'Close / Clear CTA', score: 10, max: 10 }
 ];
 
-// Higher score = more pain = lower band
-const BANDS = [
-  {
-    min: 90, max: 110,
-    name: 'The Performer',
-    headline: 'You\'ve been handed a playbook that doesn\'t fit who you are — and you\'re running it anyway.',
-    body: 'The result is predictable: inconsistent results, high energy drain after every interaction, and a persistent feeling that sales just "isn\'t you." It is. This version of it just isn\'t. The exhaustion you\'re feeling isn\'t weakness — it\'s the cost of performing a character. Before anything else can change, you need to stop optimising the wrong approach and start building one that actually fits how you think, talk, and connect.',
-    cta: 'A 15-minute call with Stephen isn\'t about motivation. It\'s about mapping exactly where the performance is costing you deals — and what to replace it with.'
-  },
-  {
-    min: 70, max: 89,
-    name: 'The Adapter',
-    headline: 'You\'ve started finding your own way, but you\'re caught between instinct and the old playbook.',
-    body: 'Some conversations feel natural — you\'re curious, sharp, genuinely yourself. Others still feel like a performance. The gap between your best sales days and your worst is wider than it needs to be, and it\'s not a skill gap. It\'s a framework gap. You don\'t have a consistent approach you actually believe in, which means you default back to old habits under pressure. The work here is consolidation: identifying what\'s already working and building it into something repeatable.',
-    cta: 'In 15 minutes, Stephen can identify where your authentic approach breaks down and what a consistent framework looks like for someone wired like you.'
-  },
-  {
-    min: 51, max: 69,
-    name: 'The Authentic Seller (In Progress)',
-    headline: 'You\'re operating mostly from instinct — and it\'s working. But there are specific moments where the old patterns creep back.',
-    body: 'You\'ve figured out more than most. You lead with curiosity, you don\'t chase deals that aren\'t right, and you\'ve stopped trying to be someone you\'re not in most situations. But pressure moments still trip you up — objections, follow-up, asking for the close. These aren\'t character flaws. They\'re the last remnants of training that told you sales requires aggression. Targeted work on those three areas would unlock a step-change in your results without changing who you are.',
-    cta: 'Book a 15-minute call with Stephen to identify your specific pressure moments and what to do differently in them.'
-  },
-  {
-    min: 22, max: 50,
-    name: 'The Quiet Closer',
-    headline: 'You\'ve cracked it. You sell in a way that feels genuinely like you — and it\'s working.',
-    body: 'The challenge now is a different one: what you\'re doing isn\'t documented, isn\'t teachable, and isn\'t scalable yet. You\'re operating from feel rather than a framework, which means it lives in your head and dies if you try to replicate it — in a team, in a different market, or on a harder day. The next stage is turning instinct into a repeatable system you can own, articulate, and pass on.',
-    cta: 'A 15-minute call with Stephen can help you articulate and formalise what\'s already working — so it stops being luck and starts being a process.'
-  }
-];
-
-const SECTION_INSIGHTS = {
-  performance_tax: 'Your biggest leak right now is the energy cost of showing up. You\'re not failing at sales — you\'re exhausting yourself performing a version of it. Every call where you\'re "on" is a withdrawal from a finite account. The goal isn\'t to push through it. It\'s to rebuild your approach so conversations are restorative rather than draining.',
-  interruption: 'The data points to one consistent pattern: you have things worth saying, and you\'re not saying them. Not because you lack insight — because the room doesn\'t pause long enough, or you second-guess yourself before you get the chance. In sales, the person who gets heard closes more deals. Getting heard isn\'t about being louder. It\'s about knowing exactly when and how to speak so that when you do, it lands.',
-  pressure: 'Pressure moments are where most introverted salespeople lose deals they should win. You get to the hard part of a conversation — a pushback, a stall, a price objection — and the instinct is to smooth things over rather than hold the line. That instinct comes from a good place. But it costs you. Learning to stay grounded in the moments that count is the single highest-leverage shift you can make.',
-  followup: 'You\'re letting deals die quietly because you don\'t want to be the person who chases. The problem: "I don\'t want to seem pushy" and "I\'m being professional" feel identical from the inside. Externally, one of them looks like disinterest. Follow-up isn\'t chasing — it\'s the last part of a sales conversation that happens to occur in writing. Reframing it changes everything.',
-  closer: 'You\'re getting to the door and not walking through it. Great conversations, real connection, genuine interest from the prospect — and then you don\'t ask. Not because you\'re unprepared. Because asking for the sale still feels like a demand rather than a natural conclusion. It isn\'t. And it doesn\'t require aggression to do it well.',
-  comparison: 'You\'ve internalised someone else\'s definition of what a good salesperson looks like — and you don\'t fit it, so you\'ve decided the problem is you. It isn\'t. The loud closer who\'s held up as the benchmark is operating on borrowed time. Customers are more sophisticated than they\'ve ever been. The salesperson who listens, asks the right questions, and earns trust consistently wins in the long run. That\'s you.'
+var modeDesc = {
+  voice: 'Speak your cold call in real time. AI responds as Sandra.',
+  email: 'Craft a cold email to get Sandra to forward it to the decision-maker.',
+  inmail: 'Write an InMail to reach past Sandra directly to the DM.'
 };
 
-let state = {
-  screen: 'intro', sectionIdx: 0, questionIdx: 0, answers: {},
-  name: '', email: '', nameError: '', emailError: '',
-  submitting: false, submitError: ''
+/* ===================== Screen routing ===================== */
+var screens = {
+  landing: 'screen-landing', dashboard: 'screen-dashboard', detail: 'screen-detail',
+  voice: 'screen-voice', email: 'screen-email', inmail: 'screen-inmail', scoring: 'screen-scoring'
 };
 
-function totalQuestions() { return SECTIONS.reduce((s, sec) => s + sec.questions.length, 0); }
-function globalQIdx() { let c = 0; for (let s = 0; s < state.sectionIdx; s++) c += SECTIONS[s].questions.length; return c + state.questionIdx; }
-function currentSection() { return SECTIONS[state.sectionIdx]; }
-function answerKey(si, qi) { return si + '_' + qi; }
-
-// Raw score: 1=Never (low pain), 5=Always (high pain) — no inversion
-function sectionScore(si) {
-  let t = 0;
-  for (let qi = 0; qi < SECTIONS[si].questions.length; qi++) {
-    const v = state.answers[answerKey(si, qi)];
-    if (v) t += v;
+function goTo(name) {
+  var current = document.querySelector('.screen.active');
+  var next = document.getElementById(screens[name]);
+  if (current === next) return;
+  if (current) {
+    current.classList.remove('shown');
+    setTimeout(function () { current.classList.remove('active'); }, 280);
   }
-  return t;
-}
-function sectionMax(si) { return SECTIONS[si].questions.length * 5; }
-function totalScore() { let t = 0; for (let si = 0; si < SECTIONS.length; si++) t += sectionScore(si); return t; }
-
-// Worst section = highest pain score
-function worstSection() {
-  let worst = 0, worstScore = -1;
-  for (let si = 0; si < SECTIONS.length; si++) {
-    const s = sectionScore(si);
-    if (s > worstScore) { worstScore = s; worst = si; }
-  }
-  return worst;
+  setTimeout(function () {
+    next.classList.add('active');
+    window.scrollTo(0, 0);
+    requestAnimationFrame(function () { requestAnimationFrame(function () { next.classList.add('shown'); }); });
+    onEnter(name);
+  }, current ? 290 : 0);
 }
 
-function getBand(score) {
-  return BANDS.find(b => score >= b.min && score <= b.max) || BANDS[BANDS.length - 1];
+function onEnter(name) {
+  if (name === 'dashboard') initDashboard();
+  if (name === 'voice') startVoice();
+  if (name === 'email') resetEmail();
+  if (name === 'inmail') resetInmail();
+  if (name === 'scoring') runScoring();
 }
 
-function progressPct() {
-  const total = totalQuestions();
-  const answered = Object.keys(state.answers).length;
-  return Math.round((answered / total) * 100);
-}
-
-function render() {
-  const root = document.getElementById('app');
-  if (state.screen === 'intro') root.innerHTML = renderIntro();
-  else if (state.screen === 'questions') root.innerHTML = renderQuestions();
-  else if (state.screen === 'capture') root.innerHTML = renderCapture();
-  else if (state.screen === 'results') root.innerHTML = renderResults();
-  attachEvents();
-}
-
-function renderProgressBar(pct) {
-  return `<div class="progress-wrap">
-    <div class="progress-top">
-      <span class="progress-label">Progress</span>
-      <span class="progress-pct">${pct}% complete</span>
-    </div>
-    <div class="progress-track">
-      <div class="progress-fill" style="width:${pct}%"></div>
-    </div>
-  </div>`;
-}
-
-function renderIntro() {
-  return `
-    <p style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#aaa;margin-bottom:6px;">Sell Like an Introvert</p>
-    <h1 class="intro-title">The Authentic Seller Audit</h1>
-    <p class="intro-sub">Twenty-two questions. Six areas. One honest picture of where your natural selling style is costing you — and what to do about it.</p>
-    <p class="intro-note">Answer based on how things actually are, not how you'd like them to be. The more honest you are, the more useful your results.</p>
-    <div class="pill-row">
-      <span class="pill">22 questions</span>
-      <span class="pill">~4 minutes</span>
-      <span class="pill">Personalised result</span>
-    </div>
-    <button class="btn btn-primary" id="start-btn" style="width:100%;padding:14px;font-size:15px;">Start the audit</button>`;
-}
-
-function renderQuestions() {
-  const sec = currentSection();
-  const q = sec.questions[state.questionIdx];
-  const key = answerKey(state.sectionIdx, state.questionIdx);
-  const selected = state.answers[key];
-  const total = totalQuestions();
-  const done = globalQIdx();
-  const pct = progressPct();
-  const isFirst = state.sectionIdx === 0 && state.questionIdx === 0;
-  const isLast = state.sectionIdx === SECTIONS.length - 1 && state.questionIdx === sec.questions.length - 1;
-
-  return `
-    ${renderProgressBar(pct)}
-    <p class="section-eyebrow">${sec.name}</p>
-    <p class="section-heading serif">${sec.desc}</p>
-    <p class="question-text">${q}</p>
-    <div class="scale-row">
-      ${SCALE.map(s => `
-        <button class="scale-btn ${selected === s.val ? 'selected' : ''}" data-val="${s.val}" data-key="${key}">
-          ${s.word}
-        </button>`).join('')}
-    </div>
-    <div class="nav-row">
-      ${!isFirst ? `<button class="btn" id="prev-btn">← Back</button>` : `<div></div>`}
-      <span style="font-size:13px;color:#aaa;">${done + 1} of ${total}</span>
-      <button class="btn btn-primary" id="next-btn" ${!selected ? 'disabled' : ''}>${isLast ? 'See my results →' : 'Next →'}</button>
-    </div>`;
-}
-
-function renderCapture() {
-  return `
-    ${renderProgressBar(100)}
-    <p style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#aaa;margin-bottom:6px;">Almost there</p>
-    <h2 class="serif" style="font-size:26px;color:#1a1a1a;line-height:1.3;margin-bottom:1rem;">Where should we send your results?</h2>
-    <p style="font-size:15px;line-height:1.7;color:#666;margin-bottom:1.75rem;">Your personalised breakdown — including your dominant challenge area and specific next steps — will be sent to you directly. No spam. No sequences. Just your results.</p>
-    <div class="field-group">
-      <label class="field-label" for="cap-name">First name</label>
-      <input type="text" id="cap-name" placeholder="Stephen" value="${state.name}" ${state.submitting ? 'disabled' : ''} />
-      ${state.nameError ? `<p class="error-msg">${state.nameError}</p>` : ''}
-    </div>
-    <div class="field-group">
-      <label class="field-label" for="cap-email">Email address</label>
-      <input type="email" id="cap-email" placeholder="you@example.com" value="${state.email}" ${state.submitting ? 'disabled' : ''} />
-      ${state.emailError ? `<p class="error-msg">${state.emailError}</p>` : ''}
-    </div>
-    ${state.submitError ? `<p class="submit-error">${state.submitError}</p>` : ''}
-    <div class="nav-row">
-      <button class="btn" id="back-capture-btn" ${state.submitting ? 'disabled' : ''}>← Back</button>
-      <button class="btn btn-green" id="submit-btn" ${state.submitting ? 'disabled' : ''} style="padding:10px 28px;">${state.submitting ? 'Sending...' : 'Show my results →'}</button>
-    </div>`;
-}
-
-function renderResults() {
-  const score = totalScore();
-  const maxScore = totalQuestions() * 5;
-  const band = getBand(score);
-  const worst = worstSection();
-  const worstSec = SECTIONS[worst];
-  const insight = SECTION_INSIGHTS[worstSec.id];
-
-  const breakdownRows = SECTIONS.map((sec, si) => {
-    const s = sectionScore(si);
-    const max = sectionMax(si);
-    const pct = Math.round((s / max) * 100);
-    const isWorst = si === worst;
-    return `<div class="breakdown-row">
-      <span class="breakdown-label">${sec.name}</span>
-      ${isWorst ? `<span class="focus-tag">Focus area</span>` : ''}
-      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
-      <span class="breakdown-score">${s}/${max}</span>
-    </div>`;
-  }).join('');
-
-  return `
-    <p style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#aaa;margin-bottom:10px;">Your results</p>
-    <div class="result-band-pill">${band.name}</div>
-    <div class="score-row">
-      <span class="score-big">${score}</span>
-      <span class="score-denom">/ ${maxScore}</span>
-    </div>
-    <h2 class="result-headline">${band.headline}</h2>
-    <p class="result-body">${band.body}</p>
-
-    <p style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;margin-bottom:0.6rem;">Score by area</p>
-    <div class="breakdown-box">${breakdownRows}</div>
-
-    <div class="insight-box">
-      <p class="insight-eyebrow">Your primary focus area — ${worstSec.name}</p>
-      <p class="insight-text">${insight}</p>
-    </div>
-
-    <div class="divider"></div>
-
-    <p style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;margin-bottom:0.6rem;">The next step</p>
-    <p class="cta-note">${band.cta}</p>
-    <button class="btn btn-green" id="cta-btn" style="width:100%;padding:14px;font-size:15px;">Book a free 15-minute clarity call</button>
-    <p class="cta-sub">No pitch. No pressure. Just clarity on what to do next.</p>`;
-}
-
-async function submitToFormspree(name, email, score, band, worstSectionName) {
-  const payload = {
-    name, email,
-    total_score: score,
-    max_score: totalQuestions() * 5,
-    band: band.name,
-    focus_area: worstSectionName,
-    section_scores: SECTIONS.map((sec, si) => `${sec.name}: ${sectionScore(si)}/${sectionMax(si)}`).join(' | ')
-  };
-  const res = await fetch(FORMSPREE_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-    body: JSON.stringify(payload)
+/* ===================== Sidebar ===================== */
+function buildSidebar() {
+  var items = [
+    { label: 'Dashboard', active: true, icon: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>' },
+    { label: 'My Progress', icon: '<path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>' },
+    { label: 'AI Coach', locked: true, icon: '<circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3"/>' },
+    { label: 'Upgrade', upgrade: true, icon: '<path d="m12 2 2.4 7.4H22l-6 4.6 2.3 7.4-6.3-4.6L5.7 21.4 8 14 2 9.4h7.6z"/>' }
+  ];
+  var html = '<div class="logo"><span class="logo-mark">🏋️</span><span class="logo-grad">PitchGym</span></div>';
+  items.forEach(function (it) {
+    var click = it.label === 'Dashboard' ? "goTo('dashboard')" :
+                it.upgrade ? 'openUpgrade()' :
+                it.locked ? "toast('AI Coach is a premium feature 🔒')" :
+                "toast('" + it.label + " coming soon')";
+    html += '<button class="side-link ' + (it.active ? 'active' : '') + '" onclick="' + click + '">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + it.icon + '</svg>' +
+      '<span>' + it.label + '</span>' +
+      (it.locked ? '<span class="lock">🔒</span>' : '') + '</button>';
   });
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.errors ? data.errors.map(e => e.message).join(' ') : 'Submission failed. Please try again.');
-  }
-  return true;
+  html += '<div class="sidebar-spacer"></div>';
+  html += '<div class="side-upgrade"><h4>⚡ Go Premium</h4><p>Unlock the AI Coach and all 10 levels.</p>' +
+          '<button class="btn btn-primary btn-block" style="padding:10px;font-size:13px" onclick="openUpgrade()">Upgrade</button></div>';
+  document.getElementById('sidebar').innerHTML = html;
 }
 
-function attachEvents() {
-  const s = state.screen;
+/* ===================== Dashboard ===================== */
+function initDashboard() {
+  buildSidebar();
+  var d = new Date();
+  var opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('dash-date').textContent = d.toLocaleDateString('en-AU', opts);
+  buildLevels();
+}
 
-  if (s === 'intro') {
-    document.getElementById('start-btn').onclick = () => { state.screen = 'questions'; render(); };
+function buildLevels() {
+  var html = '';
+  levels.forEach(function (lv) {
+    var cls = 'level-card';
+    var badge, status, click = '';
+    if (lv.state === 'done') {
+      cls += ' done unlockable'; status = '✅';
+      badge = '<span class="lvl-badge badge-done">Completed</span>';
+      click = "toast('Level 1 already cleared — nice work!')";
+    } else if (lv.state === 'current') {
+      cls += ' current unlockable'; status = '🔓';
+      badge = '<span class="lvl-badge badge-current">Current · Tap to start</span>';
+      click = "goTo('detail')";
+    } else {
+      cls += ' locked'; status = '🔒';
+      badge = '<span class="lvl-badge badge-locked">Locked</span>';
+      click = "toast('Clear Level 2 with 90+ to unlock 🔒')";
+    }
+    html += '<div class="' + cls + '" onclick="' + click + '">' +
+      '<div class="lvl-status">' + status + '</div>' +
+      '<div class="lvl-num">Level ' + lv.n + '</div>' +
+      '<div class="lvl-title">' + lv.title + '</div>' +
+      '<div class="lvl-persona">' + lv.persona + '</div>' +
+      badge + '</div>';
+  });
+  document.getElementById('level-grid').innerHTML = html;
+}
+
+/* ===================== Countdown timer ===================== */
+var resetSecs = 18 * 3600 + 42 * 60 + 33;
+function tickReset() {
+  resetSecs = resetSecs > 0 ? resetSecs - 1 : 24 * 3600;
+  var h = Math.floor(resetSecs / 3600);
+  var m = Math.floor((resetSecs % 3600) / 60);
+  var s = resetSecs % 60;
+  var pad = function (x) { return (x < 10 ? '0' : '') + x; };
+  var el = document.getElementById('reset-timer');
+  if (el) el.textContent = pad(h) + ':' + pad(m) + ':' + pad(s);
+}
+setInterval(tickReset, 1000);
+
+/* ===================== Level detail ===================== */
+function selectMode(mode) {
+  selectedMode = mode;
+  document.querySelectorAll('#mode-tabs .mode-tab').forEach(function (t) {
+    t.classList.toggle('active', t.dataset.mode === mode);
+  });
+  document.getElementById('mode-desc').textContent = modeDesc[mode];
+}
+
+function startSession() {
+  if (selectedMode === 'voice') goTo('voice');
+  else if (selectedMode === 'email') goTo('email');
+  else goTo('inmail');
+}
+
+/* ===================== Voice session ===================== */
+var voiceTimerInt = null, voiceSecs = 0, micRecording = false;
+var voiceScript = [
+  { who: 'them', text: 'TechFlow, Sandra speaking, how can I help?' },
+  { who: 'you' },
+  { who: 'them', text: "I'm sorry, who are you with?" },
+  { who: 'you' },
+  { who: 'them', text: "I'm afraid he's in meetings all day. Can I take a message?" },
+  { who: 'you' },
+  { who: 'them', text: 'Hmm… let me see if he has a moment. Can I ask what it’s regarding?' },
+  { who: 'you' },
+  { who: 'them', text: 'One moment please.' },
+  { who: 'system', text: '📞 CALL TRANSFERRED — success! You earned the handoff.' }
+];
+var voiceStep = 0;
+var youPlaceholders = [
+  "Hi Sandra! Honestly hoping you can help me — I'm trying to reach Marcus, is this the right line?",
+  "I'm Alex with FlowMetrics — we help ops teams cut manual reporting time.",
+  "Totally get it. Quick one — could you let him know we saved a similar Aussie team 9 hours a week? Worth 10 minutes?",
+  "We help his ops team automate the weekly reporting that's eating Thursdays. That's the whole reason for the call."
+];
+
+function startVoice() {
+  voiceSecs = 0; voiceStep = 0; micRecording = false;
+  document.getElementById('transcript').innerHTML = '';
+  document.getElementById('voice-dock').style.display = 'none';
+  document.getElementById('voice-end-bar').style.display = 'none';
+  document.getElementById('voice-input').value = '';
+  document.getElementById('mic-btn').classList.remove('recording');
+  document.getElementById('voice-timer').textContent = '00:00';
+  var ring = document.getElementById('ring-anim');
+  var csText = document.getElementById('cs-text');
+  var csWrap = document.getElementById('call-state');
+  ring.className = 'ring-anim ringing';
+  csWrap.className = 'call-state';
+  csText.textContent = 'Dialing TechFlow…';
+
+  if (voiceTimerInt) clearInterval(voiceTimerInt);
+
+  setTimeout(function () { csText.textContent = 'Ringing…'; }, 700);
+  setTimeout(function () {
+    if (document.getElementById('screen-voice').classList.contains('active') === false) return;
+    ring.className = 'ring-anim connected';
+    csWrap.className = 'call-state connected';
+    csText.textContent = '🟢 Connected';
+    voiceTimerInt = setInterval(function () {
+      voiceSecs++;
+      var m = Math.floor(voiceSecs / 60), s = voiceSecs % 60;
+      document.getElementById('voice-timer').textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    }, 1000);
+    advanceVoice();
+  }, 1900);
+}
+
+function advanceVoice() {
+  if (voiceStep >= voiceScript.length) {
+    document.getElementById('voice-dock').style.display = 'none';
+    document.getElementById('voice-end-bar').style.display = 'flex';
+    return;
   }
+  var step = voiceScript[voiceStep];
+  if (step.who === 'them' || step.who === 'system') {
+    if (step.who === 'them') {
+      showTyping(function () {
+        addBubble('them', step.text, 'Sandra');
+        voiceStep++;
+        handleVoiceNext();
+      });
+    } else {
+      addBubble('system', step.text, '');
+      voiceStep++;
+      handleVoiceNext();
+    }
+  } else {
+    document.getElementById('voice-dock').style.display = 'flex';
+  }
+}
 
-  if (s === 'questions') {
-    document.querySelectorAll('.scale-btn').forEach(btn => {
-      btn.onclick = () => { state.answers[btn.dataset.key] = parseInt(btn.dataset.val); render(); };
+function handleVoiceNext() {
+  var nxt = voiceScript[voiceStep];
+  if (nxt && nxt.who === 'you') {
+    document.getElementById('voice-dock').style.display = 'flex';
+    var inp = document.getElementById('voice-input');
+    var idx = Math.min(Math.floor((voiceStep - 1) / 2), youPlaceholders.length - 1);
+    inp.placeholder = youPlaceholders[idx] || 'Type your line…';
+  } else {
+    setTimeout(advanceVoice, 800);
+  }
+}
+
+function showTyping(done) {
+  var t = document.getElementById('transcript');
+  var el = document.createElement('div');
+  el.className = 'bubble them';
+  el.innerHTML = '<div class="who">Sandra</div><div class="typing"><span></span><span></span><span></span></div>';
+  t.appendChild(el);
+  scrollVoice();
+  setTimeout(function () { el.remove(); done(); }, 850);
+}
+
+function addBubble(who, text, name) {
+  var t = document.getElementById('transcript');
+  var el = document.createElement('div');
+  el.className = 'bubble ' + who;
+  if (who === 'system') el.textContent = text;
+  else el.innerHTML = (name ? '<div class="who">' + name + '</div>' : '') + '<div>' + escapeHtml(text) + '</div>';
+  t.appendChild(el);
+  scrollVoice();
+}
+
+function scrollVoice() {
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+
+function sendVoiceLine() {
+  if (!document.getElementById('screen-voice').classList.contains('active')) return;
+  var nxt = voiceScript[voiceStep];
+  if (!nxt || nxt.who !== 'you') return;
+  var inp = document.getElementById('voice-input');
+  var text = inp.value.trim() || inp.placeholder;
+  if (!text) return;
+  if (micRecording) toggleMic();
+  addBubble('you', text, 'You');
+  inp.value = '';
+  document.getElementById('voice-dock').style.display = 'none';
+  voiceStep++;
+  setTimeout(advanceVoice, 600);
+}
+
+function toggleMic() {
+  micRecording = !micRecording;
+  var btn = document.getElementById('mic-btn');
+  btn.classList.toggle('recording', micRecording);
+  if (micRecording) {
+    toast('🔴 Recording… (demo)');
+    var inp = document.getElementById('voice-input');
+    setTimeout(function () { if (micRecording) inp.value = inp.placeholder; }, 1200);
+  }
+}
+
+/* ===================== Email session ===================== */
+function resetEmail() {
+  document.getElementById('email-msgs').innerHTML = '';
+  document.getElementById('email-empty').style.display = 'block';
+  document.getElementById('email-finish').style.display = 'none';
+  document.getElementById('email-send').disabled = false;
+  document.getElementById('email-send').textContent = 'Send email';
+}
+
+function sendEmail() {
+  var body = document.getElementById('email-body').value.trim();
+  if (!body) { toast('Write your email first'); return; }
+  document.getElementById('email-empty').style.display = 'none';
+  var msgs = document.getElementById('email-msgs');
+  msgs.innerHTML += '<div class="resp-msg mine"><div class="rm-who">You → Sandra</div>' + escapeHtml(body).replace(/\n/g, '<br>') + '</div>';
+  var btn = document.getElementById('email-send');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  var sp = document.createElement('div'); sp.className = 'spinner'; sp.id = 'email-spin';
+  msgs.appendChild(sp);
+  setTimeout(function () {
+    var spin = document.getElementById('email-spin'); if (spin) spin.remove();
+    msgs.innerHTML += '<div class="resp-msg"><div class="rm-who">Sandra · Office Manager</div>Thanks for reaching out. Marcus is very busy — could you share more about what this is regarding before I forward this on?</div>';
+    btn.disabled = false; btn.textContent = 'Send reply';
+    document.getElementById('email-finish').style.display = 'flex';
+    document.getElementById('email-body').value = '';
+    document.getElementById('email-body').placeholder = 'Reply to Sandra — give her the one-line reason to forward it…';
+  }, 1400);
+}
+
+/* ===================== InMail session ===================== */
+function resetInmail() {
+  document.getElementById('inmail-msgs').innerHTML = '';
+  document.getElementById('inmail-finish').style.display = 'none';
+  document.getElementById('inmail-send').disabled = false;
+  document.getElementById('inmail-send').textContent = 'Send InMail';
+}
+
+function sendInmail() {
+  var body = document.getElementById('inmail-body').value.trim();
+  if (!body) { toast('Write your InMail first'); return; }
+  var msgs = document.getElementById('inmail-msgs');
+  msgs.innerHTML += '<div class="resp-msg mine"><div class="rm-who">You → Marcus Chen</div>' + escapeHtml(body).replace(/\n/g, '<br>') + '</div>';
+  var btn = document.getElementById('inmail-send');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  var sp = document.createElement('div'); sp.className = 'spinner'; sp.id = 'inmail-spin';
+  msgs.appendChild(sp);
+  setTimeout(function () {
+    var spin = document.getElementById('inmail-spin'); if (spin) spin.remove();
+    msgs.innerHTML += '<div class="resp-msg"><div class="rm-who">Marcus Chen · Head of Operations</div>Hi, interesting. What kind of results are you getting for similar businesses? Happy to grab 15 min Thursday.</div>';
+    btn.disabled = false; btn.textContent = 'Send reply';
+    document.getElementById('inmail-finish').style.display = 'flex';
+    document.getElementById('inmail-body').value = '';
+    document.getElementById('inmail-body').placeholder = 'Reply to Marcus — lock in that Thursday slot…';
+  }, 1400);
+}
+
+/* ===================== Scoring ===================== */
+function runScoring() {
+  var html = '';
+  rubric.forEach(function (r, i) {
+    html += '<div class="rubric-row">' +
+      '<div class="rname">' + r.name + '</div>' +
+      '<div class="rubric-bar"><i data-i="' + i + '"></i></div>' +
+      '<div class="rscore"><span class="rs-v" data-i="' + i + '">0</span>/' + r.max + '</div>' +
+      '</div>';
+  });
+  document.getElementById('rubric').innerHTML = html;
+
+  var ring = document.getElementById('ring-fg');
+  ring.style.transition = 'none';
+  ring.style.strokeDashoffset = '540.4';
+  document.getElementById('score-num').textContent = '0';
+
+  var target = 87;
+  setTimeout(function () {
+    ring.style.transition = 'stroke-dashoffset 1.5s cubic-bezier(.22,1,.36,1)';
+    ring.style.strokeDashoffset = (540.4 * (1 - target / 100)).toFixed(1);
+    countUp(document.getElementById('score-num'), 0, target, 1500);
+    rubric.forEach(function (r, i) {
+      var bar = document.querySelector('.rubric-bar i[data-i="' + i + '"]');
+      var v = document.querySelector('.rs-v[data-i="' + i + '"]');
+      setTimeout(function () {
+        if (bar) bar.style.width = (r.score / r.max * 100) + '%';
+        if (v) countUp(v, 0, r.score, 900);
+      }, 200 + i * 120);
     });
-    const nextBtn = document.getElementById('next-btn');
-    if (nextBtn) nextBtn.onclick = () => {
-      const sec = currentSection();
-      const isLastQ = state.questionIdx === sec.questions.length - 1;
-      const isLastSec = state.sectionIdx === SECTIONS.length - 1;
-      if (isLastQ && isLastSec) { state.screen = 'capture'; }
-      else if (isLastQ) { state.sectionIdx++; state.questionIdx = 0; }
-      else { state.questionIdx++; }
-      render();
-    };
-    const prevBtn = document.getElementById('prev-btn');
-    if (prevBtn) prevBtn.onclick = () => {
-      if (state.questionIdx > 0) { state.questionIdx--; }
-      else if (state.sectionIdx > 0) { state.sectionIdx--; state.questionIdx = SECTIONS[state.sectionIdx].questions.length - 1; }
-      render();
-    };
-  }
-
-  if (s === 'capture') {
-    document.getElementById('cap-name').oninput = e => { state.name = e.target.value; state.nameError = ''; };
-    document.getElementById('cap-email').oninput = e => { state.email = e.target.value; state.emailError = ''; };
-    document.getElementById('back-capture-btn').onclick = () => {
-      state.screen = 'questions';
-      state.sectionIdx = SECTIONS.length - 1;
-      state.questionIdx = SECTIONS[SECTIONS.length - 1].questions.length - 1;
-      render();
-    };
-    document.getElementById('submit-btn').onclick = async () => {
-      let valid = true;
-      if (!state.name.trim()) { state.nameError = 'Please enter your first name.'; valid = false; }
-      if (!state.email.trim() || !state.email.includes('@')) { state.emailError = 'Please enter a valid email address.'; valid = false; }
-      if (!valid) { render(); return; }
-      state.submitting = true;
-      state.submitError = '';
-      render();
-      const score = totalScore();
-      const band = getBand(score);
-      const worst = worstSection();
-      const worstName = SECTIONS[worst].name;
-      try {
-        await submitToFormspree(state.name, state.email, score, band, worstName);
-        state.submitting = false;
-        state.screen = 'results';
-        render();
-      } catch (err) {
-        state.submitting = false;
-        state.submitError = err.message || 'Something went wrong. Please try again.';
-        render();
-      }
-    };
-  }
-
-  if (s === 'results') {
-    document.getElementById('cta-btn').onclick = () => {
-      window.open('https://calendly.com/stephen-sell-like-an-introvert/new-meeting', '_blank');
-    };
-  }
+  }, 300);
 }
 
-render();
+function countUp(el, from, to, dur) {
+  var start = null;
+  function frame(ts) {
+    if (!start) start = ts;
+    var p = Math.min((ts - start) / dur, 1);
+    var eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(from + (to - from) * eased);
+    if (p < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+function tryAgain() {
+  toast('🔄 Re-running Level 2…');
+  setTimeout(function () { goTo('detail'); }, 700);
+}
+
+/* ===================== Upgrade modal ===================== */
+function openUpgrade() {
+  var m = document.getElementById('upgrade-modal');
+  m.classList.add('open');
+  requestAnimationFrame(function () { requestAnimationFrame(function () { m.classList.add('shown'); }); });
+}
+function closeUpgrade() {
+  var m = document.getElementById('upgrade-modal');
+  m.classList.remove('shown');
+  setTimeout(function () { m.classList.remove('open'); }, 300);
+}
+document.getElementById('upgrade-modal').addEventListener('click', function (e) {
+  if (e.target === this) closeUpgrade();
+});
+function stripe() {
+  toast('✓ Stripe integration ready');
+  setTimeout(closeUpgrade, 900);
+}
+
+/* ===================== Toast + utils ===================== */
+var toastTimer = null;
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.innerHTML = msg;
+  t.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2400);
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"]/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+  });
+}
+
+/* ===================== Init ===================== */
+buildSidebar();
 </script>
 </body>
 </html>
