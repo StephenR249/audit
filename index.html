@@ -211,6 +211,7 @@ h1.hero-title { font-size: 56px; font-weight: 800; line-height: 1.05; letter-spa
 }
 .mini-tag.pro { background: rgba(255,215,0,0.12); color: var(--gold); }
 .section-pill { font-size: 10px; color: var(--text-muted); padding: 3px 7px; border-radius: 6px; background: var(--surface-raised); }
+.level-grade { font-size: 12px; font-weight: 800; margin-left: auto; }
 .level-state { position: absolute; top: 14px; right: 14px; font-size: 13px; }
 .wall-banner {
   grid-column: 1 / -1; padding: 14px 20px; border-radius: 12px; margin: 4px 0;
@@ -1041,7 +1042,6 @@ details.scoring[open] summary::before { content: '▾ '; }
         <div class="onb-q">Preferences</div>
         <div class="toggle-row"><span class="tl">Sound effects</span><div class="switch on" id="sw-sound" onclick="toggleSwitch('sw-sound')"></div></div>
         <div class="toggle-row"><span class="tl">Coach proactively offers hints when I'm stuck</span><div class="switch on" id="sw-proactive" onclick="toggleSwitch('sw-proactive')"></div></div>
-        <div class="toggle-row"><span class="tl">Reduced motion</span><div class="switch" id="sw-motion" onclick="toggleSwitch('sw-motion')"></div></div>
       </div>
       <button class="btn btn-primary btn-lg" onclick="finishOnboarding()">Finish setup →</button>
     </div>
@@ -1796,7 +1796,8 @@ var weakStreak = 0;              // consecutive weak/neutral on current objectio
 var proactiveFired = {};         // objIndex -> bool
 
 // --- User profile (persisted) ---
-var userProfile = { name:'', nickname:'', accent:'#7c6af7', prefs:{ sound:true, proactive:true, motion:false } };
+var userProfile = { name:'', nickname:'', accent:'#7c6af7', prefs:{ sound:true, proactive:true } };
+var completedLevels = {}; // { levelId: tier } e.g. { 1: 'A', 2: 'B' }
 var selectedPlanKey = 'popular';
 
 var PLANS = {
@@ -1825,6 +1826,7 @@ function saveProfile() {
   try {
     localStorage.setItem('pitchgym_profile', JSON.stringify(userProfile));
     localStorage.setItem('pitchgym_pro', isPro ? '1' : '0');
+    localStorage.setItem('pitchgym_completed', JSON.stringify(completedLevels));
   } catch (e) {}
 }
 function loadProfile() {
@@ -1839,11 +1841,12 @@ function loadProfile() {
         if (p.prefs) {
           userProfile.prefs.sound = p.prefs.sound !== false;
           userProfile.prefs.proactive = p.prefs.proactive !== false;
-          userProfile.prefs.motion = !!p.prefs.motion;
         }
       }
     }
     if (localStorage.getItem('pitchgym_pro') === '1') isPro = true;
+    var rawC = localStorage.getItem('pitchgym_completed');
+    if (rawC) { var c = JSON.parse(rawC); if (c && typeof c === 'object') completedLevels = c; }
   } catch (e) {}
 }
 function applyAccent(color) {
@@ -1917,6 +1920,16 @@ function renderLevelMap() {
     var tagHtml = (lv.pro && isPro)
       ? '<span class="mini-tag pro">PRO</span>'
       : '<span class="mini-tag">' + lv.tag + '</span>';
+    var achievedTier = completedLevels[lv.id];
+    if (achievedTier) {
+      var accentColor = userProfile.accent || '#7c6af7';
+      card.style.borderColor = accentColor;
+      card.style.boxShadow = '0 0 0 2px ' + accentColor + ', 0 4px 24px ' + accentColor + '33';
+    }
+    var tierColors = { A:'#00d68f', B:'#ffd000', C:'#ff6b35', F:'#ff4444' };
+    var gradeHtml = achievedTier
+      ? '<span class="level-grade" style="color:' + (tierColors[achievedTier] || '#fff') + '">' + achievedTier + '</span>'
+      : '';
     card.innerHTML =
       '<div class="level-state">' + stateIcon + '</div>' +
       '<div class="level-num">LEVEL ' + lv.id + '</div>' +
@@ -1924,6 +1937,7 @@ function renderLevelMap() {
       '<div class="level-meta' + blurClass + '">' +
         tagHtml +
         '<span class="section-pill">' + lv.sections + ' objection' + (lv.sections > 1 ? 's' : '') + '</span>' +
+        gradeHtml +
       '</div>';
     (function(lvl) {
       if (!isPro && lvl.state === 'locked') { card.onclick = function() {}; }
@@ -2646,34 +2660,38 @@ function finishSession() {
   if (isPro) { coachCard.classList.remove('coach-locked'); coachLock.style.display = 'none'; }
   else { coachCard.classList.add('coach-locked'); coachLock.style.display = 'flex'; }
 
+  // Track completion with grade
+  if (data.pass) {
+    completedLevels[currentLevel] = data.tier;
+    saveProfile();
+  }
+
   var btns = document.getElementById('score-btns');
   var dailyNote = document.getElementById('daily-note');
   btns.innerHTML = '';
+  var tryAgainBtn = document.createElement('button');
+  tryAgainBtn.className = 'btn btn-ghost'; tryAgainBtn.textContent = 'Try again →';
+  tryAgainBtn.onclick = (function(l) { return function() { showLevelBrief(l); }; })(currentLevel);
+  var seeABtn = document.createElement('button');
+  seeABtn.className = 'btn btn-ghost'; seeABtn.textContent = 'See what A looks like';
+  seeABtn.onclick = showATierExample;
   if (data.pass) {
     if (!isPro) {
       dailyNote.style.display = 'flex';
-      var again = document.createElement('button');
-      again.className = 'btn btn-ghost'; again.textContent = 'Replay this level';
-      again.onclick = (function(l) { return function() { showLevelBrief(l); }; })(currentLevel);
       var nxt = document.createElement('button');
       nxt.className = 'btn btn-primary'; nxt.textContent = 'Next level →'; nxt.disabled = true;
-      btns.appendChild(again); btns.appendChild(nxt);
+      btns.appendChild(nxt); btns.appendChild(tryAgainBtn); btns.appendChild(seeABtn);
     } else {
       dailyNote.style.display = 'none';
       var nxt2 = document.createElement('button');
       nxt2.className = 'btn btn-primary'; nxt2.textContent = 'Next level →';
       nxt2.onclick = (function(l) { return function() { showLevelBrief(Math.min(l + 1, 25)); }; })(currentLevel);
-      btns.appendChild(nxt2);
+      btns.appendChild(nxt2); btns.appendChild(tryAgainBtn); btns.appendChild(seeABtn);
     }
   } else {
     dailyNote.style.display = 'none';
-    var tryAgain = document.createElement('button');
-    tryAgain.className = 'btn btn-primary'; tryAgain.textContent = 'Try again →';
-    tryAgain.onclick = (function(l) { return function() { showLevelBrief(l); }; })(currentLevel);
-    var seeA = document.createElement('button');
-    seeA.className = 'btn btn-ghost'; seeA.textContent = 'See what A looks like';
-    seeA.onclick = showATierExample;
-    btns.appendChild(tryAgain); btns.appendChild(seeA);
+    tryAgainBtn.className = 'btn btn-primary';
+    btns.appendChild(tryAgainBtn); btns.appendChild(seeABtn);
   }
 
   showScreen('screen-score');
@@ -2971,7 +2989,6 @@ function finishOnboarding() {
   userProfile.nickname = document.getElementById('onb-nick').value.trim() || userProfile.name.split(' ')[0] || 'champ';
   userProfile.prefs.sound = document.getElementById('sw-sound').classList.contains('on');
   userProfile.prefs.proactive = document.getElementById('sw-proactive').classList.contains('on');
-  userProfile.prefs.motion = document.getElementById('sw-motion').classList.contains('on');
   applyAccent(userProfile.accent);
   saveProfile();
   flashToast("You're all set, " + userProfile.nickname + " 💪");
@@ -3250,7 +3267,6 @@ window.addEventListener('DOMContentLoaded', function() {
   // Reflect saved prefs in the onboarding toggles.
   document.getElementById('sw-sound').classList.toggle('on', userProfile.prefs.sound);
   document.getElementById('sw-proactive').classList.toggle('on', userProfile.prefs.proactive);
-  document.getElementById('sw-motion').classList.toggle('on', userProfile.prefs.motion);
   if (userProfile.name) document.getElementById('onb-name').value = userProfile.name;
   if (userProfile.nickname) document.getElementById('onb-nick').value = userProfile.nickname;
   initCanvas();
