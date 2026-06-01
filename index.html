@@ -305,7 +305,7 @@ details.scoring[open] summary::before { content: '▾ '; }
 .scoring-rows { padding: 0 16px 14px; display: flex; flex-direction: column; gap: 8px; }
 .scoring-row { display: flex; gap: 12px; font-size: 13px; }
 .scoring-row .tier { font-weight: 800; width: 18px; }
-.tier-a { color: var(--gold); } .tier-b { color: var(--primary); } .tier-c { color: var(--orange); } .tier-f { color: var(--danger); }
+.tier-a { color: var(--success); } .tier-b { color: #ffd000; } .tier-c { color: var(--orange); } .tier-f { color: var(--danger); }
 .scoring-row .desc { color: var(--text-muted); }
 .mode-row { display: flex; flex-direction: column; gap: 8px; }
 .mode-q { font-size: 14px; font-weight: 600; }
@@ -1457,28 +1457,28 @@ function endSession() {
 
 var SCORE_DATA = {
   fail: {
-    tier: 'F', score: 38, color: 'var(--danger)',
+    tier: 'F', score: 38, color: '#ff4444',
     heading: "You dropped the price.",
     body: "The moment you said yes to a discount, the deal lost value. Not just the margin — Mike's perception of the product. Let's go again.",
     rubric: [["Discovery Questions","0/20",false],["Value Demonstration","8/25",false],["Price Handling","0/25",false],["Rapport","12/15",true],["Close","0/15",false]],
     pass: false
   },
   discovery: {
-    tier: 'A', score: 92, color: 'var(--gold)',
+    tier: 'A', score: 92, color: '#00d68f',
     heading: "You held the line.",
     body: "You found out what Mike actually cared about, then connected your product to it. That's the move.",
     rubric: [["Discovery Questions","18/20",true],["Value Demonstration","23/25",true],["Price Handling","24/25",true],["Rapport","14/15",true],["Close","13/15",true]],
     pass: true
   },
   value: {
-    tier: 'B', score: 78, color: 'var(--primary)',
+    tier: 'B', score: 78, color: '#ffd000',
     heading: "Solid. But Mike had more to give.",
     body: "You held the price and made a good case. Next level: ask what Mike's customers actually want. That answer sells itself.",
     rubric: [["Discovery Questions","9/20",false],["Value Demonstration","21/25",true],["Price Handling","22/25",true],["Rapport","13/15",true],["Close","13/15",true]],
     pass: true
   },
   neutral: {
-    tier: 'C', score: 64, color: 'var(--orange)',
+    tier: 'C', score: 64, color: '#ff6b35',
     heading: "You survived. Barely.",
     body: "You didn't drop the price, but 'it's worth it' isn't a reason. Mike needed specifics.",
     rubric: [["Discovery Questions","6/20",false],["Value Demonstration","14/25",false],["Price Handling","20/25",true],["Rapport","12/15",true],["Close","12/15",true]],
