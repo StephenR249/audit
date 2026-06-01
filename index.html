@@ -544,6 +544,100 @@ details.scoring[open] summary::before { content: '▾ '; }
   .stat-pills .dot { margin: 0 10px; }
   .slack-popup { right: 12px; left: 12px; width: auto; bottom: 12px; }
 }
+
+/* ---------- PRO badge ---------- */
+.pro-badge {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 800; letter-spacing: 1px;
+  padding: 5px 11px; border-radius: 100px; background: linear-gradient(100deg, var(--gold), #ffb800);
+  color: #1a1500; box-shadow: 0 0 14px rgba(255,215,0,0.35);
+}
+.pro-badge::before { content: '★'; font-size: 10px; }
+
+/* ---------- Payment screen ---------- */
+.pay-screen-wrap { width: 100%; max-width: 920px; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+.pay-summary {
+  border-radius: 22px; padding: 30px; background: var(--surface); border: 1px solid var(--border-bright);
+  display: flex; flex-direction: column; gap: 18px; position: sticky; top: 24px;
+}
+.pay-summary h3 { font-size: 13px; font-weight: 700; letter-spacing: 1.5px; color: var(--text-muted); }
+.pay-plan-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.pay-plan-name { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+.pay-plan-price { font-size: 30px; font-weight: 900; letter-spacing: -1px; }
+.pay-summary ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.pay-summary li { font-size: 14px; color: var(--text-muted); display: flex; gap: 9px; line-height: 1.4; }
+.pay-summary li::before { content: '✓'; color: var(--success); font-weight: 700; }
+.pay-total { display: flex; align-items: center; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--border); font-size: 16px; font-weight: 700; }
+.pay-total .amt { font-size: 22px; font-weight: 900; }
+.pay-form {
+  border-radius: 22px; padding: 30px; background: var(--surface); border: 1px solid var(--border-bright);
+  display: flex; flex-direction: column; gap: 16px;
+}
+.pay-form h3 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+.field-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block; }
+.field { display: flex; flex-direction: column; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.card-input-wrap { position: relative; }
+.card-brand { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; opacity: 0.7; }
+.trust-line { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.trust-line .lock { font-size: 13px; }
+.stripe-word { color: var(--text); font-weight: 600; }
+.pay-now-btn { margin-top: 6px; width: 100%; }
+.pay-processing { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 40px 0; text-align: center; }
+
+/* ---------- Thank you ---------- */
+.thankyou-wrap { max-width: 520px; margin: 0 auto; padding: 56px 24px; display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center; }
+.check-circle { width: 110px; height: 110px; }
+.check-circle circle { fill: none; stroke: var(--success); stroke-width: 5; stroke-dasharray: 320; stroke-dashoffset: 320; animation: drawCircle 0.7s ease forwards; }
+.check-circle path { fill: none; stroke: var(--success); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 80; stroke-dashoffset: 80; animation: drawCheck 0.45s 0.55s ease forwards; }
+@keyframes drawCircle { to { stroke-dashoffset: 0; } }
+@keyframes drawCheck { to { stroke-dashoffset: 0; } }
+.thankyou-wrap h2 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; }
+.thankyou-wrap .ty-sub { font-size: 16px; color: var(--text-muted); }
+.receipt { width: 100%; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; text-align: left; }
+.receipt-row { display: flex; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 14px; }
+.receipt-row:last-child { border-bottom: none; }
+.receipt-row .rl { color: var(--text-muted); }
+.receipt-row .rr { font-weight: 700; }
+
+/* ---------- Onboarding ---------- */
+.onb-wrap { width: 100%; max-width: 560px; display: flex; flex-direction: column; gap: 26px; }
+.onb-header h2 { font-size: 34px; font-weight: 800; letter-spacing: -1px; }
+.onb-header p { color: var(--text-muted); margin-top: 8px; font-size: 16px; }
+.onb-step { display: flex; flex-direction: column; gap: 10px; }
+.onb-step .onb-q { font-size: 17px; font-weight: 700; }
+.onb-step .onb-hint { font-size: 13px; color: var(--text-muted); }
+.swatch-row { display: flex; flex-wrap: wrap; gap: 14px; }
+.swatch {
+  width: 46px; height: 46px; border-radius: 50%; cursor: pointer; position: relative;
+  border: 2px solid transparent; transition: all 0.2s ease;
+}
+.swatch:hover { transform: scale(1.08); }
+.swatch.selected { border-color: var(--text); box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px currentColor; }
+.swatch.selected::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 18px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-radius: 14px; background: var(--surface-raised); border: 1px solid var(--border); }
+.toggle-row .tl { font-size: 15px; font-weight: 600; }
+.switch { width: 46px; height: 26px; border-radius: 100px; background: var(--surface-active); position: relative; cursor: pointer; transition: background 0.25s ease; flex-shrink: 0; }
+.switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: transform 0.25s ease; }
+.switch.on { background: var(--primary); }
+.switch.on::after { transform: translateX(20px); }
+
+/* ---------- Coach feedback (upgraded) ---------- */
+.focus-area { display: flex; flex-direction: column; gap: 6px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.focus-area:last-child { border-bottom: none; }
+.focus-tag { align-self: flex-start; font-size: 10px; font-weight: 800; letter-spacing: 1px; padding: 4px 9px; border-radius: 6px; }
+.focus-tag.fix { background: var(--danger-subtle); color: var(--danger); }
+.focus-tag.keep { background: var(--success-subtle); color: var(--success); }
+.focus-tag.levelup { background: var(--primary-glow); color: #c3b9ff; }
+.focus-head { font-size: 15px; font-weight: 700; color: var(--text); }
+.focus-note { font-size: 13.5px; line-height: 1.55; color: var(--text-muted); }
+.focus-note b { color: var(--text); font-weight: 600; }
+.focus-note .ex { color: #b6acff; font-style: italic; }
+
+@media (max-width: 760px) {
+  .pay-screen-wrap { grid-template-columns: 1fr; }
+  .pay-summary { position: static; }
+  .onb-header h2 { font-size: 28px; }
+}
 </style>
 </head>
 <body>
@@ -607,9 +701,11 @@ details.scoring[open] summary::before { content: '▾ '; }
     <button class="back-arrow" onclick="showScreen('screen-choose-path')">←</button>
     <div class="topbar-title">New Role Play</div>
     <div class="topbar-spacer"></div>
-    <div class="topbar-meta">Level 1 of 25</div>
+    <span class="pro-badge" id="nav-pro-badge" style="display:none;margin-right:12px;">PRO</span>
+    <div class="topbar-meta" id="level-map-meta">Level 1 of 25</div>
   </div>
   <div class="container">
+    <div id="level-greeting" style="font-size:15px;color:var(--text-muted);margin-bottom:16px;display:none;"></div>
     <div class="level-grid" id="level-grid"></div>
   </div>
 </section>
@@ -726,12 +822,7 @@ details.scoring[open] summary::before { content: '▾ '; }
       </div>
       <details class="scoring">
         <summary>How am I scored?</summary>
-        <div class="scoring-rows">
-          <div class="scoring-row"><span class="tier tier-a">A</span><span class="desc">Held price + discovered Mike's needs + tied value to them</span></div>
-          <div class="scoring-row"><span class="tier tier-b">B</span><span class="desc">Held price + demonstrated value with specifics</span></div>
-          <div class="scoring-row"><span class="tier tier-c">C</span><span class="desc">Held price but response was vague</span></div>
-          <div class="scoring-row"><span class="tier tier-f">F</span><span class="desc">Offered a discount</span></div>
-        </div>
+        <div class="scoring-rows" id="brief-scoring-rows"></div>
       </details>
       <div class="mode-row">
         <div class="mode-q">How do you want to run this?</div>
@@ -764,10 +855,10 @@ details.scoring[open] summary::before { content: '▾ '; }
   <!-- TEXT MODE -->
   <div id="text-mode" class="chat-window">
     <div class="prospect-strip">
-      <div class="avatar" style="background:var(--orange);">M</div>
+      <div class="avatar" id="rp-avatar" style="background:var(--orange);">M</div>
       <div>
-        <div class="prospect-name">Mike Donnelly</div>
-        <div class="prospect-role">Owner · Mike's Local, Surry Hills</div>
+        <div class="prospect-name" id="rp-prospect-name">Mike Donnelly</div>
+        <div class="prospect-role" id="rp-prospect-role">Owner · Mike's Local, Surry Hills</div>
       </div>
       <div class="typing-mini" id="typing-mini" style="margin-left:auto;">typing…</div>
     </div>
@@ -781,10 +872,10 @@ details.scoring[open] summary::before { content: '▾ '; }
 
   <!-- VOICE MODE -->
   <div id="voice-mode" class="voice-stage" style="display:none;">
-    <div class="avatar avatar-lg" style="background:var(--orange);">M</div>
+    <div class="avatar avatar-lg" id="vp-avatar" style="background:var(--orange);">M</div>
     <div>
-      <div class="prospect-name" style="font-size:20px;">Mike Donnelly</div>
-      <div class="prospect-role">Owner · Mike's Local</div>
+      <div class="prospect-name" id="vp-prospect-name" style="font-size:20px;">Mike Donnelly</div>
+      <div class="prospect-role" id="vp-prospect-role">Owner · Mike's Local</div>
     </div>
     <div class="topbar-meta" id="voice-timer">00:00</div>
     <div class="voice-status" id="voice-status">Connecting…</div>
@@ -842,6 +933,114 @@ details.scoring[open] summary::before { content: '▾ '; }
   </div>
 </section>
 
+<!-- ============ SCREEN 7: PAYMENT ============ -->
+<section id="screen-payment" class="screen">
+  <div class="topbar">
+    <button class="back-arrow" onclick="closePaymentBack()">←</button>
+    <div class="topbar-title">Checkout</div>
+  </div>
+  <div class="center-screen" style="min-height:calc(100vh - 70px);align-items:flex-start;">
+    <div class="pay-screen-wrap">
+      <div class="pay-summary">
+        <h3>ORDER SUMMARY</h3>
+        <div class="pay-plan-row">
+          <span class="pay-plan-name" id="pay-plan-name">Popular</span>
+          <span class="pay-plan-price" id="pay-plan-price">$20</span>
+        </div>
+        <ul id="pay-plan-feats"></ul>
+        <div class="pay-total"><span>Total due today</span><span class="amt" id="pay-total-amt">$20</span></div>
+      </div>
+      <div class="pay-form" id="pay-form-card">
+        <h3>Payment details</h3>
+        <div class="field">
+          <label class="field-label">Card number</label>
+          <div class="card-input-wrap">
+            <input class="text-input" id="pf-card" placeholder="4242 4242 4242 4242" inputmode="numeric" autocomplete="cc-number" maxlength="19" oninput="formatCardNumber(this)" />
+            <span class="card-brand" id="pf-brand">💳</span>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label">Expiry</label>
+            <input class="text-input" id="pf-exp" placeholder="MM/YY" inputmode="numeric" autocomplete="cc-exp" maxlength="5" oninput="formatExpiry(this)" />
+          </div>
+          <div class="field">
+            <label class="field-label">CVC</label>
+            <input class="text-input" id="pf-cvc" placeholder="123" inputmode="numeric" autocomplete="cc-csc" maxlength="4" oninput="digitsOnly(this,4)" />
+          </div>
+        </div>
+        <div class="field">
+          <label class="field-label">Name on card</label>
+          <input class="text-input" id="pf-name" placeholder="Stephen Reddy" autocomplete="cc-name" />
+        </div>
+        <div class="field">
+          <label class="field-label">Email</label>
+          <input class="text-input" id="pf-email" placeholder="you@company.com" autocomplete="email" />
+        </div>
+        <button class="btn btn-primary btn-lg pay-now-btn" id="pay-now-btn" onclick="processPayment()">Pay <span id="pay-now-amt">$20</span></button>
+        <div class="trust-line"><span class="lock">🔒</span> Payments secured by <span class="stripe-word">Stripe</span></div>
+      </div>
+      <div class="pay-form pay-processing" id="pay-processing" style="display:none;">
+        <div class="spinner"></div>
+        <div style="font-size:17px;font-weight:600;">Processing payment…</div>
+        <div class="tiny-muted">Don't close this window.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SCREEN 8: THANK YOU ============ -->
+<section id="screen-thankyou" class="screen">
+  <div class="thankyou-wrap">
+    <svg class="check-circle" viewBox="0 0 110 110">
+      <circle cx="55" cy="55" r="50"></circle>
+      <path d="M33 56 L48 71 L78 40"></path>
+    </svg>
+    <h2>Payment successful 🎉</h2>
+    <p class="ty-sub">Welcome to PitchGym Pro, <span id="ty-plan">Popular</span>.</p>
+    <div class="receipt">
+      <div class="receipt-row"><span class="rl">Plan</span><span class="rr" id="ty-r-plan">Popular</span></div>
+      <div class="receipt-row"><span class="rl">Credits added</span><span class="rr" id="ty-r-credits">5</span></div>
+      <div class="receipt-row"><span class="rl">Amount charged</span><span class="rr" id="ty-r-amount">$20.00</span></div>
+      <div class="receipt-row"><span class="rl">Date</span><span class="rr" id="ty-r-date">—</span></div>
+    </div>
+    <button class="btn btn-primary btn-lg" onclick="showScreen('screen-onboarding')">Set up my account →</button>
+  </div>
+</section>
+
+<!-- ============ SCREEN 9: ONBOARDING ============ -->
+<section id="screen-onboarding" class="screen">
+  <div class="center-screen" style="min-height:100vh;">
+    <div class="onb-wrap">
+      <div class="onb-header">
+        <h2>Let's make this yours.</h2>
+        <p>Two minutes of setup. Then we train.</p>
+      </div>
+      <div class="onb-step">
+        <div class="onb-q">What's your name?</div>
+        <input class="text-input" id="onb-name" placeholder="Full name" />
+      </div>
+      <div class="onb-step">
+        <div class="onb-q">What should we call you?</div>
+        <div class="onb-hint">We'll use this throughout the app.</div>
+        <input class="text-input" id="onb-nick" placeholder="Nickname" />
+      </div>
+      <div class="onb-step">
+        <div class="onb-q">Pick your vibe.</div>
+        <div class="onb-hint">Sets your accent colour everywhere.</div>
+        <div class="swatch-row" id="onb-swatches"></div>
+      </div>
+      <div class="onb-step">
+        <div class="onb-q">Preferences</div>
+        <div class="toggle-row"><span class="tl">Sound effects</span><div class="switch on" id="sw-sound" onclick="toggleSwitch('sw-sound')"></div></div>
+        <div class="toggle-row"><span class="tl">Coach proactively offers hints when I'm stuck</span><div class="switch on" id="sw-proactive" onclick="toggleSwitch('sw-proactive')"></div></div>
+        <div class="toggle-row"><span class="tl">Reduced motion</span><div class="switch" id="sw-motion" onclick="toggleSwitch('sw-motion')"></div></div>
+      </div>
+      <button class="btn btn-primary btn-lg" onclick="finishOnboarding()">Finish setup →</button>
+    </div>
+  </div>
+</section>
+
 <!-- ============ UPGRADE MODAL ============ -->
 <div class="modal-overlay" id="upgrade-modal">
   <div class="modal-content">
@@ -864,7 +1063,7 @@ details.scoring[open] summary::before { content: '▾ '; }
           <li>Levels 1–25 access</li>
           <li>Skip daily limit twice</li>
         </ul>
-        <button class="btn btn-ghost" style="margin-top:16px;" onclick="showPayInline()">Choose</button>
+        <button class="btn btn-ghost" style="margin-top:16px;" onclick="choosePlan('starter')">Choose</button>
       </div>
       <div class="price-card popular">
         <div class="popular-flag">⭐ POPULAR</div>
@@ -877,7 +1076,7 @@ details.scoring[open] summary::before { content: '▾ '; }
           <li>Unlimited daily sessions</li>
           <li>Priority features</li>
         </ul>
-        <button class="btn btn-primary" style="margin-top:16px;" onclick="showPayInline()">Choose</button>
+        <button class="btn btn-primary" style="margin-top:16px;" onclick="choosePlan('popular')">Choose</button>
       </div>
       <div class="price-card">
         <div class="pname">Pro 🔥</div>
@@ -888,7 +1087,7 @@ details.scoring[open] summary::before { content: '▾ '; }
           <li>Early access to new levels</li>
           <li>Custom scenario builder (coming soon)</li>
         </ul>
-        <button class="btn btn-ghost" style="margin-top:16px;" onclick="showPayInline()">Choose</button>
+        <button class="btn btn-ghost" style="margin-top:16px;" onclick="choosePlan('pro')">Choose</button>
       </div>
     </div>
     <div class="credits-unlock">
@@ -899,12 +1098,7 @@ details.scoring[open] summary::before { content: '▾ '; }
       <span>Daily limit removed</span>
     </div>
     <div class="pay-row">
-      <button class="btn btn-primary btn-lg" onclick="showPayInline()">Continue to payment →</button>
-      <div class="pay-inline" id="pay-inline">
-        <div class="tiny-muted">Stripe integration — drop your email:</div>
-        <input class="text-input" id="pay-email" placeholder="you@company.com" />
-        <button class="btn btn-primary" onclick="notifyMe()">Notify me</button>
-      </div>
+      <button class="btn btn-primary btn-lg" onclick="choosePlan('popular')">Continue to payment →</button>
     </div>
   </div>
 </div>
@@ -941,47 +1135,628 @@ details.scoring[open] summary::before { content: '▾ '; }
 
 <div class="toast" id="toast"></div>
 
+<!-- Celebration canvas — fixed overlay, shown only on pass -->
+<canvas id="celebrate-canvas" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;"></canvas>
+
 <script>
 /* ============================================================
-   DATA
+   DATA — keyword detection helpers shared by all objections
 ============================================================ */
-var LEVELS = [
-  { id:1, name:"The First Yes", scenario:"Drinks → corner store", sections:1, tag:"RETAIL", state:"current" },
-  { id:2, name:"The Gatekeeper", scenario:"Coffee → café chain", sections:2, tag:"B2B", state:"locked" },
-  { id:3, name:"On the Lot", scenario:"Cars → dealership", sections:3, tag:"RETAIL", state:"locked" },
-  { id:4, name:"The Listing", scenario:"Property → homeowner", sections:3, tag:"REAL ESTATE", state:"locked" },
-  { id:5, name:"Chef's Table", scenario:"Premium meat → restaurant", sections:4, tag:"WHOLESALE", state:"locked" },
-  { id:6, name:"The Office Upgrade", scenario:"SaaS software → SME", sections:3, tag:"B2B", state:"locked" },
-  { id:7, name:"New in Town", scenario:"Gym membership → walk-in", sections:3, tag:"CONSUMER", state:"locked" },
-  { id:8, name:"The Renovation", scenario:"Building materials → contractor", sections:4, tag:"TRADE", state:"locked" },
-  { id:9, name:"The Follow-Up", scenario:"Financial services → warm lead", sections:4, tag:"FINANCE", state:"locked" },
-  { id:10, name:"The Boardroom", scenario:"Enterprise deal → exec team", sections:5, tag:"ENTERPRISE", state:"locked" },
-  { id:11, name:"The Hostile Takeover", scenario:"Competing supplier → angry customer", sections:5, tag:"PRO", state:"pro" },
-  { id:12, name:"The Ghost", scenario:"Re-engaging a cold prospect", sections:4, tag:"PRO", state:"pro" },
-  { id:13, name:"The Negotiator", scenario:"Multi-term contract negotiation", sections:5, tag:"PRO", state:"pro" },
-  { id:14, name:"The Switcher", scenario:"Steal from a competitor", sections:5, tag:"PRO", state:"pro" },
-  { id:15, name:"The Staller", scenario:"Breaking a procrastinator's pattern", sections:5, tag:"PRO", state:"pro" },
-  { id:16, name:"The Budget Freeze", scenario:"Selling in a downturn", sections:5, tag:"PRO", state:"pro" },
-  { id:17, name:"The Committee", scenario:"Multi-stakeholder enterprise deal", sections:6, tag:"PRO", state:"pro" },
-  { id:18, name:"The Returning Hero", scenario:"Win back a churned customer", sections:5, tag:"PRO", state:"pro" },
-  { id:19, name:"The Referral Test", scenario:"Convert a skeptical referred lead", sections:5, tag:"PRO", state:"pro" },
-  { id:20, name:"The Inbound Skeptic", scenario:"Warm lead who read every review", sections:5, tag:"PRO", state:"pro" },
-  { id:21, name:"The Lowballer", scenario:"Buyer opens with an insulting offer", sections:6, tag:"PRO", state:"pro" },
-  { id:22, name:"The Expert", scenario:"Prospect who knows more than most reps", sections:6, tag:"PRO", state:"pro" },
-  { id:23, name:"The All-Rounder", scenario:"Discovery → demo → objection → close", sections:6, tag:"PRO", state:"pro" },
-  { id:24, name:"The Hostile Board", scenario:"Present to a skeptical board", sections:6, tag:"PRO", state:"pro" },
-  { id:25, name:"The Final Boss", scenario:"Hostile, expert, competitor-loyal CEO", sections:7, tag:"PRO", state:"pro" }
-];
+// Generic fold/cave detector: discounting, caving, surrendering on price.
+var FOLD_WORDS = ['discount','% off','%off','reduce the price','lower the price','cheaper','special price','knock off','cut the price','come down on price','do you a deal','sort you out','drop the price','give you a deal','match their price','beat their price','slash','for free','no charge','waive the','throw in for free'];
+// Discovery = asking, surfacing needs, qualifying.
+var DISCOVERY_WORDS = ['what matters','what do you','what would','what are your','how do your','who are your','what kind','tell me about','what are you looking','what\'s important','what does','can i ask','help me understand','walk me through','how are you currently','what\'s driving','what\'s your','why is that','what would it mean','how much is it costing','what happens if','if you don\'t','out of curiosity','what\'s the','how long have'];
+// Value = tying to outcomes, proof, ROI, differentiation.
+var VALUE_WORDS = ['because','the reason','what you get','what that means','return','roi','results','proven','data','margin','outcome','saves you','make you','grow','case study','other clients','for example','specifically','track record','guarantee','results-based','we\'ve seen','customers like you','the difference is'];
 
-var LEVEL1_STORY = "You're a sales rep for Blue Label Drinks Co.\nYou're calling Mike — he runs a corner store in Surry Hills called \"Mike's Local\".\n\nMike tried your product samples last week and actually liked them.\nHe's ready to talk. There's just one thing.\n\nHe's going to ask for a <span class=\"emph\">discount</span>.\n<span class=\"emph\">Don't give it to him.</span>";
+var SCENARIOS = {
+  1: {
+    persona:{ name:"Mike Donnelly", initials:"M", role:"Owner", company:"Mike's Local, Surry Hills", backstory:"Runs a corner store in Surry Hills. Tried your samples last week and liked them — the lemon one moves. He's keen, but he'll push for a sweetener.", avatarColor:"var(--orange)" },
+    product:"Blue Label Drinks → corner store",
+    opener:"Hey, it's Mike from the store. Got your message — yeah I tried those drinks you dropped off. Not bad actually, the lemon one's pretty good.",
+    close:"Alright, I'll give it a try. Let's do a small first order.",
+    objective:"Demonstrate value and hold the price — still land the order.",
+    objections:[
+      { id:"price", label:"Price", difficulty:"easy",
+        hint:"He's testing you. Don't talk price yet — find out what 'a good deal' means to him first.",
+        line:"Right. Any chance you could do a bit of a deal for us? We're a small store, just trying it out.",
+        ackQuestion:"Yeah honestly it's the lemon — tart without being too sugary. Half my regulars are off the soft drinks now, so it actually moves. Anyway — keen to give it a crack. What are we lookin' at per case?",
+        pass:"Yeah fair point. Alright, if the first order moves well I'll keep it going. Send me through the details.",
+        weak:"Come on, everyone gives a first-order sweetener. So can you sort me out or not?",
+        fold:"Oh sweet, yeah that works for me. Cheers." }
+    ]
+  },
+  2: {
+    persona:{ name:"Sarah Whitlock", initials:"S", role:"Owner", company:"Grind & Co Café, Newtown", backstory:"Owns a busy Newtown café. Always slammed, no patience for a pitch. You've got about two minutes before she walks off.", avatarColor:"#ff6b35" },
+    product:"Premium coffee beans → café",
+    opener:"Yeah g'day. Look I've got about two minutes, I'm absolutely slammed — what's this about?",
+    close:"Alright, you've earned ten minutes. Come by at 3 and bring a sample. Don't be late.",
+    objective:"Earn the time with relevance — book the next step.",
+    objections:[
+      { id:"time", label:"Time", difficulty:"easy",
+        hint:"She gave you a clock, not a no. Lead with the one outcome that matters to a café owner — don't pitch features, earn the meeting.",
+        line:"I've got two minutes, I'm slammed. Make it quick — why should I care?",
+        ackQuestion:"We do alright on coffee, yeah, but I haven't got time to chat about it right now. Why's it worth my two minutes?",
+        pass:"Hm. Okay, that's actually relevant. You've got my attention for a proper sit-down.",
+        weak:"Mate that's what every rep says. I really don't have time for a generic spiel.",
+        fold:"Look I'll just take whatever's cheapest, I haven't got time for this." }
+    ]
+  },
+  3: {
+    persona:{ name:"Tom Avery", initials:"T", role:"Store Manager", company:"Northside Outdoors", backstory:"Manages the shop but doesn't own it. Likes what he hears, but every spend goes through the owner, Denise.", avatarColor:"#7c6af7" },
+    product:"POS software → retail store",
+    opener:"Yeah this looks decent, I'll give you that. Thing is, it's not really my call — I'd have to run it past the owner.",
+    close:"Alright. Let me set up a quick call with Denise — I'll tell her it's worth a look. Send me the one-pager.",
+    objective:"Equip the champion AND get access to the decision-maker.",
+    objections:[
+      { id:"authority", label:"Authority", difficulty:"easy",
+        hint:"Don't try to close Tom — he can't say yes. Arm him to sell it internally AND ask for a path to the owner.",
+        line:"I'd have to run it past the owner before anything happens. It's not my call.",
+        ackQuestion:"Fair question — Denise signs off on anything over a couple grand. She's pretty hands-on with the numbers.",
+        pass:"Yeah, that'd actually help me make the case to her. Let's get her on a call together.",
+        weak:"I mean I can mention it, but you know how it goes. I'll pass it along, no promises.",
+        fold:"Tell you what, just send a contract and I'll sign it myself — she won't mind." }
+    ]
+  },
+  4: {
+    persona:{ name:"Priya Nair", initials:"P", role:"Office Manager", company:"Lendmark Finance", backstory:"Manages the office. Has used the same stationery supplier for six years. Sees no reason to change — and she'll tell you so.", avatarColor:"#00d68f" },
+    product:"Office supplies → SME",
+    opener:"Appreciate the call, but honestly — we're happy with our current supplier. Been with them years, no complaints.",
+    close:"Huh. I hadn't thought about it like that. Okay — send me a comparison, I'll actually look at it.",
+    objective:"Create doubt in the status quo — surface a gap they didn't know they had.",
+    objections:[
+      { id:"statusquo", label:"Status Quo", difficulty:"easy",
+        hint:"'Happy' usually means 'haven't looked.' Don't bash the incumbent — ask a question that exposes a gap they've quietly accepted.",
+        line:"We're happy with our current supplier. Why would we switch?",
+        ackQuestion:"Six years now. They're fine — deliveries turn up, prices are okay I suppose. Why, what are you getting at?",
+        pass:"...Actually, no, we haven't reviewed that in a while. That's a fair point. Send it through.",
+        weak:"Everyone says they're better. I've heard it before. We're fine, thanks.",
+        fold:"Well if you're cheaper I'll just switch — money's money I guess." }
+    ]
+  },
+  5: {
+    persona:{ name:"Janet Cole", initials:"J", role:"Receptionist", company:"Harbridge & Partners", backstory:"The front line. Screens every call before it reaches the partners. Polite, sharp, and very good at her job.", avatarColor:"#ffd000" },
+    product:"Managed IT services → mid-size firm",
+    opener:"Good morning, Harbridge & Partners. Can I ask what this is regarding before I put you through?",
+    close:"Alright — you sound like you actually know our world. I'll see if Mr Harbridge has a window. Hold the line.",
+    objective:"Turn the gatekeeper into an ally — get through to the decision-maker.",
+    objections:[
+      { id:"gatekeeper", label:"Gatekeeper", difficulty:"easy",
+        hint:"Janet isn't the obstacle — she's the key. Be human, be specific about why it's relevant to her firm, and treat her like the professional she is.",
+        line:"What's this regarding? I'll need to know before I put you through to anyone.",
+        ackQuestion:"He's in meetings most of the day. I can take a message — but I'll need to know it's worth his time first.",
+        pass:"Okay, that's the kind of thing he'd want to hear about. Let me see if he's free.",
+        weak:"I'm sorry, we're not interested in sales calls. I'll let them know you rang.",
+        fold:"If you just leave your number I'll pass it on. Have a good day." }
+    ]
+  },
+  6: {
+    persona:{ name:"Dave Pearce", initials:"D", role:"Front-Desk Manager", company:"IronWorks Gym", backstory:"Runs the front desk at a busy gym. Gatekeeps the owner and watches every dollar. Friendly but careful.", avatarColor:"#00e5ff" },
+    product:"Commercial cleaning → gym",
+    opener:"Yeah hey, front desk. We're pretty set on cleaning to be honest — what's the go?",
+    close:"Alright, you've not wasted my time. I'll get the owner to give you a bell — leave your details.",
+    objective:"Get past the desk and handle the price probe without folding.",
+    objections:[
+      { id:"gatekeeper", label:"Gatekeeper", difficulty:"easy",
+        hint:"He's screening, not refusing. Give him a reason this matters to a gym specifically and he'll open the door.",
+        line:"The owner handles all that. What's it about, exactly?",
+        ackQuestion:"Yeah she deals with suppliers. Why would a gym need someone new — what's different about you lot?",
+        pass:"Fair enough, that's actually relevant for a gym. I'll flag it to her.",
+        weak:"Eh, we've got a guy. I'll mention it maybe.",
+        fold:"Just send a quote, cheapest one wins really." },
+      { id:"price", label:"Price probe", difficulty:"easy",
+        hint:"A soft 'what's it cost' isn't the real objection — anchor on what clean equipment means for memberships before you name a number.",
+        line:"And roughly what are we talking money-wise? Ballpark.",
+        ackQuestion:"I only ask 'cause the last mob were dear. What makes the price worth it?",
+        pass:"Right, that makes sense actually. The owner will want to hear that.",
+        weak:"Sounds like the usual. Everyone reckons they're worth it.",
+        fold:"If you can go cheaper than what we pay now, easy sell." }
+    ]
+  },
+  7: {
+    persona:{ name:"Lena Marsh", initials:"L", role:"Owner", company:"The Copper Spoon", backstory:"Owns a small restaurant. Time-poor and budget-conscious — she'll give you a sliver of attention, then question the spend.", avatarColor:"#ff6b35" },
+    product:"Custom signage → restaurant",
+    opener:"Two minutes, tops — we open soon. What've you got?",
+    close:"Okay. I can see how that pays for itself. Let's do it — come measure up.",
+    objective:"Hold attention and justify the spend.",
+    objections:[
+      { id:"time", label:"Time", difficulty:"easy",
+        hint:"Don't rush into product. One sentence on what better signage does for foot traffic buys you the rest of the call.",
+        line:"Two minutes, tops, I'm slammed. Why should I care about signage?",
+        ackQuestion:"We're flat out before service. Make it quick — why does signage even matter for a place like mine?",
+        pass:"Okay, that's a fair point. Go on, you've got a few more minutes.",
+        weak:"Everyone says signage matters. I'm not convinced it's worth stopping for.",
+        fold:"Just give me the cheapest sign you do, I haven't got time." },
+      { id:"price", label:"Price", difficulty:"easy",
+        hint:"She's weighing cost vs return. Tie the number to covers and walk-ins, not to materials.",
+        line:"Right, and what's that going to set me back? Sounds pricey.",
+        ackQuestion:"Margins in food are brutal. Convince me that spend comes back to me.",
+        pass:"Hm, if it pulls in even a few extra tables a week, that pays off. Alright.",
+        weak:"Sounds like a lot for a sign, honestly.",
+        fold:"If you knock a bit off I'll think about it." }
+    ]
+  },
+  8: {
+    persona:{ name:"Raj Patel", initials:"R", role:"Purchasing Officer", company:"Coastline Wholesale", backstory:"Buys for a wholesaler. Methodical, needs a business case, and flags anything new to his manager before committing.", avatarColor:"#7c6af7" },
+    product:"Eco packaging → wholesaler",
+    opener:"Thanks for coming in. Eco packaging — interesting, but I'll be honest, I'd need to take this upstairs first.",
+    close:"Alright, you've given me enough to build a case. Let me get my manager in the room with you.",
+    objective:"Build the business case and create urgency.",
+    objections:[
+      { id:"authority", label:"Authority", difficulty:"easy",
+        hint:"He'll relay your pitch badly if you don't arm him. Hand him the numbers and ask to present to his manager directly.",
+        line:"I'd have to run this upstairs before we commit to anything.",
+        ackQuestion:"My manager signs off on supplier changes. What would I even tell her to get her interested?",
+        pass:"That's a solid angle. Let me set up a meeting with her and you can walk her through it.",
+        weak:"I'll mention it next time we chat. Could be weeks though.",
+        fold:"Just send a contract, I'll push it through quietly." },
+      { id:"need", label:"Need", difficulty:"easy",
+        hint:"He doesn't feel the pain yet. Surface what staying on plastic is costing him — regulation, customers, tenders — before you sell the fix.",
+        line:"Honestly though — what we've got works fine. Why change now?",
+        ackQuestion:"Plastic's cheaper for us right now. What's the actual reason to move?",
+        pass:"Okay, the regulation angle I hadn't fully clocked. That changes the timeline. Good point.",
+        weak:"Eco's a nice-to-have. Not urgent for us.",
+        fold:"If it's cheaper than plastic I'll switch, otherwise no." }
+    ]
+  },
+  9: {
+    persona:{ name:"Bianca Rossi", initials:"B", role:"Sole-Trader Electrician", company:"Rossi Electrical", backstory:"Runs her own sparky business. Already has insurance she's never thought twice about. Sharp with money, allergic to upsells.", avatarColor:"#00d68f" },
+    product:"Trade insurance → tradie",
+    opener:"Yeah look, I've already got cover through my last broker. We're sorted, mate.",
+    close:"...Right. I didn't realise that gap was there. Okay, walk me through what proper cover looks like.",
+    objective:"Expose the risk gap, hold value.",
+    objections:[
+      { id:"statusquo", label:"Status Quo", difficulty:"easy",
+        hint:"'Sorted' means she hasn't read her policy. Ask one specific question that reveals what her current cover doesn't include.",
+        line:"I've already got insurance. We're sorted, why would I switch?",
+        ackQuestion:"Got it through a mate's broker a few years back. Never had to claim. What's wrong with that?",
+        pass:"...Huh. I genuinely didn't know that wasn't covered. Yeah, tell me more.",
+        weak:"Insurance is insurance. I'm sure mine's fine.",
+        fold:"If yours is cheaper than what I pay now, I'll swap." },
+      { id:"price", label:"Price", difficulty:"easy",
+        hint:"Once she sees the gap, don't compete on premium — compete on what one uncovered claim would cost her.",
+        line:"And what's this going to cost me a month? I'm watching every dollar.",
+        ackQuestion:"Cash flow's tight as a tradie. Why pay more than I do now?",
+        pass:"Yeah, one uncovered job would wipe that out ten times over. Fair enough.",
+        weak:"Sounds dearer than what I've got. Not sure it's worth it.",
+        fold:"Match my current price and I'm in." }
+    ]
+  },
+  10: {
+    persona:{ name:"Marcus Webb", initials:"M", role:"Operations Lead", company:"Tidewater Logistics", backstory:"Runs ops at a mid-market firm. Interested, but he's a layer below the real buyer and protective of his exec's calendar.", avatarColor:"#7c6af7" },
+    product:"SaaS platform → mid-market company",
+    opener:"Yeah I've heard of you guys. Before we go further though — what's this regarding exactly, and who've you spoken to here?",
+    close:"Alright. I'll get our VP in the room — and I'll brief her properly so it lands. Send me the deck.",
+    objective:"Get to the decision-maker and arm them for the internal sell.",
+    objections:[
+      { id:"gatekeeper", label:"Gatekeeper", difficulty:"easy",
+        hint:"Marcus is qualifying you before he risks his credibility introducing you up. Be precise about value and respect his position.",
+        line:"What's this regarding, and who else here have you spoken to?",
+        ackQuestion:"I'm careful about who I take to leadership — last vendor burned me. Why's this different?",
+        pass:"Okay, that's the kind of thing I can take upstairs without looking silly. Let's talk.",
+        weak:"I get a lot of these calls. Not sure this rises to the top.",
+        fold:"Just send pricing, I'll forward it on and see what sticks." },
+      { id:"authority", label:"Authority", difficulty:"easy",
+        hint:"He can open the door but can't sign. Give him the one-line business case his VP will care about — make him look smart for bringing you in.",
+        line:"Even if I like it, the VP makes the final call. I'd be sticking my neck out introducing you.",
+        ackQuestion:"What would I actually say to her to make this worth a meeting?",
+        pass:"That's a clean pitch. She'll get it. I'll set it up and prep her.",
+        weak:"I'll forward it on and see. No promises she bites.",
+        fold:"Just give me a contract, I'll try to push it through." }
+    ]
+  },
+  11: {
+    persona:{ name:"Greg Tanaka", initials:"G", role:"Franchise Owner", company:"BurgerBar (3 sites)", backstory:"Owns three franchise locations. Lives and dies by margin and already has a beverage supplier he plays off against everyone.", avatarColor:"#ff6b35" },
+    product:"Beverage supply → franchise",
+    opener:"I'll be straight with you — margins are tight and my current supplier's cheap. You'll have to do better than 'good product'.",
+    close:"Alright. The ROI stacks up and you're clearly across it. Let's trial it at one site.",
+    objective:"Defend margin with ROI, win the head-to-head.",
+    objections:[
+      { id:"price", label:"Margin pressure", difficulty:"med",
+        hint:"He's anchoring on unit cost. Reframe to margin per location and total profit — don't fight cents, fight on dollars made.",
+        line:"Margins are tight. Your stuff costs more per unit — why would I eat that?",
+        ackQuestion:"Across three sites every cent matters. What makes the higher cost worth it?",
+        pass:"Okay — higher sell-through and better margin per case. That actually nets me more. Go on.",
+        weak:"More expensive is more expensive. I'm not seeing it.",
+        fold:"Drop your price to match them and we'll talk." },
+      { id:"competitor", label:"Competitor", difficulty:"med",
+        hint:"He's comparing you head-to-head. Don't bash the rival — make the comparison on the metric he can't ignore: profit per site.",
+        line:"My current mob does it cheaper. Why are you better than them?",
+        ackQuestion:"They've never let me down on price. What do you do that they don't?",
+        pass:"Right, the sell-through data is the difference. That's a real edge. Let's trial it.",
+        weak:"Sounds like the same thing with a nicer label.",
+        fold:"If you beat their price I'll switch all three sites." }
+    ]
+  },
+  12: {
+    persona:{ name:"Nina Brooks", initials:"N", role:"Marketing Director", company:"Vellum Apparel", backstory:"Went cold on you months ago. Busy, a little indifferent, and needs a genuine reason to re-open the conversation.", avatarColor:"#7c6af7" },
+    product:"Ad platform → re-engaged cold prospect",
+    opener:"Oh — you again. Honestly we kind of moved on. Not sure there's anything here for us right now.",
+    close:"Okay, that's actually a different conversation than last time. Let's put thirty minutes in the diary this week.",
+    objective:"Re-earn relevance and create a reason to act now.",
+    objections:[
+      { id:"need", label:"Indifference", difficulty:"med",
+        hint:"She ghosted because nothing changed. Lead with what's new and specific to her world — give her a reason the timing is different now.",
+        line:"We kind of moved on. What's actually changed since last time?",
+        ackQuestion:"Last time it just wasn't a priority. Why should it be now?",
+        pass:"Huh, okay — that is new and it's relevant to our Q3 push. Tell me more.",
+        weak:"Sounds like the same pitch as before, honestly.",
+        fold:"If you run it free for a month I'll take a look." },
+      { id:"time", label:"Time / urgency", difficulty:"med",
+        hint:"She'll happily push you to 'next quarter' forever. Make the cost of waiting concrete — what does delay cost her this quarter?",
+        line:"Even if it's interesting, this is a next-quarter thing at best.",
+        ackQuestion:"My plate's full. Why does this need to happen now and not later?",
+        pass:"Fair — waiting a quarter does cost us that window. Okay, let's move on it.",
+        weak:"There's no rush from my side, really.",
+        fold:"I'll circle back eventually, leave it with me." }
+    ]
+  },
+  13: {
+    persona:{ name:"Paul Esterhazy", initials:"P", role:"Procurement Manager", company:"Meridian Freight", backstory:"Runs procurement for a logistics firm. Decisions go through a committee, and he scrutinises total cost obsessively.", avatarColor:"#00e5ff" },
+    product:"Fleet leasing → logistics company",
+    opener:"Before we get into it — I don't decide this alone. It goes to committee. And I'll warn you, they'll chew on the numbers.",
+    close:"This is the cleanest TCO case I've seen this year. I'll take it to committee with my recommendation.",
+    objective:"Map the buying group, defend total cost of ownership.",
+    objections:[
+      { id:"authority", label:"Committee", difficulty:"med",
+        hint:"A committee kills deals through gaps you didn't fill. Find out who's on it and what each member cares about before you defend anything.",
+        line:"This goes to a committee — finance, ops, and me. It's not just my call.",
+        ackQuestion:"Finance wants cost, ops wants uptime, I want no headaches. How do I sell all three?",
+        pass:"Good — you've got an answer for each of them. That's what I need to walk in with.",
+        weak:"I'll put it in front of them and see what they say.",
+        fold:"Just give me your lowest number and I'll push it through." },
+      { id:"price", label:"TCO / Price", difficulty:"med",
+        hint:"He'll fixate on the sticker. Pull him up to total cost of ownership — maintenance, downtime, residuals — where you win.",
+        line:"Your monthly's higher than the other quote. Finance will kill it on that alone.",
+        ackQuestion:"They only look at the headline number. How do I defend paying more per month?",
+        pass:"Right — once you factor maintenance and downtime, you're actually cheaper over the term. That'll land.",
+        weak:"Higher is higher. Finance won't read past the first number.",
+        fold:"Match the other quote's monthly and it's an easy yes." }
+    ]
+  },
+  14: {
+    persona:{ name:"Dana Reyes", initials:"D", role:"Operations Head", company:"Brightline Services", backstory:"Loyal to her current CRM vendor — 'our guy' is practically family. Switching feels risky and disloyal to her.", avatarColor:"#00d68f" },
+    product:"CRM software → company loyal to a competitor",
+    opener:"I'll be honest — we love our current provider. Our rep's brilliant, he knows us. This'd be a hard sell.",
+    close:"You didn't trash them, and you showed me what we're actually missing. Okay — let's scope a migration.",
+    objective:"Respect the incumbent, reframe on outcomes, lower switching fear.",
+    objections:[
+      { id:"competitor", label:"Competitor loyalty", difficulty:"med",
+        hint:"Attacking 'their guy' attacks her judgement. Honour the relationship, then shift the conversation from loyalty to outcomes she's not getting.",
+        line:"We love our guy. Why would we leave someone who looks after us?",
+        ackQuestion:"He's been great for years. What could you possibly offer that he doesn't?",
+        pass:"Okay — that's a capability he genuinely can't match. That's worth a serious look.",
+        weak:"Sounds like what we've already got, just a different logo.",
+        fold:"If you're cheaper than him I suppose I'd consider it." },
+      { id:"trust", label:"Switching cost", difficulty:"med",
+        hint:"The real objection is fear of a painful migration. Shrink the risk — show her exactly how the switch is handled so 'change' stops feeling dangerous.",
+        line:"Even if you're better, ripping out our CRM mid-year terrifies me.",
+        ackQuestion:"Last migration we did was a nightmare. How do I know this won't blow up?",
+        pass:"Okay, a phased migration with your team running it — that I can live with. Let's scope it.",
+        weak:"Migrations are always a disaster. I'm not convinced.",
+        fold:"If you do the whole thing free I might risk it." }
+    ]
+  },
+  15: {
+    persona:{ name:"Sam Okafor", initials:"S", role:"Owner", company:"Parkside Private Clinic", backstory:"Owns a private clinic. A chronic 'let me think about it' staller — he'll nod, agree, and then never decide unless you break the pattern.", avatarColor:"#ffd000" },
+    product:"Medical equipment → private clinic",
+    opener:"Looks good, looks good. Leave it with me — let me think about it and I'll get back to you.",
+    close:"You're right, I do this every time. Okay — let's lock it in for next month. No more stalling.",
+    objective:"Break the stall pattern, build certainty, get a firm next step.",
+    objections:[
+      { id:"stall", label:"Stall", difficulty:"med",
+        hint:"'Let me think about it' is a smokescreen for an unspoken doubt. Don't accept the stall — gently surface what's actually holding him back.",
+        line:"Let me think about it and I'll get back to you. No rush, right?",
+        ackQuestion:"I just like to mull things over. What's the harm in waiting a bit?",
+        pass:"...Okay, you're right, there's a real cost to waiting. What's actually nagging me is whether it's reliable.",
+        weak:"I really do just need time. I'll call you.",
+        fold:"Tell you what, hold a discount for me and I'll decide later." },
+      { id:"trust", label:"Trust", difficulty:"med",
+        hint:"Now the real doubt is out — certainty, not pressure, closes him. Give proof and a concrete next step he can commit to today.",
+        line:"How do I know this won't break down the week after the warranty ends?",
+        ackQuestion:"Equipment failures cost me patients. Why should I trust yours?",
+        pass:"A loaner guarantee and that uptime record — okay, that's the certainty I needed. Let's lock it in.",
+        weak:"They all claim they're reliable. I've been burned before.",
+        fold:"Knock the price down and throw in a warranty and I'll sign." }
+    ]
+  },
+  16: {
+    persona:{ name:"Olivia Chen", initials:"O", role:"CFO", company:"Harrow Manufacturing", backstory:"CFO steering the company through a downturn. Budgets are frozen. Every dollar out needs an airtight return — she's heard every pitch.", avatarColor:"#00e5ff" },
+    product:"Enterprise software → company in a downturn",
+    opener:"I'll save us both time: the budget's frozen. Unless you can show me this pays for itself, this is a short call.",
+    close:"That's a genuine ROI case, not a wish. Alright — I'll carve out budget for this. Send the contract.",
+    objective:"Quantify the cost of inaction, build an airtight ROI case.",
+    objections:[
+      { id:"budget", label:"Budget freeze", difficulty:"hard",
+        hint:"'Frozen budget' isn't 'no' — it's 'prove the return.' Reframe spend as savings, and make the cost of doing nothing the bigger number.",
+        line:"The budget is frozen. There's no money for new software this year.",
+        ackQuestion:"Everything's on hold unless it's mission-critical. Why is this an exception?",
+        pass:"Okay — if it cuts more cost than it adds, that's not spend, that's savings. Keep going.",
+        weak:"Frozen is frozen. I can't conjure budget for a nice-to-have.",
+        fold:"If you defer billing six months and discount it, maybe." },
+      { id:"roi", label:"ROI proof", difficulty:"hard",
+        hint:"A CFO trusts evidence, not enthusiasm. Bring hard numbers and a payback period — and quantify what staying still costs her.",
+        line:"Everyone promises ROI. Show me real numbers or we're done.",
+        ackQuestion:"I need a payback period and a source, not a sales slide. What've you got?",
+        pass:"A nine-month payback with a comparable client to verify it — that I can defend to the board.",
+        weak:"That's a vague percentage. I can't take that upstairs.",
+        fold:"Cut the price by a third and the ROI works itself out." }
+    ]
+  },
+  17: {
+    persona:{ name:"Derek Lowe", initials:"D", role:"VP Operations", company:"Castlepoint Group", backstory:"VP juggling a deal where ops, IT, and finance all want different things. Too many cooks — and he's wary of the risk of getting it wrong.", avatarColor:"#7c6af7" },
+    product:"Logistics platform → multi-stakeholder org",
+    opener:"Fair warning — IT wants security, ops wants speed, finance wants cheap. Everyone pulls a different way here.",
+    close:"You've actually given me a way to align them around one outcome. That's rare. Let's get them all in a room.",
+    objective:"Align competing agendas around a shared outcome.",
+    objections:[
+      { id:"stakeholder", label:"Stakeholders", difficulty:"hard",
+        hint:"Each stakeholder has a veto. Don't pick a side — find the shared outcome that lets all three say yes for their own reasons.",
+        line:"IT, ops and finance all want different things. How do I get them to agree?",
+        ackQuestion:"Last project stalled because they couldn't align. What makes this different?",
+        pass:"Right — frame it around throughput and they all win in their own language. That works.",
+        weak:"You're only really solving for ops. The others won't bite.",
+        fold:"Just give me your cheapest tier, finance will shut the others up." },
+      { id:"risk", label:"Risk", difficulty:"hard",
+        hint:"At his level, fear of a failed rollout outweighs upside. De-risk it — show a pilot, a rollback plan, proof from a similar org.",
+        line:"And if this rollout fails, it's my name on it. Why should I take that risk?",
+        ackQuestion:"A botched implementation here would be career-defining, badly. How do you de-risk it?",
+        pass:"A piloted rollout with a rollback path and a reference org — okay, that's a risk I can manage.",
+        weak:"Sounds like the usual 'trust us'. I've been burned.",
+        fold:"Indemnify us against failure in writing and I'll sign." }
+    ]
+  },
+  18: {
+    persona:{ name:"Carla Mendes", initials:"C", role:"General Manager", company:"Northgate Retail", backstory:"GM of a company you let down years ago — they churned angry. She remembers. You're walking in with a debt to repay.", avatarColor:"#ff4444" },
+    product:"Telecoms service → churned former customer",
+    opener:"You've got nerve calling back. Last time your lot left us with three days of downtime. Why would I ever trust you again?",
+    close:"...Alright. You owned it instead of spinning it, and what you've shown me is different. One more chance. Don't waste it.",
+    objective:"Own the past, rebuild credibility, re-earn the business.",
+    objections:[
+      { id:"trust", label:"Broken trust", difficulty:"hard",
+        hint:"Don't defend or deflect — own the failure plainly, then show what's structurally changed. Credibility is rebuilt with accountability, not promises.",
+        line:"You burned us once. Three days down. Why should I trust you again?",
+        ackQuestion:"You cost us real money and a big client. What's actually different now?",
+        pass:"Okay — you owned it without excuses, and that redundancy change is concrete. I'm listening.",
+        weak:"That sounds like the same reassurance you gave us last time.",
+        fold:"Give it to us free for a year as an apology and I'll consider it." },
+      { id:"price", label:"Price", difficulty:"hard",
+        hint:"After breaking trust, you'll be tempted to buy your way back with discounts. Don't — re-earn on reliability and SLAs, or you'll signal guilt and weakness.",
+        line:"And after all that, you're not even the cheapest. Why pay a premium for the people who failed us?",
+        ackQuestion:"You'd want to make it right on price after what happened, surely?",
+        pass:"You held your price but backed it with an ironclad SLA. That's more reassuring than a discount, honestly.",
+        weak:"So we pay more for the privilege of being let down again? No.",
+        fold:"Slash it to win us back and we'll think about it." }
+    ]
+  },
+  19: {
+    persona:{ name:"Hassan Ali", initials:"H", role:"Founder", company:"Loopline Tech", backstory:"Founder referred to you by a peer, but deeply skeptical. He's been oversold before — he wants proof, not polish.", avatarColor:"#00d68f" },
+    product:"Recruitment service → skeptical referred lead",
+    opener:"Marcus said you were worth a call, so you've got that going for you. But I've been burned by recruiters before. Prove it.",
+    close:"Okay. That's proof, not a promise — and you're clearly not the same as the rest. Let's run a role and see.",
+    objective:"Provide proof that lands, separate from the pack.",
+    objections:[
+      { id:"proof", label:"Skepticism", difficulty:"hard",
+        hint:"He distrusts claims. Lead with verifiable proof — a specific result, a named outcome, something he can check — not adjectives.",
+        line:"Every recruiter says they're the best. Prove you actually are.",
+        ackQuestion:"I've heard 'top talent, fast' a hundred times. What can you show me that's real?",
+        pass:"A named placement, a time-to-hire I can verify — okay, that's actual evidence. Go on.",
+        weak:"That's the same buzzwords everyone uses.",
+        fold:"Work the first role for free and prove it that way." },
+      { id:"competitor", label:"Differentiation", difficulty:"hard",
+        hint:"'Proof' got you in the door; now he needs to know why you and not the others. Name the one thing that's structurally different about how you work.",
+        line:"Fine, you're decent. But so are ten others. Why you specifically?",
+        ackQuestion:"What do you do differently from every other agency in my inbox?",
+        pass:"Right — that vetting process genuinely is different, not just marketing. That's the edge.",
+        weak:"Sounds like everyone else with nicer words.",
+        fold:"Beat their fee and I'll go with you." }
+    ]
+  },
+  20: {
+    persona:{ name:"Mei Lin", initials:"M", role:"Head of Growth", company:"Quanta Labs", backstory:"Inbound lead who read every review, every comparison, every G2 thread before this call. She knows your product almost as well as you.", avatarColor:"#00e5ff" },
+    product:"Analytics suite → inbound skeptic who did deep research",
+    opener:"I've read everything — your docs, the reviews, the comparison threads. So skip the pitch. Tell me what I don't already know.",
+    close:"Okay, you actually reframed how I was thinking about the category. That's why I took the call. Let's talk terms.",
+    objective:"Out-insight the research, reframe the category.",
+    objections:[
+      { id:"informed", label:"Informed", difficulty:"hard",
+        hint:"She knows the brochure. Don't repeat it — bring an insight she couldn't have found, or reframe the problem itself.",
+        line:"I've read everything. Tell me something I don't already know.",
+        ackQuestion:"I know your feature list cold. What's the insight that isn't on your website?",
+        pass:"Huh — that's a genuinely different way to frame the problem. I hadn't seen it put that way.",
+        weak:"That's literally in your docs. I said skip the pitch.",
+        fold:"Give me the lowest price you offer anyone and I'll sign." },
+      { id:"competitor", label:"Differentiation", difficulty:"hard",
+        hint:"She's comparing on a feature grid where everyone looks similar. Move the comparison to an axis competitors can't claim — and make it matter to her growth goals.",
+        line:"On paper you and your top competitor look identical. So why you?",
+        ackQuestion:"The feature grids are basically the same. What's the real difference for a growth team?",
+        pass:"Okay — that time-to-insight gap is real and it maps directly to my goals. That separates you.",
+        weak:"That's a marketing distinction, not a real one.",
+        fold:"Match their quote and you've got the deal." }
+    ]
+  },
+  21: {
+    persona:{ name:"Vince Carter", initials:"V", role:"Buyer", company:"Apex Industrial", backstory:"A hard-nosed industrial buyer who opens with a lowball and threatens to walk. Aggression is his whole negotiating style.", avatarColor:"#ff4444" },
+    product:"Industrial parts → aggressive lowballer",
+    opener:"I'll give you thirty percent under your list and that's me being generous. Take it or I walk — I've got three other suppliers.",
+    close:"...Alright. You didn't blink and you didn't cave. I respect that. We've got a deal at your number.",
+    objective:"Hold the anchor, neutralise the threat, close on value.",
+    objections:[
+      { id:"lowball", label:"Lowball anchor", difficulty:"hard",
+        hint:"His number is theatre. Don't counter it or get defensive — calmly reject the anchor and re-anchor on the value of reliability and quality.",
+        line:"Thirty percent under list. That's my offer.",
+        ackQuestion:"Everyone discounts for volume. Why won't you?",
+        pass:"Hm. You re-anchored instead of flinching. Okay, that number's off the table. Keep talking.",
+        weak:"So that's a yes to thirty off? Good.",
+        fold:"Thirty percent it is then? Done." },
+      { id:"walkaway", label:"Walk-away threat", difficulty:"hard",
+        hint:"The threat to walk tests your nerve. Don't chase him — make the cost of his other 'three suppliers' real and let the silence work.",
+        line:"I've got three other suppliers ready to go. Give me my price or I walk.",
+        ackQuestion:"What's stopping me walking right now to one of them?",
+        pass:"...You're right, downtime from a cheaper unreliable supplier would cost me more. Fine. Go on.",
+        weak:"Then I'll walk. Last chance.",
+        fold:"Okay okay, I'll meet your price to keep you. Don't walk." },
+      { id:"price", label:"Price ultimatum", difficulty:"hard",
+        hint:"Final pressure point. Close on the total value you've built — reliability, lead time, scrap reduction — not on splitting the difference.",
+        line:"Fine. But it had better be your absolute best price or I'm gone.",
+        ackQuestion:"Give me one reason this price is worth more than the cheap option.",
+        pass:"Lower scrap, guaranteed lead times — yeah, that's worth the premium. We've got a deal.",
+        weak:"Still feels high. Sharpen the pencil.",
+        fold:"Drop it another ten percent and we're done." }
+    ]
+  },
+  22: {
+    persona:{ name:"Dr. Ng", initials:"N", role:"Technical Director", company:"Helix Biosciences", backstory:"A PhD technical director who knows the science cold and will expose any rep who fakes expertise. The buying group answers to him.", avatarColor:"#7c6af7" },
+    product:"Lab instruments → expert prospect",
+    opener:"Before pricing — your spec sheet claims a detection limit I find optimistic. Walk me through how you actually achieve it.",
+    close:"You know your instrument, you respected the procurement process, and the premium is justified. We'll proceed.",
+    objective:"Earn technical credibility, navigate the buying group, justify the premium.",
+    objections:[
+      { id:"technical", label:"Technical", difficulty:"hard",
+        hint:"He's testing whether you actually understand your product. Be precise and honest about the science — admit a limitation if it's real. Bluffing ends the deal.",
+        line:"Your detection limit looks optimistic. How do you actually achieve it?",
+        ackQuestion:"I've seen specs inflated before. What's the real-world figure under our conditions?",
+        pass:"That's an honest, precise answer — and you flagged the caveat yourself. Good. You know your instrument.",
+        weak:"That's a marketing number. You're hand-waving the physics.",
+        fold:"Just discount it and I won't dig into the specs." },
+      { id:"authority", label:"Authority", difficulty:"hard",
+        hint:"He's technical lead but procurement and the lab manager also weigh in. Map the buying group and give each the answer they need.",
+        line:"Even if I'm satisfied, procurement and my lab manager both have to sign off.",
+        ackQuestion:"Procurement cares about cost, the lab manager about training. How do you cover both?",
+        pass:"Good — a training package and a TCO breakdown covers both of them. I can move this forward.",
+        weak:"You've only convinced me. The others will stall it.",
+        fold:"Give procurement a big discount and they'll wave it through." },
+      { id:"price", label:"Price", difficulty:"hard",
+        hint:"Now justify the premium to a scientist — frame it as cost per reliable result and reduced re-runs, not as a line item.",
+        line:"You're well above the alternative. Justify the premium scientifically, not commercially.",
+        ackQuestion:"Why is your instrument worth twenty percent more than the comparable unit?",
+        pass:"Lower failure rate, fewer re-runs — cost per valid result is actually lower. That's defensible. We'll proceed.",
+        weak:"That's just 'you get what you pay for'. Not good enough.",
+        fold:"Match their price and the science is good enough." }
+    ]
+  },
+  23: {
+    persona:{ name:"Aria Solis", initials:"A", role:"COO", company:"Brightwater Group", backstory:"A COO running a full-cycle evaluation. She'll expose a weak discovery, test your objection handling, then watch how you close.", avatarColor:"#00d68f" },
+    product:"Workforce platform → full-cycle eval",
+    opener:"I'm running a proper evaluation here. So far you've pitched features without asking a single thing about how we operate. Convince me.",
+    close:"Clean discovery, you handled the pushback, and you asked for the business without flinching. That's the full package. We're in.",
+    objective:"Run a clean discovery-to-close, no fumbles.",
+    objections:[
+      { id:"discovery", label:"Discovery gap", difficulty:"hard",
+        hint:"She's flagging that you pitched before you understood her. Reset — ask sharp discovery questions about her operation before you say another word about product.",
+        line:"You've pitched at me without asking how we actually work. Convince me you understand us.",
+        ackQuestion:"You don't even know our headcount model. Why should I trust your recommendation?",
+        pass:"Better — those are the right questions. Now you understand the problem before solving it. Continue.",
+        weak:"You're still pitching, not listening.",
+        fold:"Just send your cheapest plan, I'll figure out the fit." },
+      { id:"objection", label:"Core objection", difficulty:"hard",
+        hint:"Now a real objection lands. Acknowledge it, reframe to the outcome she told you she cares about during discovery, and back it with proof.",
+        line:"Okay, you get us. But rolling this out to 400 staff sounds like a six-month nightmare.",
+        ackQuestion:"Change management at our scale is brutal. How is this not a disaster?",
+        pass:"A phased rollout tied to the outcomes I named — okay, that's manageable, not a nightmare. Good.",
+        weak:"That's hand-wavy. You haven't really answered the rollout risk.",
+        fold:"Take a chunk off and I'll absorb the rollout pain myself." },
+      { id:"close", label:"Closing hesitation", difficulty:"hard",
+        hint:"The signal is there but she's hesitating at the line. Don't re-pitch — ask for the business clearly and let the silence do the closing.",
+        line:"I'm close... but I always like to sit on big decisions. Let me come back to you.",
+        ackQuestion:"What's the harm in me taking another week to decide?",
+        pass:"...No, you're right, there's no real reason to wait. Let's start. Send the paperwork.",
+        weak:"I'll think it over and circle back.",
+        fold:"Hold a discount for me and I'll commit later." }
+    ]
+  },
+  24: {
+    persona:{ name:"Richard Hale", initials:"R", role:"Chairman", company:"Stratford Holdings", backstory:"Chairman of a hostile board you're presenting to. They've seen vendors overpromise and they're hunting for reasons to say no.", avatarColor:"#ff4444" },
+    product:"Capital equipment → hostile board presentation",
+    opener:"Let's not waste the board's time. We've been burned by big promises before. The room is skeptical — earn it.",
+    close:"The board's satisfied. You answered the risk, the comparison, and the cost without flinching. We'll approve the investment.",
+    objective:"Win a skeptical board on risk, proof, and value.",
+    objections:[
+      { id:"risk", label:"Risk", difficulty:"hard",
+        hint:"A board fears downside more than it craves upside. Lead with how you de-risk the investment — proof, references, a staged commitment.",
+        line:"This is a major capital outlay. What stops it becoming an expensive mistake?",
+        ackQuestion:"We've approved big bets that went nowhere. How is this de-risked?",
+        pass:"A staged rollout with reference sites and milestone gates — that's prudent. The board can support that.",
+        weak:"That's optimism, not risk management. The board won't buy it.",
+        fold:"Cut the commitment in half and we'll feel safer." },
+      { id:"competitor", label:"Competitor", difficulty:"hard",
+        hint:"A board member has a rival quote in hand. Don't disparage — reframe on long-term value and total outcome where the cheaper option falls short.",
+        line:"One of our directors has a cheaper proposal on the table. Why not them?",
+        ackQuestion:"On paper theirs costs less over five years. Defend the difference.",
+        pass:"Once you factor output and downtime, your total return is higher. That's a board-level argument. Good.",
+        weak:"Sounds like the same kit with a bigger invoice.",
+        fold:"Beat their number and the board's an easy yes." },
+      { id:"price", label:"Price", difficulty:"hard",
+        hint:"Final hurdle — justify the capital to fiduciaries. Frame it as return on capital and payback, the language a board is obligated to respect.",
+        line:"Final question — justify this price to a board with a fiduciary duty to shareholders.",
+        ackQuestion:"Why is this the responsible use of shareholder capital?",
+        pass:"A defined payback and return on capital that beats our hurdle rate — yes, that's responsible. Approved.",
+        weak:"That's a sales figure, not a financial case.",
+        fold:"Shave the price and we'll call it responsible." }
+    ]
+  },
+  25: {
+    persona:{ name:"Eleanor Vance", initials:"E", role:"CEO", company:"Continental Dynamics", backstory:"The final boss. A hostile, expert CEO loyal to a competitor, who guards her own calendar and has dismantled better reps than you. Beat all three and the deal is yours.", avatarColor:"var(--gold)" },
+    product:"Enterprise transformation → hostile, expert, competitor-loyal CEO",
+    opener:"You have ninety seconds. I didn't ask for this meeting, my assistant overbooked me. So — why are you still talking?",
+    close:"...You held your ground on all three, you knew your subject, and you didn't flinch when I pushed. Few do. Alright. Let's begin the partnership.",
+    objective:"Survive all three — earn the deal against the toughest buyer in the game.",
+    objections:[
+      { id:"gatekeeper", label:"Her own time", difficulty:"hard",
+        hint:"She's gatekeeping herself. You won't earn ninety minutes with a pitch — earn it with one sharp, relevant insight about her business that makes staying worth her while.",
+        line:"You have ninety seconds. Why are you still talking?",
+        ackQuestion:"My calendar is the most valuable thing in this building. Justify the interruption.",
+        pass:"...Hm. That's a sharper read on my business than most. Fine — you have my attention. Continue.",
+        weak:"That's a generic opener. Ninety seconds wasted. Tighten it.",
+        fold:"I'll have my assistant book something cheap and small, off you go." },
+      { id:"competitor", label:"Competitor + expert", difficulty:"hard",
+        hint:"She's loyal to a rival AND knows the domain cold. Don't bash the incumbent or oversimplify — respect her expertise and reframe on the outcome her current vendor can't deliver.",
+        line:"We're committed to our current partner, and frankly I know this space better than you. Why would I switch?",
+        ackQuestion:"I've run three transformations. What could you possibly teach me about this?",
+        pass:"...That's a genuinely sophisticated point, and it's an outcome they can't give me. You've earned the next question.",
+        weak:"You're explaining my own industry to me. Poorly. Move on.",
+        fold:"If you undercut them significantly I'll consider a pilot." },
+      { id:"price", label:"Price / risk ultimatum", difficulty:"hard",
+        hint:"The final test — premium price plus the risk of a transformation. Hold the line on both: frame price as risk-adjusted return and prove you de-risk the change. Cave here and you lose everything.",
+        line:"This is a fortune and transformations fail more than they succeed. Give me one reason this isn't reckless — and a far better price.",
+        ackQuestion:"Why should I bet the company on your price and your promise?",
+        pass:"A risk-adjusted return, staged commitments, and you held your price with conviction. That's a partner, not a vendor. Let's begin.",
+        weak:"That's a brochure answer to a board-level risk. Inadequate.",
+        fold:"Halve the price and indemnify the risk and maybe." }
+    ]
+  }
+};
 
-var LEVEL1_GOALS = [
-  "Understand what Mike actually values before discussing price",
-  "Demonstrate why Blue Label is worth full price",
-  "Hold the line — and still get the order"
-];
+// Derive the LEVELS list (map cards / brief / steppers) from SCENARIOS + rules.
+var LEVEL_NAMES = {
+  1:"The First Yes",2:"The Brush-Off",3:"Not My Call",4:"Happy As We Are",5:"The Gatekeeper",
+  6:"Front Desk",7:"Two Minutes, Tops",8:"Run It Upstairs",9:"We're Sorted",10:"The Shortlist",
+  11:"Margins Are Tight",12:"The Ghost",13:"By Committee",14:"We Love Our Guy",15:"Let Me Think About It",
+  16:"Budget's Frozen",17:"Too Many Cooks",18:"You Burned Us Once",19:"Prove It",20:"I've Read Everything",
+  21:"Take It Or Leave It",22:"I Know This Better Than You",23:"Convince Me",24:"The Board",25:"The Final Boss"
+};
+var LEVEL_TAGS = {
+  1:"RETAIL",2:"HOSPITALITY",3:"RETAIL",4:"SME",5:"B2B",6:"B2B",7:"HOSPITALITY",8:"WHOLESALE",9:"TRADE",10:"MID-MARKET",
+  11:"FRANCHISE",12:"RE-ENGAGE",13:"LOGISTICS",14:"COMPETE",15:"HEALTH",16:"ENTERPRISE",17:"ENTERPRISE",18:"WIN-BACK",19:"REFERRAL",20:"INBOUND",
+  21:"NEGOTIATION",22:"EXPERT",23:"FULL CYCLE",24:"BOARD",25:"FINAL BOSS"
+};
+var LEVELS = [];
+(function buildLevels(){
+  for (var id = 1; id <= 25; id++) {
+    var sc = SCENARIOS[id];
+    LEVELS.push({
+      id:id,
+      name:LEVEL_NAMES[id],
+      scenario:sc.product,
+      sections:sc.objections.length,
+      tag:LEVEL_TAGS[id],
+      pro:(id > 10),
+      state:(id === 1 ? 'current' : (id <= 10 ? 'locked' : 'pro'))
+    });
+  }
+})();
 
-var SECTION_NAMES = ["Price Objection","Discovery","Value Pitch","Objection #2","Negotiation","Close","Final Push"];
+var SECTION_NAMES = ["Opener","Objection","Objection #2","Objection #3","Close"];
 
 /* ============================================================
    STATE
@@ -990,13 +1765,85 @@ var currentScreen = 'screen-landing';
 var currentLevel = 1;
 var mode = 'text';
 var chatMessages = [];
-var convoStage = 0;
+var convoStage = 0;          // 0=opener, then odd/even managed by engine
 var timerInterval = null;
 var timerSeconds = 0;
 var slackUses = 1;
 var isPro = false;
 var recording = false;
 var sessionEnded = false;
+
+// --- Engine run-state ---
+var activeScenario = null;       // SCENARIOS[currentLevel]
+var objIndex = 0;                // which objection we're on
+var awaitingObjectionReply = false;
+var objResults = [];             // 'pass' | 'value' | 'weak' | 'fold' per objection
+var weakStreak = 0;              // consecutive weak/neutral on current objection
+var proactiveFired = {};         // objIndex -> bool
+
+// --- User profile (persisted) ---
+var userProfile = { name:'', nickname:'', accent:'#7c6af7', prefs:{ sound:true, proactive:true, motion:false } };
+var selectedPlanKey = 'popular';
+
+var PLANS = {
+  starter:{ key:'starter', name:'Starter', price:20, displayPrice:'$10', credits:2,
+    feats:['2 credits','AI coach on 2 sessions','Levels 1–25 access','Skip daily limit twice'] },
+  popular:{ key:'popular', name:'Popular', price:20, displayPrice:'$20', credits:5,
+    feats:['5 credits','AI coach on every session','All 25 levels','Unlimited daily sessions','Priority features'] },
+  pro:{ key:'pro', name:'Pro', price:50, displayPrice:'$50', credits:15,
+    feats:['15 credits','Everything in Popular','Early access to new levels','Custom scenario builder (soon)'] }
+};
+
+// Accent swatches for onboarding
+var ACCENTS = [
+  { name:'Violet', color:'#7c6af7', glow:'rgba(124,106,247,0.2)' },
+  { name:'Cyan', color:'#00e5ff', glow:'rgba(0,229,255,0.2)' },
+  { name:'Orange', color:'#ff6b35', glow:'rgba(255,107,53,0.2)' },
+  { name:'Emerald', color:'#00d68f', glow:'rgba(0,214,143,0.2)' },
+  { name:'Hot Pink', color:'#ff4d8d', glow:'rgba(255,77,141,0.2)' },
+  { name:'Gold', color:'#ffd000', glow:'rgba(255,208,0,0.2)' }
+];
+
+/* ============================================================
+   PROFILE PERSISTENCE
+============================================================ */
+function saveProfile() {
+  try {
+    localStorage.setItem('pitchgym_profile', JSON.stringify(userProfile));
+    localStorage.setItem('pitchgym_pro', isPro ? '1' : '0');
+  } catch (e) {}
+}
+function loadProfile() {
+  try {
+    var raw = localStorage.getItem('pitchgym_profile');
+    if (raw) {
+      var p = JSON.parse(raw);
+      if (p && typeof p === 'object') {
+        userProfile.name = p.name || '';
+        userProfile.nickname = p.nickname || '';
+        userProfile.accent = p.accent || '#7c6af7';
+        if (p.prefs) {
+          userProfile.prefs.sound = p.prefs.sound !== false;
+          userProfile.prefs.proactive = p.prefs.proactive !== false;
+          userProfile.prefs.motion = !!p.prefs.motion;
+        }
+      }
+    }
+    if (localStorage.getItem('pitchgym_pro') === '1') isPro = true;
+  } catch (e) {}
+}
+function applyAccent(color) {
+  var glow = 'rgba(124,106,247,0.2)';
+  for (var i = 0; i < ACCENTS.length; i++) { if (ACCENTS[i].color === color) glow = ACCENTS[i].glow; }
+  document.documentElement.style.setProperty('--primary', color);
+  document.documentElement.style.setProperty('--primary-glow', glow);
+}
+function applyMotionPref() {
+  document.documentElement.style.scrollBehavior = userProfile.prefs.motion ? 'auto' : '';
+}
+function applyProState() {
+  document.getElementById('nav-pro-badge').style.display = isPro ? 'inline-flex' : 'none';
+}
 
 /* ============================================================
    SCREEN NAV
@@ -1020,31 +1867,52 @@ function showScreen(id) {
    LEVEL MAP
 ============================================================ */
 function renderLevelMap() {
+  applyProState();
+  // Greeting line (uses nickname once set)
+  var greet = document.getElementById('level-greeting');
+  if (userProfile.nickname) {
+    greet.style.display = 'block';
+    greet.textContent = 'Ready when you are, ' + userProfile.nickname + '.';
+  } else {
+    greet.style.display = 'none';
+  }
+  var meta = document.getElementById('level-map-meta');
+  meta.textContent = isPro ? 'All 25 levels unlocked' : 'Level 1 of 25';
+
   var grid = document.getElementById('level-grid');
   grid.innerHTML = '';
   for (var i = 0; i < LEVELS.length; i++) {
     var lv = LEVELS[i];
-    // Free tier only ever sees Levels 1–10. Levels 11–25 stay hidden until
-    // they finish Level 10 — that's when the upgrade reveal fires.
-    if (lv.id > 10) continue;
+    // Free tier sees Levels 1–10 (locked beyond progress). Pro sees all 25, none locked.
+    if (!isPro && lv.id > 10) continue;
+
     var card = document.createElement('div');
     var stateClass = '', stateIcon = '';
-    if (lv.state === 'done') { stateClass = 'done'; stateIcon = '✅'; }
-    else if (lv.state === 'current') { stateClass = 'current'; stateIcon = '🔓'; }
-    else { stateClass = 'locked'; stateIcon = '🔒'; }
+    if (isPro) {
+      // Pro: nothing is locked. Keep done/current for progress feel.
+      if (lv.state === 'done') { stateClass = 'done'; stateIcon = '✅'; }
+      else if (lv.state === 'current') { stateClass = 'current'; stateIcon = '▶'; }
+      else { stateClass = ''; stateIcon = ''; }
+    } else {
+      if (lv.state === 'done') { stateClass = 'done'; stateIcon = '✅'; }
+      else if (lv.state === 'current') { stateClass = 'current'; stateIcon = '🔓'; }
+      else { stateClass = 'locked'; stateIcon = '🔒'; }
+    }
     card.className = 'level-card ' + stateClass;
-    // Locked levels: number stays sharp, everything else blurs to build anticipation.
     var blurClass = (stateClass === 'locked') ? ' blurred' : '';
+    var tagHtml = (lv.pro && isPro)
+      ? '<span class="mini-tag pro">PRO</span>'
+      : '<span class="mini-tag">' + lv.tag + '</span>';
     card.innerHTML =
       '<div class="level-state">' + stateIcon + '</div>' +
       '<div class="level-num">LEVEL ' + lv.id + '</div>' +
       '<div class="level-name' + blurClass + '">' + lv.name + '</div>' +
       '<div class="level-meta' + blurClass + '">' +
-        '<span class="mini-tag">' + lv.tag + '</span>' +
-        '<span class="section-pill">' + lv.sections + ' section' + (lv.sections > 1 ? 's' : '') + '</span>' +
+        tagHtml +
+        '<span class="section-pill">' + lv.sections + ' objection' + (lv.sections > 1 ? 's' : '') + '</span>' +
       '</div>';
     (function(lvl) {
-      if (lvl.state === 'locked') { card.onclick = function() {}; }
+      if (!isPro && lvl.state === 'locked') { card.onclick = function() {}; }
       else { card.onclick = function() { showLevelBrief(lvl.id); }; }
     })(lv);
     grid.appendChild(card);
@@ -1059,34 +1927,81 @@ function showLevelBrief(levelNum) {
   var lv = null;
   for (var i = 0; i < LEVELS.length; i++) { if (LEVELS[i].id === levelNum) lv = LEVELS[i]; }
   if (!lv) lv = LEVELS[0];
+  var sc = SCENARIOS[levelNum] || SCENARIOS[1];
+
   document.getElementById('brief-lvl').textContent = 'LEVEL ' + lv.id;
   document.getElementById('brief-tag').textContent = lv.tag;
+  document.getElementById('topbar-title-brief') && (document.getElementById('topbar-title-brief').textContent = lv.name);
 
-  document.getElementById('brief-story').innerHTML = LEVEL1_STORY;
+  // Story: persona + backstory + the named objection(s) they'll face.
+  var objLabels = [];
+  for (var o = 0; o < sc.objections.length; o++) objLabels.push(sc.objections[o].label);
+  var p = sc.persona;
+  var story = "You're selling " + emphParts(sc.product) + ".\n\n" +
+    "You're up against " + boldName(p.name) + " — " + p.role + " at " + p.company + ".\n" +
+    p.backstory + "\n\n" +
+    "Objection" + (objLabels.length > 1 ? "s" : "") + " you'll face: " +
+    objLabels.map(function(l){ return '<span class="emph">' + escapeHtml(l) + '</span>'; }).join(', ') + ".";
+  document.getElementById('brief-story').innerHTML = story;
+
+  // Goals = the scenario objective + a per-objection goal line.
   var goalWrap = document.getElementById('brief-goals');
   goalWrap.innerHTML = '';
-  for (var g = 0; g < LEVEL1_GOALS.length; g++) {
-    var d = document.createElement('div');
-    d.className = 'goal-item';
-    d.textContent = LEVEL1_GOALS[g];
-    goalWrap.appendChild(d);
+  addGoal(goalWrap, sc.objective);
+  for (var g = 0; g < sc.objections.length; g++) {
+    addGoal(goalWrap, 'Handle the ' + sc.objections[g].label.toLowerCase() + ' objection without folding');
   }
 
+  // Stepper: Opener → one node per objection → Close
   var stepper = document.getElementById('brief-stepper');
   stepper.innerHTML = '';
-  for (var s = 0; s < lv.sections; s++) {
+  var steps = ['Opener'];
+  for (var s = 0; s < sc.objections.length; s++) steps.push(sc.objections[s].label);
+  steps.push('Close');
+  for (var k = 0; k < steps.length; k++) {
     var node = document.createElement('div');
     node.className = 'step-node';
-    node.innerHTML = '<div class="step-circle ' + (s === 0 ? '' : 'future') + '">' + (s + 1) + '</div><span class="step-label">' + (SECTION_NAMES[s] || ('Section ' + (s + 1))) + '</span>';
+    node.innerHTML = '<div class="step-circle ' + (k === 0 ? '' : 'future') + '">' + (k + 1) + '</div><span class="step-label">' + escapeHtml(steps[k]) + '</span>';
     stepper.appendChild(node);
-    if (s < lv.sections - 1) {
+    if (k < steps.length - 1) {
       var conn = document.createElement('div');
       conn.className = 'step-conn';
       stepper.appendChild(conn);
     }
   }
+
+  // Scoring rubric (generic, references the key objection)
+  var keyObj = sc.objections[0].label.toLowerCase();
+  var rows = document.getElementById('brief-scoring-rows');
+  rows.innerHTML = '';
+  addScoreRow(rows, 'a', 'Handled every objection with discovery + value tied to ' + escapeHtml(p.name) + "'s world");
+  addScoreRow(rows, 'b', 'Held the line and made a solid value case on each objection');
+  addScoreRow(rows, 'c', 'Held the line but responses were vague');
+  addScoreRow(rows, 'f', 'Folded — caved or discounted on the ' + escapeHtml(keyObj) + ' objection');
+
   showScreen('screen-level-brief');
 }
+function addGoal(wrap, text) {
+  var d = document.createElement('div');
+  d.className = 'goal-item';
+  d.textContent = text;
+  wrap.appendChild(d);
+}
+function addScoreRow(wrap, tier, desc) {
+  var r = document.createElement('div');
+  r.className = 'scoring-row';
+  r.innerHTML = '<span class="tier tier-' + tier + '">' + tier.toUpperCase() + '</span><span class="desc">' + desc + '</span>';
+  wrap.appendChild(r);
+}
+function emphParts(product) {
+  // product looks like "X → Y"; render the X with emphasis.
+  var parts = product.split('→');
+  if (parts.length === 2) {
+    return '<span class="emph">' + escapeHtml(parts[0].trim()) + '</span> to ' + escapeHtml(parts[1].trim());
+  }
+  return escapeHtml(product);
+}
+function boldName(n) { return '<span class="emph">' + escapeHtml(n) + '</span>'; }
 
 function toggleMode(m) {
   mode = m;
@@ -1106,16 +2021,29 @@ function startSession() {
   slackUses = isPro ? 5 : 1;
   updateSlackBtn();
 
-  document.getElementById('rp-title').textContent = 'Level ' + currentLevel + ' · Price Objection';
+  activeScenario = SCENARIOS[currentLevel] || SCENARIOS[1];
+  objIndex = 0;
+  awaitingObjectionReply = false;
+  objResults = [];
+  weakStreak = 0;
+  proactiveFired = {};
 
   var lv = null;
   for (var i = 0; i < LEVELS.length; i++) { if (LEVELS[i].id === currentLevel) lv = LEVELS[i]; }
   if (!lv) lv = LEVELS[0];
+
+  document.getElementById('rp-title').textContent = 'Level ' + currentLevel + ' · ' + LEVEL_NAMES[currentLevel];
+
+  // Update prospect identity in both modes
+  var per = activeScenario.persona;
+  setProspectIdentity(per);
+
   var pills = document.getElementById('rp-pills');
   pills.innerHTML = '';
-  for (var p = 0; p < lv.sections; p++) {
+  // one pill per objection
+  for (var pz = 0; pz < activeScenario.objections.length; pz++) {
     var pill = document.createElement('div');
-    pill.className = 'spill' + (p === 0 ? ' active' : '');
+    pill.className = 'spill' + (pz === 0 ? ' active' : '');
     pills.appendChild(pill);
   }
 
@@ -1127,9 +2055,26 @@ function startSession() {
 
   if (mode === 'text') {
     renderChat();
-    mikeOpens();
+    prospectOpens();
   } else {
     startVoice();
+  }
+}
+
+function setProspectIdentity(per) {
+  document.getElementById('rp-avatar').textContent = per.initials;
+  document.getElementById('rp-avatar').style.background = per.avatarColor;
+  document.getElementById('rp-prospect-name').textContent = per.name;
+  document.getElementById('rp-prospect-role').textContent = per.role + ' · ' + per.company;
+  document.getElementById('vp-avatar').textContent = per.initials;
+  document.getElementById('vp-avatar').style.background = per.avatarColor;
+  document.getElementById('vp-prospect-name').textContent = per.name;
+  document.getElementById('vp-prospect-role').textContent = per.role + ' · ' + per.company;
+}
+function updateSectionPills() {
+  var pills = document.querySelectorAll('#rp-pills .spill');
+  for (var i = 0; i < pills.length; i++) {
+    pills[i].classList.toggle('active', i <= objIndex);
   }
 }
 
@@ -1155,12 +2100,13 @@ function updateTimer() {
 function renderChat() {
   var wrap = document.getElementById('chat-messages');
   wrap.innerHTML = '';
+  var per = activeScenario ? activeScenario.persona : { initials:'M', avatarColor:'var(--orange)' };
   for (var i = 0; i < chatMessages.length; i++) {
     var m = chatMessages[i];
     var div = document.createElement('div');
     div.className = 'msg ' + m.role;
     if (m.role === 'prospect') {
-      div.innerHTML = '<div class="avatar" style="background:var(--orange);width:32px;height:32px;font-size:13px;">M</div><div class="bubble">' + escapeHtml(m.text) + '</div>';
+      div.innerHTML = '<div class="avatar" style="background:' + per.avatarColor + ';width:32px;height:32px;font-size:13px;">' + per.initials + '</div><div class="bubble">' + escapeHtml(m.text) + '</div>';
     } else {
       div.innerHTML = '<div class="bubble">' + escapeHtml(m.text) + '</div>';
     }
@@ -1178,11 +2124,12 @@ function showTyping(show) {
   document.getElementById('typing-mini').classList.toggle('show', show);
   var wrap = document.getElementById('chat-messages');
   var t = document.getElementById('typing-bubble');
+  var per = activeScenario ? activeScenario.persona : { initials:'M', avatarColor:'var(--orange)' };
   if (show && !t) {
     t = document.createElement('div');
     t.id = 'typing-bubble';
     t.className = 'msg prospect';
-    t.innerHTML = '<div class="avatar" style="background:var(--orange);width:32px;height:32px;font-size:13px;">M</div><div class="typing-dots"><span></span><span></span><span></span></div>';
+    t.innerHTML = '<div class="avatar" style="background:' + per.avatarColor + ';width:32px;height:32px;font-size:13px;">' + per.initials + '</div><div class="typing-dots"><span></span><span></span><span></span></div>';
     wrap.appendChild(t);
     scrollChat();
   } else if (!show && t) {
@@ -1190,7 +2137,7 @@ function showTyping(show) {
   }
 }
 
-function mikeSay(text, delay, cb) {
+function prospectSay(text, delay, cb) {
   showTyping(true);
   setTimeout(function() {
     showTyping(false);
@@ -1200,27 +2147,30 @@ function mikeSay(text, delay, cb) {
   }, delay);
 }
 
-function mikeOpens() {
-  mikeSay("Hey, it's Mike from the store. Got your message — yeah I tried those drinks you dropped off. Not bad actually, the lemon one's pretty good.", 1200, function() { convoStage = 1; });
+// convoStage convention (text + voice share it):
+//   0  = nothing said yet
+//   1  = opener delivered, waiting for rep's first line
+//   2+ = inside objection loop; awaitingObjectionReply tracks turn
+function prospectOpens() {
+  prospectSay(activeScenario.opener, 1200, function() { convoStage = 1; });
 }
 
+// Classify the rep's reply against the active objection.
+// Returns: 'fold' | 'discovery' | 'value' | 'neutral'
 function detectResponse(text) {
-  var t = text.toLowerCase();
-  var failWords = ['discount','deal','% off','%off','reduce','lower the price','cheaper','special price','special offer','flexible on','work something out','knock','cut the price','come down','do something'];
-  var discoveryWords = ['what matters','what do you','what would','what are your','how do your','who are your','what kind','tell me about','what are you looking for','what\'s important','what does'];
-  var valueWords = ['because','the reason','what you get','what that means','return','roi','results','other stores','selling well','proven','data','margin'];
+  var t = ' ' + text.toLowerCase() + ' ';
   var i;
-  for (i = 0; i < failWords.length; i++) { if (t.indexOf(failWords[i]) !== -1) return 'fail'; }
-  for (i = 0; i < discoveryWords.length; i++) { if (t.indexOf(discoveryWords[i]) !== -1) return 'discovery'; }
-  for (i = 0; i < valueWords.length; i++) { if (t.indexOf(valueWords[i]) !== -1) return 'value'; }
+  for (i = 0; i < FOLD_WORDS.length; i++) { if (t.indexOf(FOLD_WORDS[i]) !== -1) return 'fold'; }
+  for (i = 0; i < DISCOVERY_WORDS.length; i++) { if (t.indexOf(DISCOVERY_WORDS[i]) !== -1) return 'discovery'; }
+  for (i = 0; i < VALUE_WORDS.length; i++) { if (t.indexOf(VALUE_WORDS[i]) !== -1) return 'value'; }
   return 'neutral';
 }
 
-// Did the user ask Mike something? Used so Mike acknowledges before moving on.
+// Did the rep ask a question? So the prospect acknowledges before moving on.
 function isQuestion(text) {
   var t = text.toLowerCase().trim();
   if (t.indexOf('?') !== -1) return true;
-  var starters = ['what','how','why','who','when','where','which','did','do you','have you','was there','is there','tell me','any'];
+  var starters = ['what','how','why','who','when','where','which','did','do you','have you','was there','is there','tell me','any','can you','could you','would you'];
   for (var i = 0; i < starters.length; i++) { if (t.indexOf(starters[i]) === 0) return true; }
   return false;
 }
@@ -1240,34 +2190,77 @@ function sendChatMessage() {
   handleUserTurn(text);
 }
 
+// ---- Data-driven turn engine (TEXT) ----
 function handleUserTurn(text) {
   if (convoStage === 1) {
-    // Mike just praised the lemon. If the rep asks him about it, acknowledge
-    // the answer before pivoting to price — a real person wouldn't ignore it.
-    if (isQuestion(text)) {
-      mikeSay("Yeah honestly it's the lemon — it's tart without being too sugary. Half my regulars are off the soft drinks these days, so something like that actually moves. Anyway — I'm keen to give it a crack. What are we looking at per case?", 1400, function() { convoStage = 2; });
-    } else {
-      mikeSay("Yeah, fair enough. Look, I'm keen to give it a go. What are we looking at in terms of pricing? How much per case?", 1100, function() { convoStage = 2; });
-    }
-  } else if (convoStage === 2) {
-    mikeSay("Right. Any chance you could do a bit of a deal for us? We're a small store, just trying it out.", 1100, function() { convoStage = 3; });
-  } else if (convoStage === 3) {
-    var r = detectResponse(text);
-    if (r === 'fail') {
-      mikeSay("Oh sweet, yeah that works for me. Cheers.", 900, function() { finishSession('fail'); });
-    } else if (r === 'discovery') {
-      mikeSay("Good question. Honestly the margins have to work and I need something that actually sells. My customers are pretty health-conscious these days.", 1300, function() { convoStage = 4; });
-    } else if (r === 'value') {
-      mikeSay("I get that but honestly every rep says their product's worth it. What makes yours different for a store like mine?", 1000, function() { convoStage = 5; });
-    } else {
-      mikeSay("Come on, everyone gives a first-order sweetener. So can you sort me out or not?", 1100, function() { convoStage = 3; });
-    }
-  } else if (convoStage === 4) {
-    if (detectResponse(text) === 'fail') { mikeSay("Oh sweet, yeah that works for me. Cheers.", 900, function() { finishSession('fail'); }); return; }
-    mikeSay("Yeah fair point. Alright look, if the first order moves well I'll keep it going. Send me through the details.", 1200, function() { finishSession('discovery'); });
-  } else if (convoStage === 5) {
-    if (detectResponse(text) === 'fail') { mikeSay("Oh sweet, yeah that works for me. Cheers.", 900, function() { finishSession('fail'); }); return; }
-    mikeSay("Alright, I'll give it a try. Let's do a small first order.", 1100, function() { finishSession('value'); });
+    // Rep responded to the opener — raise the first objection.
+    raiseObjection(text, prospectSay, function(){});
+    return;
+  }
+  // We're answering an objection.
+  resolveObjection(text, prospectSay, function(){});
+}
+
+// Prospect raises objection at objIndex (acknowledging a question first).
+function raiseObjection(prevText, sayFn, after) {
+  var obj = activeScenario.objections[objIndex];
+  var line = obj.line;
+  if (prevText && isQuestion(prevText) && obj.ackQuestion) line = obj.ackQuestion;
+  sayFn(line, 1200, function() {
+    convoStage = 2;
+    awaitingObjectionReply = true;
+    weakStreak = 0;
+    updateSectionPills();
+    if (after) after();
+  });
+}
+
+// Resolve the rep's reply to the current objection, route, advance.
+function resolveObjection(text, sayFn, after) {
+  var obj = activeScenario.objections[objIndex];
+  var r = detectResponse(text);
+
+  if (r === 'fold') {
+    objResults[objIndex] = 'fold';
+    sayFn(obj.fold, 900, function() { finishSession(); });
+    return;
+  }
+  if (r === 'discovery' || r === 'value') {
+    objResults[objIndex] = r;   // 'discovery' (best) or 'value' (solid)
+    weakStreak = 0;
+    advanceAfterObjection(sayFn, obj.pass);
+    return;
+  }
+  // neutral / weak
+  weakStreak++;
+  // Pro proactive coach: after 2 weak in a row, nudge (if enabled).
+  if (isPro && userProfile.prefs.proactive && weakStreak >= 2 && !proactiveFired[objIndex]) {
+    proactiveFired[objIndex] = true;
+    showSlackPopup(true);
+  }
+  if (weakStreak >= 3) {
+    // They held but never landed it — count as a weak hold and move on.
+    objResults[objIndex] = 'weak';
+    advanceAfterObjection(sayFn, obj.pass);
+    return;
+  }
+  sayFn(obj.weak, 1100, function() { if (after) after(); });
+}
+
+function advanceAfterObjection(sayFn, passLine) {
+  objIndex++;
+  if (objIndex >= activeScenario.objections.length) {
+    // All objections handled — deliver close, then score.
+    sayFn(passLine, 1100, function() {
+      sayFn(activeScenario.close, 1300, function() { finishSession(); });
+    });
+  } else {
+    awaitingObjectionReply = false;
+    updateSectionPills();
+    // Acknowledge with the pass line, then raise the next objection.
+    sayFn(passLine, 1100, function() {
+      raiseObjection(null, sayFn, function(){});
+    });
   }
 }
 
@@ -1296,12 +2289,18 @@ function useLifeline(type) {
     updateSlackBtn();
     showSlackPopup();
   } else if (type === 'retry') {
-    showConfirm('Start this section over?', function() {
+    showConfirm('Start this call over?', function() {
       closeConfirm();
       chatMessages = [];
       convoStage = 0;
+      objIndex = 0;
+      objResults = [];
+      weakStreak = 0;
+      awaitingObjectionReply = false;
+      proactiveFired = {};
+      updateSectionPills();
       renderChat();
-      mikeOpens();
+      prospectOpens();
     });
   } else if (type === 'undo') {
     if (chatMessages.length < 2) return;
@@ -1317,9 +2316,15 @@ function useLifeline(type) {
   }
 }
 
-function showSlackPopup() {
-  var msg = "Mike hasn't told you why he wants a deal — ask him what matters most to him about stocking a new drinks brand. That's your in.";
-  if (convoStage >= 4) msg = "He just told you margins and health-conscious customers matter. Tie Blue Label directly to those two things — that's the A.";
+function showSlackPopup(proactive) {
+  // Contextual hint tied to the CURRENT objection — a nudge, never the answer.
+  var msg = "Stay with it — find out what really matters to them before you make your case.";
+  if (activeScenario && activeScenario.objections[objIndex]) {
+    msg = activeScenario.objections[objIndex].hint;
+  }
+  if (proactive) {
+    msg = "👀 Heads up — you've drifted twice now. " + msg;
+  }
   document.getElementById('slack-msg').textContent = msg;
   var now = new Date();
   var hh = String(now.getHours()); while (hh.length < 2) hh = '0' + hh;
@@ -1357,17 +2362,17 @@ function startVoice() {
   setTimeout(function() {
     status.textContent = 'Connected';
     setTimeout(function() {
-      voiceMikeSpeak("Hey, it's Mike from the store. Got your message — yeah I tried those drinks you dropped off. Not bad actually, the lemon one's pretty good.", function() { convoStage = 1; promptUserVoice(); });
+      voiceProspectSpeak(activeScenario.opener, function() { convoStage = 1; promptUserVoice(); });
     }, 800);
   }, 1200);
 }
 
-function voiceMikeSpeak(text, cb) {
+function voiceProspectSpeak(text, cb) {
   var status = document.getElementById('voice-status');
   var wave = document.getElementById('voice-wave');
-  status.textContent = 'Mike is speaking…';
+  status.textContent = activeScenario.persona.name + ' is speaking…';
   wave.classList.add('speaking');
-  addTranscript('Mike', text);
+  addTranscript('prospect', text);
   setTimeout(function() {
     wave.classList.remove('speaking');
     if (cb) cb();
@@ -1382,10 +2387,11 @@ function promptUserVoice() {
 
 function addTranscript(who, text) {
   var body = document.getElementById('voice-transcript-body');
+  var per = activeScenario ? activeScenario.persona : { initials:'M', avatarColor:'var(--orange)' };
   var div = document.createElement('div');
-  div.className = 'msg ' + (who === 'Mike' ? 'prospect' : 'user');
-  if (who === 'Mike') {
-    div.innerHTML = '<div class="avatar" style="background:var(--orange);width:28px;height:28px;font-size:12px;">M</div><div class="bubble" style="font-size:14px;">' + escapeHtml(text) + '</div>';
+  div.className = 'msg ' + (who === 'prospect' ? 'prospect' : 'user');
+  if (who === 'prospect') {
+    div.innerHTML = '<div class="avatar" style="background:' + per.avatarColor + ';width:28px;height:28px;font-size:12px;">' + per.initials + '</div><div class="bubble" style="font-size:14px;">' + escapeHtml(text) + '</div>';
   } else {
     div.innerHTML = '<div class="bubble" style="font-size:14px;">🎙 ' + escapeHtml(text) + '</div>';
   }
@@ -1416,6 +2422,12 @@ function sendVoiceMessage() {
   document.getElementById('voice-input-row').style.display = 'none';
   addTranscript('You', text);
   handleVoiceTurn(text);
+}
+
+// Voice say-wrapper matching prospectSay signature (text, delay, cb).
+// Does NOT auto-prompt — the engine decides when the user's turn is.
+function voiceSay(text, delay, cb) {
+  setTimeout(function() { voiceProspectSpeak(text, function() { if (cb) cb(); }); }, 700);
 }
 
 function voiceKeydown(e) {
@@ -1566,6 +2578,11 @@ function finishSession(resultKey) {
 
   showScreen('screen-score');
   setTimeout(function() { animateScore(data.score); }, 350);
+
+  // Pass = trigger full-screen celebration ~400ms after screen transition.
+  if (data.pass) {
+    setTimeout(celebrate, 400);
+  }
 
   // Finishing Level 10 is the moment we reveal there's more — and that it's Pro.
   if (data.pass && currentLevel === 10) {
@@ -1808,6 +2825,206 @@ function initCanvas() {
   resize(); makeParticles();
   window.addEventListener('resize', function() { resize(); makeParticles(); });
   draw();
+}
+
+/* ============================================================
+   CELEBRATION ANIMATION
+============================================================ */
+var celebrateRAF = null;
+var celebrateTimeout = null;
+
+function celebrate() {
+  var canvas = document.getElementById('celebrate-canvas');
+  if (!canvas || !canvas.getContext) return;
+  var ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  // Size canvas to viewport
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var W = canvas.width, H = canvas.height;
+  canvas.style.display = 'block';
+
+  var COLORS = ['#ffd000','#00d68f','#7c6af7','#ff6b35','#00e5ff','#ff4444','#ffffff','#ffd700'];
+  var GOLD_COLORS = ['#ffd700','#f59e0b'];
+
+  // --- Build 120 particles ---
+  var particles = [];
+  for (var i = 0; i < 120; i++) {
+    var type = (i < 55) ? 'confetti' : (i < 85) ? 'coin' : 'none';
+    // spread launch x across full width, clusters near center-ish
+    var lx = W * 0.1 + Math.random() * W * 0.8;
+    var color = COLORS[Math.floor(Math.random() * COLORS.length)];
+    var goldColor = GOLD_COLORS[Math.floor(Math.random() * GOLD_COLORS.length)];
+    particles.push({
+      type: type,
+      x: lx,
+      y: H + 10 + Math.random() * 60,          // start below viewport
+      vx: (Math.random() - 0.5) * 5.5,
+      vy: -(9 + Math.random() * 10),             // launch upward
+      color: color,
+      goldColor: goldColor,
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.28,
+      radius: 5 + Math.random() * 2,            // for coin
+      alpha: 1,
+      scaleX: 1,                                 // confetti squish for flip feel
+      flipDir: Math.random() > 0.5 ? 1 : -1,
+      flipSpeed: 0.05 + Math.random() * 0.08
+    });
+  }
+
+  // --- Firework bursts: 5 staggered ---
+  var BURST_DELAYS = [0, 250, 500, 900, 1400];
+  var bursts = [];
+  var startTime = performance.now();
+
+  function scheduleBursts() {
+    for (var b = 0; b < BURST_DELAYS.length; b++) {
+      (function(delay) {
+        setTimeout(function() {
+          var bx = W * 0.1 + Math.random() * W * 0.8;
+          var by = H * 0.05 + Math.random() * H * 0.35;
+          var numLines = 8 + Math.floor(Math.random() * 5);
+          var burstColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+          var lines = [];
+          for (var l = 0; l < numLines; l++) {
+            var angle = (l / numLines) * Math.PI * 2;
+            var len = 40 + Math.random() * 60;
+            lines.push({
+              ex: bx + Math.cos(angle) * len,
+              ey: by + Math.sin(angle) * len
+            });
+          }
+          bursts.push({ x: bx, y: by, lines: lines, color: burstColor, born: performance.now() });
+        }, delay);
+      })(BURST_DELAYS[b]);
+    }
+  }
+
+  scheduleBursts();
+
+  // Also kick loose some particles immediately with upward velocity
+  // (a second wave from different x to fill the screen)
+  for (var j = 0; j < 40; j++) {
+    var type2 = (j < 20) ? 'confetti' : 'coin';
+    var lx2 = Math.random() * W;
+    particles.push({
+      type: type2,
+      x: lx2,
+      y: H + 5 + Math.random() * 40,
+      vx: (Math.random() - 0.5) * 7,
+      vy: -(7 + Math.random() * 14),
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      goldColor: GOLD_COLORS[Math.floor(Math.random() * GOLD_COLORS.length)],
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.3,
+      radius: 5 + Math.random() * 2,
+      alpha: 1,
+      scaleX: 1,
+      flipDir: Math.random() > 0.5 ? 1 : -1,
+      flipSpeed: 0.05 + Math.random() * 0.08
+    });
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, W, H);
+
+    // --- Draw firework bursts ---
+    var now = performance.now();
+    for (var bi = bursts.length - 1; bi >= 0; bi--) {
+      var bst = bursts[bi];
+      var age = now - bst.born;
+      var BURST_LIFE = 600;
+      if (age > BURST_LIFE) { bursts.splice(bi, 1); continue; }
+      var bAlpha = 1 - (age / BURST_LIFE);
+      ctx.save();
+      ctx.globalAlpha = bAlpha;
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = bst.color;
+      ctx.strokeStyle = bst.color;
+      ctx.lineWidth = 2.5;
+      for (var li = 0; li < bst.lines.length; li++) {
+        // Progress the line outward as it ages
+        var progress = age / BURST_LIFE;
+        var lx3 = bst.x + (bst.lines[li].ex - bst.x) * Math.min(progress * 2, 1);
+        var ly3 = bst.y + (bst.lines[li].ey - bst.y) * Math.min(progress * 2, 1);
+        ctx.beginPath();
+        ctx.moveTo(bst.x, bst.y);
+        ctx.lineTo(lx3, ly3);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // --- Draw & update particles ---
+    for (var pi = 0; pi < particles.length; pi++) {
+      var p = particles[pi];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.18;                              // gravity
+      p.vx *= 0.998;                             // minimal air resist
+
+      // Fade out once they're well past the top or far below viewport
+      if (p.y < -80 || p.y > H + 80) {
+        p.alpha = Math.max(0, p.alpha - 0.04);
+      } else if (p.vy > 0 && p.y > H * 0.6) {
+        // fade as they fall into the bottom half
+        p.alpha = Math.max(0, p.alpha - 0.012);
+      }
+
+      if (p.alpha <= 0) continue;
+
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.translate(p.x, p.y);
+
+      if (p.type === 'confetti') {
+        p.rotation += p.rotationSpeed;
+        p.scaleX += p.flipDir * p.flipSpeed;
+        if (Math.abs(p.scaleX) >= 1) p.flipDir *= -1;
+        ctx.rotate(p.rotation);
+        ctx.scale(p.scaleX, 1);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-4, -2, 8, 4);
+
+      } else if (p.type === 'coin') {
+        p.rotation += p.rotationSpeed;
+        ctx.rotate(p.rotation);
+        // coin body
+        ctx.beginPath();
+        ctx.arc(0, 0, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = p.goldColor;
+        ctx.fill();
+        // shine highlight
+        ctx.beginPath();
+        ctx.arc(-p.radius * 0.25, -p.radius * 0.3, p.radius * 0.35, 0, Math.PI);
+        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    celebrateRAF = requestAnimationFrame(loop);
+  }
+
+  loop();
+
+  // Auto-clear after 3200ms
+  clearTimeout(celebrateTimeout);
+  celebrateTimeout = setTimeout(clearCelebrate, 3200);
+}
+
+function clearCelebrate() {
+  if (celebrateRAF) { cancelAnimationFrame(celebrateRAF); celebrateRAF = null; }
+  clearTimeout(celebrateTimeout);
+  var canvas = document.getElementById('celebrate-canvas');
+  if (!canvas) return;
+  canvas.style.display = 'none';
+  var ctx = canvas.getContext('2d');
+  if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 /* ============================================================
