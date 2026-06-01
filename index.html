@@ -1155,6 +1155,8 @@ var FOLD_WORDS = ['discount','% off','%off','reduce the price','lower the price'
 var DISCOVERY_WORDS = ['what matters','what do you','what would','what are your','how do your','who are your','what kind','tell me about','what are you looking','what\'s important','what does','can i ask','help me understand','walk me through','how are you currently','what\'s driving','what\'s your','why is that','what would it mean','how much is it costing','what happens if','if you don\'t','out of curiosity','what\'s the','how long have'];
 // Value = tying to outcomes, proof, ROI, differentiation.
 var VALUE_WORDS = ['because','the reason','what you get','what that means','return','roi','results','proven','data','margin','outcome','saves you','make you','grow','case study','other clients','for example','specifically','track record','guarantee','results-based','we\'ve seen','customers like you','the difference is'];
+// Close = locking a concrete next step / commitment at the end.
+var CLOSE_WORDS = ['next step','book','schedule','calendar','diary','set up a','set up the','set you up','put time','find a time','put a time','when works','what day','this week','next week','tomorrow','monday','tuesday','wednesday','thursday','friday','at 3','3pm','trial','pilot','first order','small order','get started','get you started','kick off','kick it off','lock in','lock it in','lock this in','put you down','demo','follow-up call','i\'ll send','i will send','send the contract','send over','send you the','paperwork','agreement','sign','onboard','get the ball rolling','proposal','deposit','deliver','come measure','come by','let\'s do it','let\'s start','shall we'];
 
 // When the rep keeps stalling, the prospect escalates rather than repeating itself.
 var WEAK_ESCALATIONS = [
@@ -1181,19 +1183,19 @@ var SCENARIOS = {
     ]
   },
   2: {
-    persona:{ name:"Sarah Whitlock", initials:"S", role:"Owner", company:"Grind & Co Café, Newtown", backstory:"Owns a busy Newtown café. Always slammed, no patience for a pitch. You've got about two minutes before she walks off.", avatarColor:"#ff6b35" },
+    persona:{ name:"Sarah Whitlock", initials:"S", role:"Owner", company:"Grind & Co Café, Newtown", backstory:"Owns a busy Newtown café. Always slammed, no patience for a pitch. You've got about two minutes before she walks off — earn them and she'll give you more.", avatarColor:"#ff6b35" },
     product:"Premium coffee beans → café",
-    opener:"Yeah g'day. Look I've got about two minutes, I'm absolutely slammed — what's this about?",
-    close:"Alright, you've earned ten minutes. Come by at 3 and bring a sample. Don't be late.",
+    opener:"Yeah g'day. Look, I'm mid-rush here — what's this about? Make it worth my while.",
+    close:"Alright, you've earned a proper sit-down. Come by at 3 and bring a sample. Don't be late.",
     objective:"Earn the time with relevance — book the next step.",
     objections:[
       { id:"time", label:"Time", difficulty:"easy",
-        hint:"She gave you a clock, not a no. Lead with the one outcome that matters to a café owner — don't pitch features, earn the meeting.",
-        line:"I've got two minutes, I'm slammed. Make it quick — why should I care?",
-        ackQuestion:"We do alright on coffee, yeah, but I haven't got time to chat about it right now. Why's it worth my two minutes?",
-        pass:"Hm. Okay, that's actually relevant. You've got my attention for a proper sit-down.",
-        weak:"Mate that's what every rep says. I really don't have time for a generic spiel.",
-        fold:"Look I'll just take whatever's cheapest, I haven't got time for this." }
+        hint:"She gave you a clock, not a no. Don't pitch features — lead with the one outcome a café owner actually loses sleep over, and you'll earn the meeting.",
+        line:"Right, coffee beans. Mate, I've already got a supplier and a queue out the door — why is this worth pulling me off the machine?",
+        ackQuestion:"Honestly? Coffee's our biggest seller, so yeah it matters — but I haven't got time for a tasting right now. Why should I make the time?",
+        pass:"Hm. Okay, that's actually relevant to a place like mine — not the usual spiel. Go on, you've got a bit more than two minutes.",
+        weak:"Mate, that's what every rep says. I've got coffee going cold — give me something real or I'm back on the machine.",
+        fold:"Look, I'll just take whatever's cheapest, I haven't got time for this." }
     ]
   },
   3: {
@@ -1741,6 +1743,64 @@ var SCENARIOS = {
   }
 };
 
+// Per-level "See what an A looks like" — a model approach tailored to each scenario.
+var A_TIER_EXAMPLES = {
+  1:"\"Before we talk price — what's actually moving off your shelves right now, and what margin do you need it to hit?\"\n\nDiscover first. Then tie the lemon's sell-through to his regulars, hold your number, and close on a small first order. Discovery → value on HIS terms → hold → lock the next step.",
+  2:"\"Cafés that switched to our beans lifted repeat coffee orders around 18% — that's revenue, not a tasting. Worth booking ten proper minutes to see if that's real for Grind & Co?\"\n\nLead with her one outcome, not features. Earn the sit-down, then book it.",
+  3:"\"Makes total sense it's Denise's call. What does she need to see to say yes — and could we get her on a quick call so I make your case for you?\"\n\nDon't try to close Tom. Arm the champion and get a path to the real buyer.",
+  4:"\"Six years is a great run — clearly they've looked after you. Out of curiosity, when did you last benchmark their pricing and delivery? Let me send a side-by-side, no switch required yet.\"\n\nDon't bash the incumbent. Ask the question that exposes a quietly-accepted gap.",
+  5:"\"You'd know better than me what reaches Mr Harbridge's desk. We just cut downtime 40% for two firms like yours — is that the kind of thing he'd want flagged?\"\n\nTreat the gatekeeper as the key, not the obstacle. Be specific and human.",
+  6:"\"Totally fair to screen me. For a gym, clean equipment is really a membership-retention issue — that's why owners care. What does she weigh most: price or reliability?\"\n\nGive a gym-specific reason, then discover before you price.",
+  7:"\"One line: better signage lifts walk-in covers — that's revenue, not cost. Want me to show what it'd do for your foot traffic before you decide it's not worth the spend?\"\n\nTie the spend to covers and walk-ins, never to materials.",
+  8:"\"Let's arm you for that meeting. What's plastic actually costing you now — tenders, regulation, customer pushback? I'll build the case with you and present to her directly.\"\n\nSurface the pain of standing still, then equip the champion.",
+  9:"\"'Sorted' is good. Quick one — does your current policy cover tools stolen from a locked ute? Most don't. Worth two minutes to check the gap?\"\n\nExpose the specific gap, then frame cost against one uncovered claim.",
+  10:"\"I respect you're protecting the VP's time. Here's the one-line case she'll care about... want me to prep you so you look sharp bringing it in?\"\n\nMake him the hero of the internal sell, then get the room.",
+  11:"\"Forget unit cost — let's talk profit per site. Our sell-through nets you more per case even at a higher price. Want me to run the numbers across your three sites?\"\n\nFight on dollars made, not cents spent.",
+  12:"\"Fair that you moved on. Here's what's genuinely changed since... and waiting a quarter costs you the Q3 window specifically. Worth 30 minutes to see if the timing's different now?\"\n\nLead with what's new, then make the delay cost concrete.",
+  13:"\"Committees kill deals through gaps. Who's in the room and what does each one care about? Let me arm you on cost, uptime and headaches so all three say yes for their own reasons.\"\n\nMap the buying group before you defend anything.",
+  14:"\"Your rep sounds genuinely great — don't switch for the sake of it. One question: is he giving you [the outcome] you're missing? If not, here's how a phased migration removes the risk entirely.\"\n\nHonour the incumbent, shift to outcomes, shrink the switching fear.",
+  15:"\"'Let me think about it' usually means something's nagging. What's the real hesitation — reliability? Let me give you the uptime proof and lock a date so this doesn't just drift.\"\n\nDon't accept the stall. Surface the doubt, then create certainty.",
+  16:"\"Frozen budget is fair. This isn't spend — it's a nine-month payback that cuts more cost than it adds, and I can point you to a comparable client to verify it. Want the numbers your board can defend?\"\n\nReframe spend as savings; make inaction the bigger number.",
+  17:"\"Three agendas, one outcome: throughput. Frame it there and IT, ops and finance each win in their own language. And here's the pilot plus rollback plan that keeps your name off the risk.\"\n\nFind the shared outcome, then de-risk the rollout.",
+  18:"\"You're right to be angry — three days down was on us. Here's the redundancy change that makes that structurally impossible now. And I won't buy you back with a discount; I'll earn it on an ironclad SLA.\"\n\nOwn the failure plainly, then rebuild on accountability, not price.",
+  19:"\"Skip the adjectives — here's a named placement and a time-to-hire you can verify. And the one structural difference: our vetting process [specific]. Run one role and judge me on the result.\"\n\nLead with verifiable proof, then name what's genuinely different.",
+  20:"\"You know the brochure, so here's what's not on it: [a reframe of the category]. On your axis — time-to-insight — that's where we separate, and it maps straight to your growth goals. Let's talk terms.\"\n\nOut-insight the research; move the comparison to an axis only you can win.",
+  21:"\"Thirty under list isn't a number I'll counter — let me re-anchor on what reliability and lead time are actually worth. Your other three suppliers cost less right up until one stoppage wipes the saving. Here's my number, and here's why it holds.\"\n\nReject the anchor calmly; re-anchor on value; let silence work.",
+  22:"\"Honest answer: under your conditions it's [the real figure], and here's the caveat. For procurement and your lab manager — here's the TCO and the training package. The premium is cost-per-valid-result, which is actually lower.\"\n\nBe precise, admit real limits, then justify the premium scientifically.",
+  23:"\"You're right — I pitched before I understood you. Let me reset: how's your headcount model structured, and what does success look like in twelve months?\"\n\nThen tie every answer back to what she told you, handle the rollout objection with a phased plan, and ask for the business cleanly.",
+  24:"\"A board fears downside more than it wants upside — so here's the staged rollout, reference sites and milestone gates. Versus the cheaper quote, your total return is higher once output and downtime are in, and the payback beats your hurdle rate.\"\n\nSpeak in board language: risk, proof, return on capital.",
+  25:"\"One insight, not a pitch: [a sharp, specific read on her business]. Your current partner can't deliver [the outcome] — here's exactly why. And the price is a risk-adjusted return with staged commitments; I won't discount conviction. Let's begin.\"\n\nEarn the time with insight, reframe past the incumbent, hold on price AND risk."
+};
+
+// Buying-signal the prospect gives once all objections are handled — your cue to LOCK the next step.
+var CLOSE_ASKS = {
+  1:"Alright, you've actually won me over. So — what happens next?",
+  2:"Okay, you've earned more than two minutes. How do you want to leave this?",
+  3:"Right, I'm sold on taking this to Denise. What's the next move?",
+  4:"Hm, you've got me curious now. So where do we go from here?",
+  5:"You clearly know our world. What would you like me to do?",
+  6:"Alright, not a waste of time after all. So what's the next step?",
+  7:"Okay, I can see how that pays for itself. We open in a sec — what now?",
+  8:"You've given me enough to build a case. Where to from here?",
+  9:"Right, I genuinely didn't know that gap was there. So what do we do?",
+  10:"Okay, I can take this upstairs without looking silly. What do you need from me?",
+  11:"The numbers stack up. So how do we actually kick this off?",
+  12:"Okay, this is a different conversation than last time. What's the next step?",
+  13:"This is the cleanest case I've seen this year. How do you want to proceed?",
+  14:"You've genuinely made me reconsider. So where do we go from here?",
+  15:"You're right, I do this every time. Okay — so what now?",
+  16:"That's a real ROI case, not a wish. What's the next step?",
+  17:"You've given me a way to align them. So what's the move?",
+  18:"...Alright. One more chance. So how do we actually do this?",
+  19:"Okay, that's proof, not a promise. So where to from here?",
+  20:"You actually reframed it for me. Let's talk — what's next?",
+  21:"...You didn't blink and you didn't cave. Respect. So how do we close this?",
+  22:"The premium's justified and you know your instrument. How do we proceed?",
+  23:"Clean discovery, you handled the pushback. That's the full package — so what's the next step?",
+  24:"The board's satisfied. How do you want to proceed?",
+  25:"Few hold their ground on all three like that. So — how do we begin?"
+};
+
 // Derive the LEVELS list (map cards / brief / steppers) from SCENARIOS + rules.
 var LEVEL_NAMES = {
   1:"The First Yes",2:"The Brush-Off",3:"Not My Call",4:"Happy As We Are",5:"The Gatekeeper",
@@ -1794,6 +1854,9 @@ var awaitingObjectionReply = false;
 var objResults = [];             // 'pass' | 'value' | 'weak' | 'fold' per objection
 var weakStreak = 0;              // consecutive weak/neutral on current objection
 var proactiveFired = {};         // objIndex -> bool
+var awaitingClose = false;       // objections cleared, waiting for rep to lock the next step
+var closeResult = null;          // 'locked' | 'weak' | null (e.g. voice / never reached)
+var coachIntroShown = false;     // only ping the coach intro once per session
 
 // --- User profile (persisted) ---
 var userProfile = { name:'', nickname:'', accent:'#7c6af7', prefs:{ sound:true, proactive:true } };
@@ -2055,6 +2118,9 @@ function startSession() {
   objResults = [];
   weakStreak = 0;
   proactiveFired = {};
+  awaitingClose = false;
+  closeResult = null;
+  coachIntroShown = false;
 
   var lv = null;
   for (var i = 0; i < LEVELS.length; i++) { if (LEVELS[i].id === currentLevel) lv = LEVELS[i]; }
@@ -2180,7 +2246,16 @@ function prospectSay(text, delay, cb) {
 //   1  = opener delivered, waiting for rep's first line
 //   2+ = inside objection loop; awaitingObjectionReply tracks turn
 function prospectOpens() {
-  prospectSay(activeScenario.opener, 1200, function() { convoStage = 1; });
+  prospectSay(activeScenario.opener, 1200, function() {
+    convoStage = 1;
+    // Coach checks in once the call's live, nudging the rep to use the lifeline.
+    if (!coachIntroShown) {
+      coachIntroShown = true;
+      setTimeout(function() {
+        if (!sessionEnded && convoStage === 1) showSlackPopup('intro');
+      }, 1500);
+    }
+  });
 }
 
 // Classify the rep's reply against the active objection.
@@ -2220,6 +2295,11 @@ function sendChatMessage() {
 
 // ---- Data-driven turn engine (TEXT) ----
 function handleUserTurn(text) {
+  if (awaitingClose) {
+    // Objections are done — this is the rep's chance to lock the next step.
+    resolveClose(text, prospectSay);
+    return;
+  }
   if (convoStage === 1) {
     // Rep responded to the opener — raise the first objection.
     raiseObjection(text, prospectSay, function(){});
@@ -2227,6 +2307,22 @@ function handleUserTurn(text) {
   }
   // We're answering an objection.
   resolveObjection(text, prospectSay, function(){});
+}
+
+// Did the rep lock a concrete next step?
+function detectClose(text) {
+  var t = ' ' + text.toLowerCase() + ' ';
+  for (var i = 0; i < CLOSE_WORDS.length; i++) { if (t.indexOf(CLOSE_WORDS[i]) !== -1) return 'locked'; }
+  // A question that proposes timing also counts as a close attempt.
+  if (isQuestion(text) && /(when|what time|what day|next|how about|could we|shall we|can we)/.test(t)) return 'locked';
+  return 'weak';
+}
+
+// Rep's final turn: lock the commitment (or fumble it), then the prospect accepts and we score.
+function resolveClose(text, sayFn) {
+  awaitingClose = false;
+  closeResult = detectClose(text);
+  sayFn(activeScenario.close, 1200, function() { finishSession(); });
 }
 
 // Prospect raises objection at objIndex (acknowledging a question first).
@@ -2283,9 +2379,13 @@ function resolveObjection(text, sayFn, after) {
 function advanceAfterObjection(sayFn, passLine) {
   objIndex++;
   if (objIndex >= activeScenario.objections.length) {
-    // All objections handled — deliver close, then score.
+    // All objections handled — the prospect throws a buying signal and the rep
+    // gets one last turn to LOCK the next step. That's what we grade the close on.
+    awaitingObjectionReply = false;
+    updateSectionPills();
+    var closeAsk = CLOSE_ASKS[currentLevel] || "Alright, you've convinced me. So — what happens next?";
     sayFn(passLine, 1100, function() {
-      sayFn(activeScenario.close, 1300, function() { finishSession(); });
+      sayFn(closeAsk, 1300, function() { awaitingClose = true; });
     });
   } else {
     awaitingObjectionReply = false;
@@ -2331,6 +2431,8 @@ function useLifeline(type) {
       weakStreak = 0;
       awaitingObjectionReply = false;
       proactiveFired = {};
+      awaitingClose = false;
+      closeResult = null;
       updateSectionPills();
       renderChat();
       prospectOpens();
@@ -2345,18 +2447,29 @@ function useLifeline(type) {
       if (last.role === 'user') break;
     }
     convoStage = Math.max(1, convoStage - 1);
+    awaitingClose = false;
     renderChat();
   }
 }
 
-function showSlackPopup(proactive) {
-  // Contextual hint tied to the CURRENT objection — a nudge, never the answer.
-  var msg = "Stay with it — find out what really matters to them before you make your case.";
-  if (activeScenario && activeScenario.objections[objIndex]) {
-    msg = activeScenario.objections[objIndex].hint;
-  }
-  if (proactive) {
-    msg = "👀 Heads up — you've drifted twice now. " + msg;
+var slackIntroTimer = null;
+function showSlackPopup(mode) {
+  var isProactive = (mode === true || mode === 'proactive');
+  var isIntro = (mode === 'intro');
+  var msg;
+  if (isIntro) {
+    // Friendly check-in that points the rep at the lifeline — costs no hints.
+    var who = userProfile.nickname ? (userProfile.nickname + ', ') : '';
+    msg = "👋 " + who + "Stephen here — your coach for this call. Stuck on an objection? Tap “💬 Slack Stephen” down the bottom any time and I'll give you a nudge. You've got this.";
+  } else {
+    // Contextual hint tied to the CURRENT objection — a nudge, never the answer.
+    msg = "Stay with it — find out what really matters to them before you make your case.";
+    if (activeScenario && activeScenario.objections[objIndex]) {
+      msg = activeScenario.objections[objIndex].hint;
+    }
+    if (isProactive) {
+      msg = "👀 Heads up — you've drifted twice now. " + msg;
+    }
   }
   document.getElementById('slack-msg').textContent = msg;
   var now = new Date();
@@ -2364,6 +2477,13 @@ function showSlackPopup(proactive) {
   var mm = String(now.getMinutes()); while (mm.length < 2) mm = '0' + mm;
   document.getElementById('slack-time').textContent = hh + ':' + mm;
   document.getElementById('slack-popup').classList.add('show');
+  clearTimeout(slackIntroTimer);
+  if (isIntro) {
+    // Auto-dismiss the intro so it never blocks the chat.
+    slackIntroTimer = setTimeout(function() {
+      document.getElementById('slack-popup').classList.remove('show');
+    }, 7000);
+  }
 }
 function closeSlack() { document.getElementById('slack-popup').classList.remove('show'); }
 
@@ -2573,17 +2693,27 @@ function computeResult() {
   else if (folded) { heading = "You dropped the price."; body = "The second you gave ground, the product lost value in " + name + "'s eyes. Hold the line and make the case instead."; }
   else { heading = "You never made the case."; body = "You didn't engage — no real value, no questions. " + name + " gave you nothing to work with because you gave him nothing. Go again, and lead."; }
 
+  // Close row reflects whether they actually locked a next step.
+  var lockedClose = (closeResult === 'locked');
+  var weakClose = (closeResult === 'weak');
+  var closeCell, closeOk;
+  if (!pass) { closeCell = "0/15"; closeOk = false; }
+  else if (lockedClose) { closeCell = "14/15"; closeOk = true; }
+  else if (weakClose) { closeCell = "6/15"; closeOk = false; }
+  else { closeCell = "12/15"; closeOk = true; }  // voice / not reached — don't punish
+
   // Rubric, derived from what actually happened.
   var rubric = [
     ["Discovery Questions", disc > 0 ? (disc >= Math.ceil(n/2) ? "18/20" : "11/20") : "3/20", disc > 0],
     ["Value Demonstration", (val + disc) > 0 ? ((val + disc) >= Math.ceil(n/2) ? "22/25" : "13/25") : "5/25", (val + disc) > 0],
     ["Objection Handling", folded ? "0/25" : (engaged >= Math.ceil(n/2) ? "23/25" : "12/25"), !folded && engaged > 0],
     ["Rapport", engaged > 0 ? "13/15" : "8/15", engaged > 0],
-    ["Close", pass ? "13/15" : "0/15", pass]
+    ["Close", closeCell, closeOk]
   ];
 
   return { tier: tier, score: score, color: color, heading: heading, body: body, rubric: rubric, pass: pass,
-           folded: folded, disc: disc, val: val, weak: weak, engaged: engaged, n: n };
+           folded: folded, disc: disc, val: val, weak: weak, engaged: engaged, n: n,
+           closeResult: closeResult };
 }
 
 /* ---- Dynamic AI coach feedback: raw, specific, per objection ---- */
@@ -2598,7 +2728,7 @@ function coachForObjection(obj, result) {
 var GENERAL_TIPS = [
   { tag:'LEVEL UP', headline:'Lead with a question, not a pitch', note:'Reps who discover first close more. Open the next call by finding out what success looks like to them before you say a word about your product.' },
   { tag:'KEEP', headline:'Your tone held up', note:'You didn\'t get rattled. Composure under pressure is half the battle — bank that.' },
-  { tag:'FIX', headline:'Always lock a next step', note:'Never end a call without a concrete commitment — a time, a trial, an order. "I\'ll follow up" is where deals go to die.' }
+  { tag:'LEVEL UP', headline:'Make it specific, not generic', note:'The reps who win name numbers, clients and outcomes. Swap "it\'s worth it" for a concrete proof point every single time.' }
 ];
 
 function buildCoachFeedback(res) {
@@ -2607,11 +2737,18 @@ function buildCoachFeedback(res) {
   for (var i = 0; i < objs.length; i++) {
     items.push(coachForObjection(objs[i], objResults[i] || 'weak'));
   }
-  // A summary area tuned to the overall result.
-  if (res.tier === 'A') items.push({ tag:'KEEP', headline:'You closed clean', note:'You carried value all the way to the ask and got the commitment. This is the standard — repeat it.' });
-  else if (res.folded) items.push({ tag:'FIX', headline:'Kill the discount reflex', note:'Discounting is a flinch. Replace it with a question that buys you time to make the case. Practice this until holding feels normal.' });
-  else if (res.disc === 0) items.push({ tag:'LEVEL UP', headline:'Discover before you defend', note:'You never asked what they actually wanted, so every answer was a guess. Curiosity first — it changes everything downstream.' });
-  else items.push({ tag:'LEVEL UP', headline:'Tighten the close', note:'You did the work; now make the ask sharper. End on a clear, low-friction next step they can say yes to today.' });
+  // Close feedback — grounded in whether they actually locked a next step.
+  if (res.folded) {
+    items.push({ tag:'FIX', headline:'Kill the discount reflex', note:'Discounting is a flinch. Replace it with a question that buys you time to make the case. Practice this until holding feels normal.' });
+  } else if (res.closeResult === 'locked') {
+    items.push({ tag:'KEEP', headline:'You locked the next step', note:'You carried it all the way to a concrete commitment — a time, a trial, an order — instead of "I\'ll follow up". That\'s how deals actually move. Keep doing exactly that.' });
+  } else if (res.closeResult === 'weak') {
+    items.push({ tag:'FIX', headline:'You won them, then drifted at the line', note:'They gave you the green light and you let it hang. Always end on a specific next step they can say yes to today: "Let\'s book Tuesday 3pm" or "I\'ll send the contract this arvo." Vague endings are where won deals quietly die.' });
+  } else if (res.disc === 0) {
+    items.push({ tag:'LEVEL UP', headline:'Discover before you defend', note:'You never asked what they actually wanted, so every answer was a guess. Curiosity first — it changes everything downstream.' });
+  } else {
+    items.push({ tag:'LEVEL UP', headline:'Tighten the close', note:'You did the work; now make the ask sharper. End on a clear, low-friction next step they can say yes to today.' });
+  }
 
   // Tougher levels (more objections) earn more coaching. Min 3.
   while (items.length < 3) { items.push(GENERAL_TIPS[items.length % GENERAL_TIPS.length]); }
@@ -2724,7 +2861,9 @@ function animateScore(target) {
 
 function showATierExample() {
   var ct = document.getElementById('confirm-text');
-  ct.textContent = "A-tier opener:\n\n\"Before we talk price — what matters most to you when you stock a new drinks brand? Margin? Turnover?\"\n\nDiscover first. Then tie value to the answer. Then hold.";
+  var example = A_TIER_EXAMPLES[currentLevel] || A_TIER_EXAMPLES[1];
+  var lvlName = LEVEL_NAMES[currentLevel] ? (' · ' + LEVEL_NAMES[currentLevel]) : '';
+  ct.textContent = "What an A looks like — Level " + currentLevel + lvlName + ":\n\n" + example;
   ct.style.whiteSpace = 'pre-line';
   ct.style.textAlign = 'left';
   document.getElementById('confirm-overlay').classList.add('show');
