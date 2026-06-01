@@ -114,13 +114,31 @@ input, textarea { font-family: inherit; }
   text-align: center; padding: 24px; gap: 28px;
 }
 .hero-inner { max-width: 640px; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+/* Dynamic entrance: each child fades up in sequence on load */
+.hero-inner > * { opacity: 0; animation: heroReveal 0.7s cubic-bezier(0.22,1,0.36,1) forwards; }
+.hero-inner > *:nth-child(1) { animation-delay: 0.05s; }
+.hero-inner > *:nth-child(2) { animation-delay: 0.18s; }
+.hero-inner > *:nth-child(3) { animation-delay: 0.32s; }
+.hero-inner > *:nth-child(4) { animation-delay: 0.44s; }
+.hero-inner > *:nth-child(5) { animation-delay: 0.56s; }
+@keyframes heroReveal { from { opacity: 0; transform: translateY(18px); filter: blur(6px); } to { opacity: 1; transform: translateY(0); filter: blur(0); } }
 .badge-pill {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 7px 16px; border-radius: 100px; font-size: 13px; font-weight: 500;
   background: var(--primary-glow); border: 1px solid rgba(124,106,247,0.3); color: #b6acff;
 }
-.badge-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 8px var(--primary); }
+.badge-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 8px var(--primary); animation: badgePulse 2s ease-in-out infinite; }
+@keyframes badgePulse { 0%,100% { box-shadow: 0 0 8px var(--primary); } 50% { box-shadow: 0 0 16px var(--primary); } }
 h1.hero-title { font-size: 56px; font-weight: 800; line-height: 1.05; letter-spacing: -1.5px; }
+/* Animated gradient sweep on the key word */
+.hero-shimmer {
+  background: linear-gradient(100deg, var(--primary) 0%, var(--neon) 35%, #b6acff 55%, var(--primary) 80%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: shimmerSweep 5s linear infinite;
+}
+@keyframes shimmerSweep { 0% { background-position: 200% 0; } 100% { background-position: -50% 0; } }
 .hero-sub { font-size: 19px; color: var(--text-muted); font-weight: 400; }
 .tiny-muted { font-size: 13px; color: var(--text-muted); }
 .stat-pills { display: flex; gap: 0; margin-top: 8px; align-items: center; flex-wrap: wrap; justify-content: center; }
@@ -183,6 +201,9 @@ h1.hero-title { font-size: 56px; font-weight: 800; line-height: 1.05; letter-spa
 .level-card.done { border-color: rgba(0,214,143,0.3); }
 .level-num { font-size: 12px; color: var(--text-muted); font-weight: 600; }
 .level-name { font-weight: 700; font-size: 15px; line-height: 1.2; letter-spacing: -0.3px; }
+/* Locked levels keep the number sharp but blur the rest — anticipation */
+.level-card.locked { opacity: 1; }
+.blurred { filter: blur(5px); opacity: 0.65; user-select: none; pointer-events: none; transition: filter 0.3s ease; }
 .level-meta { display: flex; align-items: center; gap: 6px; margin-top: auto; flex-wrap: wrap; }
 .mini-tag {
   font-size: 9px; font-weight: 700; letter-spacing: 0.8px; padding: 3px 7px; border-radius: 6px;
@@ -457,6 +478,24 @@ details.scoring[open] summary::before { content: '▾ '; }
 .modal-close:hover { border-color: var(--border-bright); }
 .modal-content h2 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; text-align: center; }
 .modal-content > p.sub { text-align: center; color: var(--text-muted); margin: 8px 0 32px; font-size: 16px; }
+.reveal-banner {
+  text-align: center; margin-bottom: 28px; padding-bottom: 24px;
+  border-bottom: 1px solid var(--border); animation: fadeUp 0.5s ease;
+}
+.reveal-tag {
+  display: inline-block; padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 700;
+  letter-spacing: 0.5px; background: var(--gold); color: #1a1500; margin-bottom: 14px;
+}
+.reveal-title { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+.reveal-sub { color: var(--text-muted); margin-top: 8px; font-size: 15px; }
+.reveal-sub strong { color: var(--neon); }
+.reveal-levels { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 18px; }
+.reveal-chip {
+  font-size: 12px; font-weight: 600; padding: 7px 13px; border-radius: 10px;
+  background: var(--surface-raised); border: 1px solid var(--border); color: var(--text-muted);
+  position: relative;
+}
+.reveal-chip .lk { color: var(--gold); margin-right: 5px; }
 .price-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .price-card {
   background: var(--surface-raised); border: 1.5px solid var(--border); border-radius: 18px; padding: 24px;
@@ -523,8 +562,8 @@ details.scoring[open] summary::before { content: '▾ '; }
     <div class="hero-inner">
       <div class="badge-pill">The sales training gym</div>
       <div>
-        <h1 class="hero-title">Every rep is a rep.</h1>
-        <p class="hero-sub" style="margin-top:16px;">Practice real objections. Get scored. Level up.</p>
+        <h1 class="hero-title">Close with <span class="hero-shimmer">confidence.</span></h1>
+        <p class="hero-sub" style="margin-top:16px;">Role play real objections. Get feedback. Level Up.</p>
       </div>
       <button class="btn btn-primary btn-lg" onclick="showScreen('screen-choose-path')">Start training →</button>
       <div class="tiny-muted">Free to start. No card needed.</div>
@@ -807,8 +846,14 @@ details.scoring[open] summary::before { content: '▾ '; }
 <div class="modal-overlay" id="upgrade-modal">
   <div class="modal-content">
     <button class="modal-close" onclick="closeUpgrade()">✕</button>
-    <h2>Unlock the full gym.</h2>
-    <p class="sub">One upgrade. Everything open.</p>
+    <div class="reveal-banner" id="reveal-banner" style="display:none;">
+      <div class="reveal-tag">🏆 LEVEL 10 CLEARED</div>
+      <div class="reveal-title">You've maxed out the free gym.</div>
+      <div class="reveal-sub">There are <strong>15 harder levels</strong> waiting — and they don't go easy.</div>
+      <div class="reveal-levels" id="reveal-levels"></div>
+    </div>
+    <h2 id="upgrade-title">Unlock the full gym.</h2>
+    <p class="sub" id="upgrade-sub">One upgrade. Everything open.</p>
     <div class="price-cards">
       <div class="price-card">
         <div class="pname">Starter</div>
@@ -848,8 +893,8 @@ details.scoring[open] summary::before { content: '▾ '; }
     </div>
     <div class="credits-unlock">
       <span>All 25 levels</span>
-      <span>AI coach feedback</span>
-      <span>5 Slack Stephen hints per session</span>
+      <span>AI coach on every level — including 1–10</span>
+      <span>5 Slack Stephen hints (up from 1)</span>
       <span>Undo &amp; retry unlimited</span>
       <span>Daily limit removed</span>
     </div>
@@ -979,30 +1024,27 @@ function renderLevelMap() {
   grid.innerHTML = '';
   for (var i = 0; i < LEVELS.length; i++) {
     var lv = LEVELS[i];
-    if (i === 10) {
-      var wall = document.createElement('div');
-      wall.className = 'wall-banner';
-      wall.innerHTML = '<span>Levels 11–25 are Pro. Upgrade to unlock.</span><button onclick="openUpgrade()">Upgrade →</button>';
-      grid.appendChild(wall);
-    }
+    // Free tier only ever sees Levels 1–10. Levels 11–25 stay hidden until
+    // they finish Level 10 — that's when the upgrade reveal fires.
+    if (lv.id > 10) continue;
     var card = document.createElement('div');
     var stateClass = '', stateIcon = '';
     if (lv.state === 'done') { stateClass = 'done'; stateIcon = '✅'; }
     else if (lv.state === 'current') { stateClass = 'current'; stateIcon = '🔓'; }
-    else if (lv.state === 'pro') { stateClass = 'locked'; stateIcon = '⭐'; }
     else { stateClass = 'locked'; stateIcon = '🔒'; }
     card.className = 'level-card ' + stateClass;
+    // Locked levels: number stays sharp, everything else blurs to build anticipation.
+    var blurClass = (stateClass === 'locked') ? ' blurred' : '';
     card.innerHTML =
       '<div class="level-state">' + stateIcon + '</div>' +
       '<div class="level-num">LEVEL ' + lv.id + '</div>' +
-      '<div class="level-name">' + lv.name + '</div>' +
-      '<div class="level-meta">' +
-        '<span class="mini-tag ' + (lv.tag === 'PRO' ? 'pro' : '') + '">' + lv.tag + '</span>' +
+      '<div class="level-name' + blurClass + '">' + lv.name + '</div>' +
+      '<div class="level-meta' + blurClass + '">' +
+        '<span class="mini-tag">' + lv.tag + '</span>' +
         '<span class="section-pill">' + lv.sections + ' section' + (lv.sections > 1 ? 's' : '') + '</span>' +
       '</div>';
     (function(lvl) {
-      if (lvl.state === 'pro') { card.onclick = openUpgrade; }
-      else if (lvl.state === 'locked') { card.onclick = function() {}; }
+      if (lvl.state === 'locked') { card.onclick = function() {}; }
       else { card.onclick = function() { showLevelBrief(lvl.id); }; }
     })(lv);
     grid.appendChild(card);
@@ -1174,6 +1216,15 @@ function detectResponse(text) {
   return 'neutral';
 }
 
+// Did the user ask Mike something? Used so Mike acknowledges before moving on.
+function isQuestion(text) {
+  var t = text.toLowerCase().trim();
+  if (t.indexOf('?') !== -1) return true;
+  var starters = ['what','how','why','who','when','where','which','did','do you','have you','was there','is there','tell me','any'];
+  for (var i = 0; i < starters.length; i++) { if (t.indexOf(starters[i]) === 0) return true; }
+  return false;
+}
+
 function pushUser(text) {
   chatMessages.push({ role: 'user', text: text });
   renderChat();
@@ -1191,7 +1242,13 @@ function sendChatMessage() {
 
 function handleUserTurn(text) {
   if (convoStage === 1) {
-    mikeSay("So look, I'm keen to give it a go. What are we looking at in terms of pricing? How much per case?", 1000, function() { convoStage = 2; });
+    // Mike just praised the lemon. If the rep asks him about it, acknowledge
+    // the answer before pivoting to price — a real person wouldn't ignore it.
+    if (isQuestion(text)) {
+      mikeSay("Yeah honestly it's the lemon — it's tart without being too sugary. Half my regulars are off the soft drinks these days, so something like that actually moves. Anyway — I'm keen to give it a crack. What are we looking at per case?", 1400, function() { convoStage = 2; });
+    } else {
+      mikeSay("Yeah, fair enough. Look, I'm keen to give it a go. What are we looking at in terms of pricing? How much per case?", 1100, function() { convoStage = 2; });
+    }
   } else if (convoStage === 2) {
     mikeSay("Right. Any chance you could do a bit of a deal for us? We're a small store, just trying it out.", 1100, function() { convoStage = 3; });
   } else if (convoStage === 3) {
@@ -1368,7 +1425,11 @@ function voiceKeydown(e) {
 function handleVoiceTurn(text) {
   var next = function(t, cb) { setTimeout(function() { voiceMikeSpeak(t, cb); }, 700); };
   if (convoStage === 1) {
-    next("So look, I'm keen to give it a go. What are we looking at in terms of pricing? How much per case?", function() { convoStage = 2; promptUserVoice(); });
+    if (isQuestion(text)) {
+      next("Yeah honestly it's the lemon — it's tart without being too sugary. Half my regulars are off the soft drinks these days, so something like that actually moves. Anyway — I'm keen to give it a crack. What are we looking at per case?", function() { convoStage = 2; promptUserVoice(); });
+    } else {
+      next("Yeah, fair enough. Look, I'm keen to give it a go. What are we looking at in terms of pricing? How much per case?", function() { convoStage = 2; promptUserVoice(); });
+    }
   } else if (convoStage === 2) {
     next("Right. Any chance you could do a bit of a deal for us? We're a small store, just trying it out.", function() { convoStage = 3; promptUserVoice(); });
   } else if (convoStage === 3) {
@@ -1505,6 +1566,11 @@ function finishSession(resultKey) {
 
   showScreen('screen-score');
   setTimeout(function() { animateScore(data.score); }, 350);
+
+  // Finishing Level 10 is the moment we reveal there's more — and that it's Pro.
+  if (data.pass && currentLevel === 10) {
+    setTimeout(function() { openUpgrade('level10'); }, 1900);
+  }
 }
 
 function animateScore(target) {
@@ -1642,7 +1708,31 @@ function buildModules() {
 /* ============================================================
    UPGRADE MODAL
 ============================================================ */
-function openUpgrade() { document.getElementById('upgrade-modal').classList.add('show'); }
+function openUpgrade(reveal) {
+  var banner = document.getElementById('reveal-banner');
+  var title = document.getElementById('upgrade-title');
+  var sub = document.getElementById('upgrade-sub');
+  if (reveal === 'level10') {
+    // Populate the teaser with the locked levels they haven't seen yet.
+    var wrap = document.getElementById('reveal-levels');
+    wrap.innerHTML = '';
+    for (var i = 0; i < LEVELS.length; i++) {
+      if (LEVELS[i].id <= 10) continue;
+      var chip = document.createElement('div');
+      chip.className = 'reveal-chip';
+      chip.innerHTML = '<span class="lk">🔒</span>Lvl ' + LEVELS[i].id + ' · ' + LEVELS[i].name;
+      wrap.appendChild(chip);
+    }
+    banner.style.display = 'block';
+    title.textContent = 'Keep the momentum going.';
+    sub.textContent = 'Unlock all 25 levels, plus the AI coach on every level — even the ones you\'ve already passed.';
+  } else {
+    banner.style.display = 'none';
+    title.textContent = 'Unlock the full gym.';
+    sub.textContent = 'One upgrade. Everything open.';
+  }
+  document.getElementById('upgrade-modal').classList.add('show');
+}
 function closeUpgrade() {
   document.getElementById('upgrade-modal').classList.remove('show');
   document.getElementById('pay-inline').classList.remove('show');
