@@ -453,6 +453,13 @@ details.scoring[open] summary::before { content: '▾ '; }
 .coach-bullet::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); }
 .coach-bullet b { color: var(--text); font-weight: 600; }
 .coach-locked .coach-bullets { filter: blur(5px); opacity: 0.5; user-select: none; }
+.coach-item { padding: 14px 16px; border-radius: 12px; background: var(--surface-raised); border: 1px solid var(--border); }
+.coach-tag { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 0.8px; padding: 3px 8px; border-radius: 6px; margin-bottom: 8px; }
+.coach-tag.tag-fix { background: var(--danger-subtle); color: #ff7a7a; }
+.coach-tag.tag-keep { background: var(--success-subtle); color: #4ade80; }
+.coach-tag.tag-levelup { background: var(--orange-subtle); color: #ff9466; }
+.coach-item-head { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.coach-item-note { font-size: 13.5px; line-height: 1.55; color: var(--text-muted); }
 .coach-lock-overlay {
   position: absolute; inset: 0; top: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
   background: linear-gradient(transparent, var(--surface) 60%);
@@ -1149,6 +1156,13 @@ var DISCOVERY_WORDS = ['what matters','what do you','what would','what are your'
 // Value = tying to outcomes, proof, ROI, differentiation.
 var VALUE_WORDS = ['because','the reason','what you get','what that means','return','roi','results','proven','data','margin','outcome','saves you','make you','grow','case study','other clients','for example','specifically','track record','guarantee','results-based','we\'ve seen','customers like you','the difference is'];
 
+// When the rep keeps stalling, the prospect escalates rather than repeating itself.
+var WEAK_ESCALATIONS = [
+  "Look, I'm a busy bloke. You've not actually told me anything yet — why should I care?",
+  "Mate, that's not an answer. Give me one concrete reason or I've got to get back to it.",
+  "I'm going to be honest, you're losing me here. Last chance — what's actually in it for me?"
+];
+
 var SCENARIOS = {
   1: {
     persona:{ name:"Mike Donnelly", initials:"M", role:"Owner", company:"Mike's Local, Surry Hills", backstory:"Runs a corner store in Surry Hills. Tried your samples last week and liked them — the lemon one moves. He's keen, but he'll push for a sweetener.", avatarColor:"var(--orange)" },
@@ -1786,7 +1800,7 @@ var userProfile = { name:'', nickname:'', accent:'#7c6af7', prefs:{ sound:true, 
 var selectedPlanKey = 'popular';
 
 var PLANS = {
-  starter:{ key:'starter', name:'Starter', price:20, displayPrice:'$10', credits:2,
+  starter:{ key:'starter', name:'Starter', price:10, displayPrice:'$10', credits:2,
     feats:['2 credits','AI coach on 2 sessions','Levels 1–25 access','Skip daily limit twice'] },
   popular:{ key:'popular', name:'Popular', price:20, displayPrice:'$20', credits:5,
     feats:['5 credits','AI coach on every session','All 25 levels','Unlimited daily sessions','Priority features'] },
@@ -2244,7 +2258,12 @@ function resolveObjection(text, sayFn, after) {
     advanceAfterObjection(sayFn, obj.pass);
     return;
   }
-  sayFn(obj.weak, 1100, function() { if (after) after(); });
+  // Escalate instead of repeating the same line verbatim — feels more human.
+  var firstName = activeScenario.persona.name.split(' ')[0];
+  var line = (weakStreak === 1)
+    ? obj.weak
+    : WEAK_ESCALATIONS[(weakStreak - 2) % WEAK_ESCALATIONS.length].replace('{name}', firstName);
+  sayFn(line, 1100, function() { if (after) after(); });
 }
 
 function advanceAfterObjection(sayFn, passLine) {
@@ -2498,18 +2517,98 @@ var SCORE_DATA = {
   }
 };
 
-var COACH_BULLETS = [
-  "Your opener was clean — you let Mike talk first instead of pitching. <b>Good instinct.</b>",
-  "When he asked for a deal, you didn't flinch. That pause before answering read as confidence.",
-  "<b>The turn:</b> you asked what his customers wanted before defending price. That's what separated this from a B.",
-  "Next rep: name a specific store like his that's already moving units. Proof beats promise."
+/* ============================================================
+   SCORING — analyses each objection result, not just the last line
+============================================================ */
+// Points per objection outcome. 'weak' = held but never made a real case.
+var OBJ_POINTS = { discovery: 100, value: 82, weak: 52, fold: 0 };
+
+function computeResult() {
+  var objs = (activeScenario && activeScenario.objections) ? activeScenario.objections : [];
+  var n = objs.length || 1;
+  var pts = 0, folded = false, disc = 0, val = 0, weak = 0, unanswered = 0;
+  for (var i = 0; i < n; i++) {
+    var r = objResults[i];
+    if (!r) { r = 'weak'; unanswered++; }      // ended early / never engaged this one
+    if (r === 'fold') { folded = true; }
+    else if (r === 'discovery') { disc++; }
+    else if (r === 'value') { val++; }
+    else { weak++; }
+    pts += (OBJ_POINTS[r] !== undefined ? OBJ_POINTS[r] : OBJ_POINTS.weak);
+  }
+  var avg = Math.round(pts / n);
+  var engaged = disc + val;          // objections where they actually made a case
+
+  var tier, score;
+  if (folded) { tier = 'F'; score = 38; }
+  else if (engaged === 0) { tier = 'F'; score = 42; }   // pure non-engagement = fail
+  else if (avg >= 90) { tier = 'A'; score = avg; }
+  else if (avg >= 74) { tier = 'B'; score = avg; }
+  else if (avg >= 62) { tier = 'C'; score = avg; }
+  else { tier = 'F'; score = Math.max(avg, 44); }
+
+  var color = { A:'#00d68f', B:'#ffd000', C:'#ff6b35', F:'#ff4444' }[tier];
+  var pass = (tier !== 'F');
+
+  // Dynamic headline / body.
+  var name = activeScenario.persona.name.split(' ')[0];
+  var heading, body;
+  if (tier === 'A') { heading = "You held the line."; body = "You found out what " + name + " actually cared about, then tied your value straight to it. That's the move."; }
+  else if (tier === 'B') { heading = "Solid. There was more on the table."; body = "You made a real case and held firm. Next level: ask what " + name + " values before you pitch — that's what turns a B into an A."; }
+  else if (tier === 'C') { heading = "You survived. Barely."; body = "You didn't cave, but parts of this were vague. " + name + " needed specifics, not 'it's worth it'."; }
+  else if (folded) { heading = "You dropped the price."; body = "The second you gave ground, the product lost value in " + name + "'s eyes. Hold the line and make the case instead."; }
+  else { heading = "You never made the case."; body = "You didn't engage — no real value, no questions. " + name + " gave you nothing to work with because you gave him nothing. Go again, and lead."; }
+
+  // Rubric, derived from what actually happened.
+  var rubric = [
+    ["Discovery Questions", disc > 0 ? (disc >= Math.ceil(n/2) ? "18/20" : "11/20") : "3/20", disc > 0],
+    ["Value Demonstration", (val + disc) > 0 ? ((val + disc) >= Math.ceil(n/2) ? "22/25" : "13/25") : "5/25", (val + disc) > 0],
+    ["Objection Handling", folded ? "0/25" : (engaged >= Math.ceil(n/2) ? "23/25" : "12/25"), !folded && engaged > 0],
+    ["Rapport", engaged > 0 ? "13/15" : "8/15", engaged > 0],
+    ["Close", pass ? "13/15" : "0/15", pass]
+  ];
+
+  return { tier: tier, score: score, color: color, heading: heading, body: body, rubric: rubric, pass: pass,
+           folded: folded, disc: disc, val: val, weak: weak, engaged: engaged, n: n };
+}
+
+/* ---- Dynamic AI coach feedback: raw, specific, per objection ---- */
+function coachForObjection(obj, result) {
+  var L = obj.label.toLowerCase();
+  if (result === 'fold') return { tag:'FIX', headline:'You caved on the ' + L + ' objection', note:'The moment you gave ground, you told them the price was never real. Hold, then redirect: "Before we touch the number — let me show you why this pays for itself."' };
+  if (result === 'discovery') return { tag:'KEEP', headline:'Sharp discovery on the ' + L, note:'You asked before you pitched. That earned you the right to aim your value at exactly what they care about. This is elite — keep doing it.' };
+  if (result === 'value') return { tag:'LEVEL UP', headline:'Good value, but you assumed', note:'You made a real case on the ' + L + ' — but you guessed what mattered to them. Ask first: "What\'s driving that for you?" That one question is the gap between a B and an A.' };
+  return { tag:'FIX', headline:'You went vague on the ' + L, note:'"It\'s worth it" isn\'t a reason. Get concrete — a number, a comparable client, a specific outcome. Vagueness is what loses deals like this one.' };
+}
+
+var GENERAL_TIPS = [
+  { tag:'LEVEL UP', headline:'Lead with a question, not a pitch', note:'Reps who discover first close more. Open the next call by finding out what success looks like to them before you say a word about your product.' },
+  { tag:'KEEP', headline:'Your tone held up', note:'You didn\'t get rattled. Composure under pressure is half the battle — bank that.' },
+  { tag:'FIX', headline:'Always lock a next step', note:'Never end a call without a concrete commitment — a time, a trial, an order. "I\'ll follow up" is where deals go to die.' }
 ];
 
-function finishSession(resultKey) {
+function buildCoachFeedback(res) {
+  var items = [];
+  var objs = activeScenario.objections;
+  for (var i = 0; i < objs.length; i++) {
+    items.push(coachForObjection(objs[i], objResults[i] || 'weak'));
+  }
+  // A summary area tuned to the overall result.
+  if (res.tier === 'A') items.push({ tag:'KEEP', headline:'You closed clean', note:'You carried value all the way to the ask and got the commitment. This is the standard — repeat it.' });
+  else if (res.folded) items.push({ tag:'FIX', headline:'Kill the discount reflex', note:'Discounting is a flinch. Replace it with a question that buys you time to make the case. Practice this until holding feels normal.' });
+  else if (res.disc === 0) items.push({ tag:'LEVEL UP', headline:'Discover before you defend', note:'You never asked what they actually wanted, so every answer was a guess. Curiosity first — it changes everything downstream.' });
+  else items.push({ tag:'LEVEL UP', headline:'Tighten the close', note:'You did the work; now make the ask sharper. End on a clear, low-friction next step they can say yes to today.' });
+
+  // Tougher levels (more objections) earn more coaching. Min 3.
+  while (items.length < 3) { items.push(GENERAL_TIPS[items.length % GENERAL_TIPS.length]); }
+  return items;
+}
+
+function finishSession() {
   if (sessionEnded) return;
   sessionEnded = true;
   clearInterval(timerInterval);
-  var data = SCORE_DATA[resultKey] || SCORE_DATA.neutral;
+  var data = computeResult();
 
   var badge = document.getElementById('tier-badge');
   badge.textContent = data.tier;
@@ -2531,20 +2630,21 @@ function finishSession(resultKey) {
   var coachCard = document.getElementById('coach-card');
   var coachBullets = document.getElementById('coach-bullets');
   var coachLock = document.getElementById('coach-lock');
-  if (data.pass) {
-    coachCard.style.display = 'block';
-    coachBullets.innerHTML = '';
-    for (var b = 0; b < COACH_BULLETS.length; b++) {
-      var dd = document.createElement('div');
-      dd.className = 'coach-bullet';
-      dd.innerHTML = COACH_BULLETS[b];
-      coachBullets.appendChild(dd);
-    }
-    if (isPro) { coachCard.classList.remove('coach-locked'); coachLock.style.display = 'none'; }
-    else { coachCard.classList.add('coach-locked'); coachLock.style.display = 'flex'; }
-  } else {
-    coachCard.style.display = 'none';
+  // Coach feedback shows on EVERY result now (including fails — that's when
+  // you need it most). Free users see it blurred behind the unlock.
+  coachCard.style.display = 'block';
+  coachBullets.innerHTML = '';
+  var fb = buildCoachFeedback(data);
+  for (var b = 0; b < fb.length; b++) {
+    var dd = document.createElement('div');
+    dd.className = 'coach-item';
+    dd.innerHTML = '<span class="coach-tag tag-' + fb[b].tag.replace(/\s/g,'').toLowerCase() + '">' + fb[b].tag + '</span>' +
+                   '<div class="coach-item-head">' + fb[b].headline + '</div>' +
+                   '<div class="coach-item-note">' + fb[b].note + '</div>';
+    coachBullets.appendChild(dd);
   }
+  if (isPro) { coachCard.classList.remove('coach-locked'); coachLock.style.display = 'none'; }
+  else { coachCard.classList.add('coach-locked'); coachLock.style.display = 'flex'; }
 
   var btns = document.getElementById('score-btns');
   var dailyNote = document.getElementById('daily-note');
@@ -2752,7 +2852,8 @@ function openUpgrade(reveal) {
 }
 function closeUpgrade() {
   document.getElementById('upgrade-modal').classList.remove('show');
-  document.getElementById('pay-inline').classList.remove('show');
+  var pi = document.getElementById('pay-inline');
+  if (pi) pi.classList.remove('show');
 }
 function showPayInline() {
   document.getElementById('pay-inline').classList.add('show');
@@ -2764,6 +2865,118 @@ function notifyMe() {
   flashToast("You're on the list. We'll reach out soon.");
   document.getElementById('pay-email').value = '';
   setTimeout(closeUpgrade, 800);
+}
+
+/* ============================================================
+   PAYMENT FLOW
+============================================================ */
+var returnToScreenAfterPay = 'screen-level-map';
+
+function choosePlan(planKey) {
+  selectedPlanKey = planKey;
+  var plan = PLANS[planKey] || PLANS.popular;
+  // Populate the checkout summary.
+  document.getElementById('pay-plan-name').textContent = plan.name;
+  document.getElementById('pay-plan-price').textContent = plan.displayPrice;
+  document.getElementById('pay-total-amt').textContent = plan.displayPrice;
+  document.getElementById('pay-now-amt').textContent = plan.displayPrice;
+  var feats = document.getElementById('pay-plan-feats');
+  feats.innerHTML = '';
+  for (var i = 0; i < plan.feats.length; i++) {
+    var li = document.createElement('li');
+    li.textContent = plan.feats[i];
+    feats.appendChild(li);
+  }
+  // Reset the form back to card view (in case of a prior attempt).
+  document.getElementById('pay-form-card').style.display = '';
+  document.getElementById('pay-processing').style.display = 'none';
+  closeUpgrade();
+  showScreen('screen-payment');
+}
+
+function closePaymentBack() {
+  showScreen(returnToScreenAfterPay);
+  setTimeout(openUpgrade, 200);
+}
+
+function digitsOnly(el, max) {
+  var v = el.value.replace(/\D/g, '');
+  if (max) v = v.slice(0, max);
+  el.value = v;
+}
+function formatCardNumber(el) {
+  var v = el.value.replace(/\D/g, '').slice(0, 16);
+  el.value = v.replace(/(.{4})/g, '$1 ').trim();
+}
+function formatExpiry(el) {
+  var v = el.value.replace(/\D/g, '').slice(0, 4);
+  if (v.length >= 3) el.value = v.slice(0, 2) + '/' + v.slice(2);
+  else el.value = v;
+}
+
+function processPayment() {
+  var plan = PLANS[selectedPlanKey] || PLANS.popular;
+  // Light validation — it's a demo, but it should feel real.
+  var card = document.getElementById('pf-card').value.replace(/\s/g, '');
+  if (card.length < 12) { flashToast('Enter a card number (try 4242 4242 4242 4242).'); return; }
+  document.getElementById('pay-form-card').style.display = 'none';
+  document.getElementById('pay-processing').style.display = 'flex';
+  setTimeout(function() {
+    // Build the receipt.
+    document.getElementById('ty-plan').textContent = plan.name;
+    document.getElementById('ty-r-plan').textContent = plan.name;
+    document.getElementById('ty-r-credits').textContent = plan.credits;
+    document.getElementById('ty-r-amount').textContent = plan.displayPrice + '.00';
+    var d = new Date();
+    document.getElementById('ty-r-date').textContent = d.toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
+    // Flip to Pro.
+    isPro = true;
+    saveProfile();
+    showScreen('screen-thankyou');
+  }, 1400);
+}
+
+/* ============================================================
+   ONBOARDING
+============================================================ */
+function renderSwatches() {
+  var wrap = document.getElementById('onb-swatches');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  for (var i = 0; i < ACCENTS.length; i++) {
+    (function(acc) {
+      var sw = document.createElement('button');
+      sw.className = 'swatch' + (acc.color === userProfile.accent ? ' selected' : '');
+      sw.style.background = acc.color;
+      sw.title = acc.name;
+      sw.setAttribute('data-color', acc.color);
+      sw.onclick = function() { selectAccent(acc.color); };
+      wrap.appendChild(sw);
+    })(ACCENTS[i]);
+  }
+}
+function selectAccent(color) {
+  userProfile.accent = color;
+  applyAccent(color);
+  var sws = document.querySelectorAll('#onb-swatches .swatch');
+  for (var i = 0; i < sws.length; i++) {
+    sws[i].classList.toggle('selected', sws[i].getAttribute('data-color') === color);
+  }
+}
+function toggleSwitch(id) {
+  document.getElementById(id).classList.toggle('on');
+}
+function finishOnboarding() {
+  userProfile.name = document.getElementById('onb-name').value.trim();
+  userProfile.nickname = document.getElementById('onb-nick').value.trim() || userProfile.name.split(' ')[0] || 'champ';
+  userProfile.prefs.sound = document.getElementById('sw-sound').classList.contains('on');
+  userProfile.prefs.proactive = document.getElementById('sw-proactive').classList.contains('on');
+  userProfile.prefs.motion = document.getElementById('sw-motion').classList.contains('on');
+  applyAccent(userProfile.accent);
+  saveProfile();
+  flashToast("You're all set, " + userProfile.nickname + " 💪");
+  showScreen('screen-level-map');
+  renderLevelMap();
 }
 
 /* ============================================================
@@ -3031,6 +3244,15 @@ function clearCelebrate() {
    INIT
 ============================================================ */
 window.addEventListener('DOMContentLoaded', function() {
+  loadProfile();
+  applyAccent(userProfile.accent);
+  renderSwatches();
+  // Reflect saved prefs in the onboarding toggles.
+  document.getElementById('sw-sound').classList.toggle('on', userProfile.prefs.sound);
+  document.getElementById('sw-proactive').classList.toggle('on', userProfile.prefs.proactive);
+  document.getElementById('sw-motion').classList.toggle('on', userProfile.prefs.motion);
+  if (userProfile.name) document.getElementById('onb-name').value = userProfile.name;
+  if (userProfile.nickname) document.getElementById('onb-nick').value = userProfile.nickname;
   initCanvas();
   renderLevelMap();
   showIntakeStep(0);
