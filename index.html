@@ -267,8 +267,16 @@ h1.hero-title { font-size: 56px; font-weight: 800; line-height: 1.05; letter-spa
   display: flex; flex-direction: column; gap: 10px; transition: all 0.25s ease;
 }
 .module-card:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 0 20px var(--primary-glow); }
+.module-card.completed { border-color: rgba(0,214,143,0.4); }
 .module-card h4 { font-size: 17px; font-weight: 700; }
 .module-card p { font-size: 13px; color: var(--text-muted); line-height: 1.5; flex: 1; }
+.module-card .module-product { font-size: 11px; color: var(--primary); font-weight: 600; letter-spacing: 0.5px; }
+.module-grade { font-size: 11px; font-weight: 800; margin-left: 8px; }
+.intake-summary-box {
+  background: var(--surface-raised); border: 1px solid var(--border-bright); border-radius: 14px;
+  padding: 20px 22px; font-size: 16px; line-height: 1.7; color: var(--text); font-style: italic;
+}
+.intake-summary-edit { font-size: 13px; color: var(--text-muted); margin-top: 8px; }
 .diff-tag { align-self: flex-start; font-size: 10px; font-weight: 700; letter-spacing: 0.8px; padding: 4px 9px; border-radius: 6px; }
 .diff-tag.easy { background: var(--success-subtle); color: var(--success); }
 .diff-tag.med { background: var(--orange-subtle); color: var(--orange); }
@@ -705,12 +713,12 @@ details.scoring[open] summary::before { content: '▾ '; }
         <p class="path-body">25 progressively harder calls. One skill per level. 90% to pass. Free up to Level 10.</p>
         <button class="btn btn-primary" onclick="event.stopPropagation();showScreen('screen-level-map')">Start from Level 1 →</button>
       </div>
-      <div class="path-card path-neon" onclick="showScreen('screen-learning-intake')">
+      <div class="path-card path-neon" onclick="openLearningIntake()">
         <div class="path-tag">PRACTICE</div>
         <div class="path-icon">🎯</div>
         <h3>Work on a specific skill.</h3>
         <p class="path-body">Tell us how you sell. We'll build the scenarios around your world.</p>
-        <button class="btn btn-neon" onclick="event.stopPropagation();showScreen('screen-learning-intake')">Customise my training →</button>
+        <button class="btn btn-neon" onclick="event.stopPropagation();openLearningIntake()">Customise my training →</button>
       </div>
     </div>
   </div>
@@ -799,7 +807,14 @@ details.scoring[open] summary::before { content: '▾ '; }
           <button class="chip" onclick="toggleChip(this)">Closing</button>
           <button class="chip" onclick="toggleChip(this)">Rapport</button>
         </div>
-        <div class="intake-nav"><button class="btn btn-ghost" onclick="prevIntakeStep()">← Back</button><button class="btn btn-primary" onclick="submitIntake()">Build my modules →</button></div>
+        <div class="intake-nav"><button class="btn btn-ghost" onclick="prevIntakeStep()">← Back</button><button class="btn btn-primary" onclick="nextIntakeStep()">Next →</button></div>
+      </div>
+
+      <div class="intake-step" data-step="6">
+        <h3>Does this sound right?</h3>
+        <div class="intake-summary-box" id="intake-summary"></div>
+        <div class="intake-summary-edit">Not quite? Hit back to adjust any answer.</div>
+        <div class="intake-nav"><button class="btn btn-ghost" onclick="prevIntakeStep()">← Back</button><button class="btn btn-primary" onclick="submitIntake()">Build my plan →</button></div>
       </div>
     </div>
 
@@ -810,9 +825,13 @@ details.scoring[open] summary::before { content: '▾ '; }
     </div>
 
     <div id="intake-modules" style="display:none;width:100%;align-items:center;flex-direction:column;gap:28px;">
-      <div class="screen-header"><h2>Your training plan</h2><p>Built from your answers. Start anywhere.</p></div>
+      <div class="screen-header"><h2>Your training plan</h2><p id="plan-subhead">Built from your answers. Start anywhere.</p></div>
       <div class="module-grid" id="module-grid"></div>
-      <button class="btn btn-ghost" onclick="showScreen('screen-choose-path')">← Back to paths</button>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+        <button class="btn btn-ghost" onclick="saveIntakeProgress(true)">💾 Save progress</button>
+        <button class="btn btn-ghost" onclick="retakeIntake()">↺ Update my answers</button>
+        <button class="btn btn-ghost" onclick="showScreen('screen-choose-path')">← Back to paths</button>
+      </div>
     </div>
   </div>
 </section>
@@ -820,8 +839,8 @@ details.scoring[open] summary::before { content: '▾ '; }
 <!-- ============ SCREEN 4: BRIEF ============ -->
 <section id="screen-level-brief" class="screen">
   <div class="topbar">
-    <button class="back-arrow" onclick="showScreen('screen-level-map')">←</button>
-    <div class="topbar-title">Mission Brief</div>
+    <button class="back-arrow" id="brief-back-btn" onclick="briefBack()">←</button>
+    <div class="topbar-title" id="brief-topbar-title">Mission Brief</div>
   </div>
   <div class="center-screen" style="min-height:calc(100vh - 70px);">
     <div class="brief-card">
@@ -2026,7 +2045,22 @@ function renderLevelMap() {
 /* ============================================================
    BRIEF
 ============================================================ */
+function briefBack() {
+  if (practiceMode) {
+    showScreen('screen-learning-intake');
+    document.getElementById('intake-form-wrap').style.display = 'none';
+    document.getElementById('intake-loading').style.display = 'none';
+    buildModules();
+    document.getElementById('intake-modules').style.display = 'flex';
+  } else {
+    showScreen('screen-level-map');
+  }
+}
+
 function showLevelBrief(levelNum) {
+  practiceMode = false;
+  practiceModuleKey = null;
+  document.getElementById('brief-topbar-title').textContent = 'Mission Brief';
   currentLevel = levelNum;
   var lv = null;
   for (var i = 0; i < LEVELS.length; i++) { if (LEVELS[i].id === levelNum) lv = LEVELS[i]; }
@@ -2125,7 +2159,7 @@ function startSession() {
   slackUses = isPro ? 5 : 1;
   updateSlackBtn();
 
-  activeScenario = SCENARIOS[currentLevel] || SCENARIOS[1];
+  if (!practiceMode) { activeScenario = SCENARIOS[currentLevel] || SCENARIOS[1]; }
   objIndex = 0;
   awaitingObjectionReply = false;
   objResults = [];
@@ -2139,7 +2173,12 @@ function startSession() {
   for (var i = 0; i < LEVELS.length; i++) { if (LEVELS[i].id === currentLevel) lv = LEVELS[i]; }
   if (!lv) lv = LEVELS[0];
 
-  document.getElementById('rp-title').textContent = 'Level ' + currentLevel + ' · ' + LEVEL_NAMES[currentLevel];
+  if (practiceMode) {
+    var modTitles = { 'hold-the-line':'Hold the Line','the-gatekeeper':'The Gatekeeper','not-right-now':'"Not Right Now"','find-the-buyer':'Find the Buyer','the-ask':'The Ask','first-30':'First 30 Seconds','discovery':'Discovery Drills','reflex':'Objection Reflex','cold-open':'The Cold Open','value-trans':'Value Translation' };
+    document.getElementById('rp-title').textContent = 'Practice · ' + (modTitles[practiceModuleKey] || 'Module');
+  } else {
+    document.getElementById('rp-title').textContent = 'Level ' + currentLevel + ' · ' + LEVEL_NAMES[currentLevel];
+  }
 
   // Update prospect identity in both modes
   var per = activeScenario.persona;
@@ -2838,36 +2877,69 @@ function finishSession() {
 
   // Track completion with grade
   if (data.pass) {
-    completedLevels[currentLevel] = data.tier;
-    saveProfile();
+    if (practiceMode && practiceModuleKey) {
+      completedPractice[practiceModuleKey] = data.tier;
+      saveIntakeProgress(false);
+    } else {
+      completedLevels[currentLevel] = data.tier;
+      saveProfile();
+    }
   }
 
   var btns = document.getElementById('score-btns');
   var dailyNote = document.getElementById('daily-note');
   btns.innerHTML = '';
-  var tryAgainBtn = document.createElement('button');
-  tryAgainBtn.className = 'btn btn-ghost'; tryAgainBtn.textContent = 'Try again →';
-  tryAgainBtn.onclick = (function(l) { return function() { showLevelBrief(l); }; })(currentLevel);
   var seeABtn = document.createElement('button');
   seeABtn.className = 'btn btn-ghost'; seeABtn.textContent = 'See what A looks like';
   seeABtn.onclick = showATierExample;
-  if (data.pass) {
-    if (!isPro) {
-      dailyNote.style.display = 'flex';
-      var nxt = document.createElement('button');
-      nxt.className = 'btn btn-primary'; nxt.textContent = 'Next level →'; nxt.disabled = true;
-      btns.appendChild(nxt); btns.appendChild(tryAgainBtn); btns.appendChild(seeABtn);
+
+  if (practiceMode) {
+    // Practice mode: Back to plan + Try again (no "Next level")
+    dailyNote.style.display = 'none';
+    var backBtn = document.createElement('button');
+    backBtn.className = 'btn btn-ghost'; backBtn.textContent = '← Back to plan';
+    backBtn.onclick = function() {
+      practiceMode = false;
+      practiceModuleKey = null;
+      showScreen('screen-learning-intake');
+      document.getElementById('intake-form-wrap').style.display = 'none';
+      document.getElementById('intake-loading').style.display = 'none';
+      document.getElementById('intake-modules').style.display = 'flex';
+      buildModules();
+    };
+    var tryAgainBtn = document.createElement('button');
+    tryAgainBtn.textContent = 'Try again →';
+    tryAgainBtn.className = data.pass ? 'btn btn-ghost' : 'btn btn-primary';
+    var capturedKey = practiceModuleKey;
+    var modTitlesLocal = { 'hold-the-line':'Hold the Line','the-gatekeeper':'The Gatekeeper','not-right-now':'"Not Right Now"','find-the-buyer':'Find the Buyer','the-ask':'The Ask','first-30':'First 30 Seconds','discovery':'Discovery Drills','reflex':'Objection Reflex','cold-open':'The Cold Open','value-trans':'Value Translation' };
+    tryAgainBtn.onclick = (function(k) { return function() { showPracticeBrief(k, modTitlesLocal[k] || k); }; })(capturedKey);
+    if (data.pass) {
+      btns.appendChild(backBtn); btns.appendChild(tryAgainBtn); btns.appendChild(seeABtn);
     } else {
-      dailyNote.style.display = 'none';
-      var nxt2 = document.createElement('button');
-      nxt2.className = 'btn btn-primary'; nxt2.textContent = 'Next level →';
-      nxt2.onclick = (function(l) { return function() { showLevelBrief(Math.min(l + 1, 25)); }; })(currentLevel);
-      btns.appendChild(nxt2); btns.appendChild(tryAgainBtn); btns.appendChild(seeABtn);
+      btns.appendChild(tryAgainBtn); btns.appendChild(backBtn); btns.appendChild(seeABtn);
     }
   } else {
-    dailyNote.style.display = 'none';
-    tryAgainBtn.className = 'btn btn-primary';
-    btns.appendChild(tryAgainBtn); btns.appendChild(seeABtn);
+    var tryAgainCampaign = document.createElement('button');
+    tryAgainCampaign.className = 'btn btn-ghost'; tryAgainCampaign.textContent = 'Try again →';
+    tryAgainCampaign.onclick = (function(l) { return function() { showLevelBrief(l); }; })(currentLevel);
+    if (data.pass) {
+      if (!isPro) {
+        dailyNote.style.display = 'flex';
+        var nxt = document.createElement('button');
+        nxt.className = 'btn btn-primary'; nxt.textContent = 'Next level →'; nxt.disabled = true;
+        btns.appendChild(nxt); btns.appendChild(tryAgainCampaign); btns.appendChild(seeABtn);
+      } else {
+        dailyNote.style.display = 'none';
+        var nxt2 = document.createElement('button');
+        nxt2.className = 'btn btn-primary'; nxt2.textContent = 'Next level →';
+        nxt2.onclick = (function(l) { return function() { showLevelBrief(Math.min(l + 1, 25)); }; })(currentLevel);
+        btns.appendChild(nxt2); btns.appendChild(tryAgainCampaign); btns.appendChild(seeABtn);
+      }
+    } else {
+      dailyNote.style.display = 'none';
+      tryAgainCampaign.className = 'btn btn-primary';
+      btns.appendChild(tryAgainCampaign); btns.appendChild(seeABtn);
+    }
   }
 
   showScreen('screen-score');
@@ -2915,12 +2987,15 @@ function showATierExample() {
    INTAKE
 ============================================================ */
 var intakeStep = 0;
-var intakeData = { how: [], leads: [], challenge: [], audience: null, sell: '' };
+var intakeData = { how: [], leads: [], challenge: [], audience: null, sell: '', industry: '', why: '' };
+var practiceMode = false;        // true when running a practice module, not a campaign level
+var practiceModuleKey = null;    // which module is active in practice mode
+var completedPractice = {};      // { moduleKey: tier }
 
 function renderDots() {
   var dots = document.getElementById('progress-dots');
   dots.innerHTML = '';
-  for (var i = 0; i < 6; i++) {
+  for (var i = 0; i < 7; i++) {
     var d = document.createElement('div');
     d.className = 'pdot' + (i === intakeStep ? ' active' : (i < intakeStep ? ' done' : ''));
     dots.appendChild(d);
@@ -2953,16 +3028,105 @@ function nextIntakeStep() {
   if (intakeStep === 1 && collectMulti('how').length === 0) { flashToast('Pick at least one.'); return; }
   if (intakeStep === 2 && !intakeData.audience) { flashToast('Pick B2B or B2C.'); return; }
   if (intakeStep === 4 && collectMulti('leads').length === 0) { flashToast('Pick at least one.'); return; }
-  if (intakeStep < 5) showIntakeStep(intakeStep + 1);
+  if (intakeStep === 5) {
+    intakeData.challenge = collectMulti('challenge');
+    if (intakeData.challenge.length === 0) { flashToast('Pick at least one challenge.'); return; }
+    intakeData.how = collectMulti('how');
+    intakeData.leads = collectMulti('leads');
+    intakeData.sell = document.getElementById('q-sell').value.trim();
+    intakeData.industry = (document.getElementById('q-industry').value || '').trim();
+    intakeData.why = (document.getElementById('q-why').value || '').trim();
+    buildIntakeSummary();
+    saveIntakeProgress(false);
+  }
+  if (intakeStep < 6) showIntakeStep(intakeStep + 1);
 }
 function prevIntakeStep() { if (intakeStep > 0) showIntakeStep(intakeStep - 1); }
 
+function listWords(arr) {
+  if (!arr || arr.length === 0) return '';
+  var a = arr.map(function(x){ return x.toLowerCase(); });
+  if (a.length === 1) return a[0];
+  return a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+}
+
+function buildIntakeSummary() {
+  var sell = intakeData.sell || 'your product';
+  var isB2B = !intakeData.audience || intakeData.audience.indexOf('B2B') !== -1;
+  var aud = isB2B ? 'other businesses' : 'consumers';
+  var ind = intakeData.industry ? ' in the ' + intakeData.industry + ' sector' : '';
+  var howStr = intakeData.how.length > 0 ? listWords(intakeData.how) : 'various channels';
+  var leadStr = intakeData.leads.length > 0 ? listWords(intakeData.leads) : 'various sources';
+  var chalStr = intakeData.challenge.length > 0 ? listWords(intakeData.challenge) : 'various areas';
+  var text = 'So you sell ' + sell + ' to ' + aud + ind + '. ' +
+    'You mainly sell through ' + howStr + ', and generate leads through ' + leadStr + '. ' +
+    'Your biggest focus' + (intakeData.challenge.length > 1 ? ' areas are ' : ' area is ') + chalStr + '.' +
+    ' Does that sound about right?';
+  document.getElementById('intake-summary').textContent = text;
+}
+
+function saveIntakeProgress(showNotice) {
+  try {
+    localStorage.setItem('pitchgym_intake', JSON.stringify(intakeData));
+    localStorage.setItem('pitchgym_practice_done', JSON.stringify(completedPractice));
+  } catch(e) {}
+  if (showNotice) flashToast('Progress saved.');
+}
+
+function loadIntakeProgress() {
+  var hasIntake = false;
+  try {
+    var raw = localStorage.getItem('pitchgym_intake');
+    if (raw) {
+      var d = JSON.parse(raw);
+      if (d && d.sell) { intakeData = d; hasIntake = true; }
+    }
+    var rcp = localStorage.getItem('pitchgym_practice_done');
+    if (rcp) { var cp = JSON.parse(rcp); if (cp && typeof cp === 'object') completedPractice = cp; }
+  } catch(e) {}
+  return hasIntake;
+}
+
+function openLearningIntake() {
+  showScreen('screen-learning-intake');
+  var hasData = loadIntakeProgress();
+  if (hasData) {
+    // Resume saved plan — skip the questionnaire
+    document.getElementById('intake-form-wrap').style.display = 'none';
+    document.getElementById('intake-loading').style.display = 'none';
+    buildModules();
+    document.getElementById('intake-modules').style.display = 'flex';
+  } else {
+    // Fresh start — show the questionnaire from step 0
+    document.getElementById('intake-form-wrap').style.display = '';
+    document.getElementById('intake-loading').style.display = 'none';
+    document.getElementById('intake-modules').style.display = 'none';
+    showIntakeStep(0);
+  }
+}
+
+function retakeIntake() {
+  // Reset intake data and go back to questionnaire
+  intakeData = { how: [], leads: [], challenge: [], audience: null, sell: '', industry: '', why: '' };
+  // Clear chips and inputs
+  var chips = document.querySelectorAll('.chip.selected, .bigchoice.selected');
+  for (var i = 0; i < chips.length; i++) chips[i].classList.remove('selected');
+  var sellEl = document.getElementById('q-sell');
+  var indEl = document.getElementById('q-industry');
+  var whyEl = document.getElementById('q-why');
+  if (sellEl) sellEl.value = '';
+  if (indEl) indEl.value = '';
+  if (whyEl) whyEl.value = '';
+  document.getElementById('intake-modules').style.display = 'none';
+  document.getElementById('intake-loading').style.display = 'none';
+  document.getElementById('intake-form-wrap').style.display = '';
+  showIntakeStep(0);
+}
+
 function submitIntake() {
-  intakeData.challenge = collectMulti('challenge');
-  if (intakeData.challenge.length === 0) { flashToast('Pick at least one challenge.'); return; }
-  intakeData.how = collectMulti('how');
-  intakeData.leads = collectMulti('leads');
-  intakeData.sell = document.getElementById('q-sell').value.trim();
+  // Collect any remaining form fields (safety)
+  if (!intakeData.sell) intakeData.sell = document.getElementById('q-sell').value.trim();
+  if (!intakeData.industry) intakeData.industry = (document.getElementById('q-industry').value || '').trim();
 
   document.getElementById('intake-form-wrap').style.display = 'none';
   document.getElementById('intake-loading').style.display = 'flex';
@@ -2973,49 +3137,281 @@ function submitIntake() {
   }, 1500);
 }
 
+// Challenge → module mapping (key = challenge chip text)
 var CHALLENGE_MODULES = {
-  'Price objections': { t: "Hold the Line", d: "Keep your price when buyers push. Discover value before defending it.", diff: "med" },
-  'Getting past gatekeepers': { t: "The Gatekeeper", d: "Earn the handoff. Turn the assistant into your advocate, not your wall.", diff: "med" },
-  'Time objections': { t: "\"Not Right Now\"", d: "Break the stall loop. Make the cost of waiting feel real.", diff: "easy" },
-  'Authority objections': { t: "Find the Buyer", d: "\"I'll ask my boss.\" Reach the real decision-maker without losing your champion.", diff: "hard" },
-  'Closing': { t: "The Ask", d: "Stop circling. Ask for the order with confidence and silence.", diff: "med" },
-  'Rapport': { t: "First 30 Seconds", d: "Build trust fast. Sound like a human, not a script.", diff: "easy" }
+  'Price objections':          { key:'hold-the-line',  t:'Hold the Line',     diff:'med' },
+  'Getting past gatekeepers':  { key:'the-gatekeeper', t:'The Gatekeeper',    diff:'med' },
+  'Time objections':           { key:'not-right-now',  t:'"Not Right Now"',   diff:'easy' },
+  'Authority objections':      { key:'find-the-buyer', t:'Find the Buyer',    diff:'hard' },
+  'Closing':                   { key:'the-ask',        t:'The Ask',           diff:'med' },
+  'Rapport':                   { key:'first-30',       t:'First 30 Seconds',  diff:'easy' }
 };
 var CONTEXT_MODULES = [
-  { t: "Discovery Drills", d: "Ask the questions that surface real pain. Listen more than you pitch.", diff: "easy" },
-  { t: "Objection Reflex", d: "Rapid-fire pushback. Train your instant, calm response under pressure.", diff: "hard" },
-  { t: "The Cold Open", d: "Win the first ten seconds of a cold call before they hang up.", diff: "med" },
-  { t: "Value Translation", d: "Turn features into outcomes that matter to this exact buyer.", diff: "med" }
+  { key:'discovery',    t:'Discovery Drills',  diff:'easy' },
+  { key:'reflex',       t:'Objection Reflex',  diff:'hard' },
+  { key:'cold-open',    t:'The Cold Open',     diff:'med'  },
+  { key:'value-trans',  t:'Value Translation', diff:'med'  }
 ];
+
+// Generate a description that mentions the rep's actual product.
+function moduleDesc(key, sell) {
+  var s = sell || 'your product';
+  var D = {
+    'hold-the-line':  'The prospect says ' + s + ' is too expensive. Hold your price, build the case, and don\'t cave.',
+    'the-gatekeeper': 'The gatekeeper screens every call before it reaches the real buyer. Turn them into your ally.',
+    'not-right-now':  'They like ' + s + ' but keep stalling. Make the cost of waiting feel real.',
+    'find-the-buyer': '"I\'ll need to run it past my manager." Equip the champion and get to the decision-maker.',
+    'the-ask':        'You\'ve done the work. Now stop circling and ask for the ' + s + ' order with conviction.',
+    'first-30':       'You have thirty seconds before they hang up. Make them feel heard before you pitch ' + s + '.',
+    'discovery':      'You\'re selling ' + s + '. Ask the questions that surface real pain before you say a word about product.',
+    'reflex':         'Rapid-fire pushback on ' + s + '. Train your instant, calm response to whatever they throw at you.',
+    'cold-open':      'Cold call, ten seconds. Win the right to keep talking before they hang up on ' + s + '.',
+    'value-trans':    'Turn the features of ' + s + ' into outcomes that matter to this specific buyer.'
+  };
+  return D[key] || 'Practice key skills for selling ' + s + '.';
+}
+
+// Build a custom scenario for a practice module, using intakeData context.
+function buildPracticeScenario(key) {
+  var d = intakeData;
+  var sell = d.sell || 'your product';
+  var isB2B = !d.audience || d.audience.indexOf('B2B') !== -1;
+  var ind = d.industry || (isB2B ? 'business' : 'consumer');
+  var name, initials, role, company, avatarColor, opener, close, objective, objections;
+
+  if (key === 'hold-the-line') {
+    name = isB2B ? 'Alex Harrington' : 'Jamie Chen'; initials = 'A'; avatarColor = '#ff6b35';
+    role = isB2B ? 'Head of Operations' : 'Customer'; company = isB2B ? 'Pinnacle ' + ind.charAt(0).toUpperCase() + ind.slice(1) + ' Co.' : '';
+    opener = 'Yeah, I\'ve had a look. Interesting. But honestly it feels steep — we\'ve seen similar things for less.';
+    close = 'Alright. You\'ve made a solid case — let\'s move forward at your number.';
+    objective = 'Hold your price and demonstrate value. Don\'t cave.';
+    objections = [{ id:'price', label:'Price', difficulty:'med',
+      hint:'Don\'t defend the number — discover what value looks like to them first. Then make the case.',
+      line:'Look, I appreciate what you\'re pitching, but can you do better on price? Everyone\'s flexible.',
+      ackQuestion:'Fair question — why is ' + sell + ' worth that when I can probably find something cheaper?',
+      pass:'Okay, that actually makes sense. If the return is there, the price works for us.',
+      weak:'I get it, but the number is still the number. Can you sharpen your pencil at all?',
+      fold:'Yeah alright, if you can cut it a bit I\'ll pull the trigger today.' }];
+  } else if (key === 'the-gatekeeper') {
+    name = 'Janet Cole'; initials = 'J'; avatarColor = '#ffd000';
+    role = 'Executive Assistant'; company = isB2B ? ind.charAt(0).toUpperCase() + ind.slice(1) + ' Partners' : 'The Office';
+    opener = 'Good morning. Before I put you through — can I ask what this is regarding?';
+    close = 'You know what, you actually sound like you know what you\'re talking about. Let me see if she\'s free.';
+    objective = 'Turn the gatekeeper into an ally — get through to the decision-maker.';
+    objections = [{ id:'gate', label:'Gatekeeper', difficulty:'med',
+      hint:'Janet isn\'t the obstacle — she\'s the key. Be specific, be human, and respect her role.',
+      line:'She\'s very busy. I\'ll need a bit more detail before I put you through to anyone.',
+      ackQuestion:'I get a lot of these calls. What makes ' + sell + ' worth interrupting her for?',
+      pass:'Okay, that\'s the kind of thing she\'d want to hear about. Let me check her calendar.',
+      weak:'I appreciate it, but I really can\'t just put everyone through. Can you send an email?',
+      fold:'Best leave your number and I\'ll pass it on. Probably won\'t hear back though.' }];
+  } else if (key === 'not-right-now') {
+    name = 'Sam Okafor'; initials = 'S'; avatarColor = '#00d68f';
+    role = isB2B ? 'General Manager' : 'Customer'; company = isB2B ? 'Meridian ' + ind.charAt(0).toUpperCase() + ind.slice(1) : '';
+    opener = 'Yeah look, ' + sell + ' looks good — I just can\'t move on anything right now. Quarter\'s hectic.';
+    close = 'You\'re right, I\'ve been putting this off. Let\'s lock something in — what does next Tuesday look like?';
+    objective = 'Break the stall. Surface the real hesitation and make the cost of waiting real.';
+    objections = [{ id:'time', label:'Timing', difficulty:'easy',
+      hint:'\'Not right now\' usually means something\'s unspoken. Ask what\'s driving the hesitation.',
+      line:'It\'s just not the right time — I\'ll circle back in a couple of months.',
+      ackQuestion:'What\'s the actual hold-up? Is it budget, priorities, or something else with ' + sell + '?',
+      pass:'...Yeah, you\'re right. Waiting isn\'t really free. Let\'s find a time to move it forward.',
+      weak:'I\'ll call you when things settle down. Shouldn\'t be long.',
+      fold:'If you do a deal for waiting I\'ll think about it later.' }];
+  } else if (key === 'find-the-buyer') {
+    name = 'Tom Avery'; initials = 'T'; avatarColor = '#7c6af7';
+    role = isB2B ? 'Team Lead' : 'Store Manager'; company = isB2B ? ind.charAt(0).toUpperCase() + ind.slice(1) + ' Group' : '';
+    opener = 'Yeah look, ' + sell + ' sounds useful — but I\'d have to get sign-off before anything happens.';
+    close = 'Right, if you can come in and speak to Denise directly that\'d actually be the best way. Let me set it up.';
+    objective = 'Arm the champion and get access to the real decision-maker.';
+    objections = [{ id:'auth', label:'Authority', difficulty:'hard',
+      hint:'Don\'t try to close Tom — he can\'t say yes. Arm him to sell it up and ask for a path to the buyer.',
+      line:'It\'s not really my call. I\'d have to run it past my manager.',
+      ackQuestion:'She signs off on everything like this. What would I even tell her to get her to take a meeting?',
+      pass:'Yeah, that\'s a clean case actually. Let me set up a time with her and you can walk her through it.',
+      weak:'I\'ll mention it. Not sure she\'ll bite though — these things take time.',
+      fold:'Just send a contract — I\'ll sign it and sort it out with her later.' }];
+  } else if (key === 'the-ask') {
+    name = 'Riley Park'; initials = 'R'; avatarColor = '#00e5ff';
+    role = isB2B ? 'Operations Director' : 'Customer'; company = isB2B ? 'Northgate ' + ind.charAt(0).toUpperCase() + ind.slice(1) : '';
+    opener = 'Yeah, I\'m pretty much sold on ' + sell + ' — it ticks most of our boxes. Just want to be sure before we commit.';
+    close = 'You\'re right. No real reason to keep sitting on it. Let\'s get it moving — send the paperwork.';
+    objective = 'They\'re ready. Stop re-pitching and ask for the order clearly.';
+    objections = [{ id:'stall', label:'Hesitation', difficulty:'med',
+      hint:'They\'re not hesitating because of doubt — they\'re waiting for you to ask. Make a clean, low-friction ask.',
+      line:'I think I want to do it — I just want to sit on it a few more days to be sure.',
+      ackQuestion:'What would make me feel 100% ready to say yes right now?',
+      pass:'...Actually, there\'s nothing. I\'m overthinking it. Let\'s do it.',
+      weak:'Yeah, I just need a bit more time. Nothing specific — just my process.',
+      fold:'Maybe if you threw in a discount it\'d make the decision easier.' }];
+  } else if (key === 'first-30') {
+    name = 'Dana Reyes'; initials = 'D'; avatarColor = '#ff4d8d';
+    role = isB2B ? 'Business Owner' : 'Shopper'; company = isB2B ? ind.charAt(0).toUpperCase() + ind.slice(1) + ' Solutions' : '';
+    opener = 'Yeah, g\'day. Look I\'ve got thirty seconds — what\'s this about?';
+    close = 'You know what, you actually sound worth a proper chat. Come back to me Thursday.';
+    objective = 'Earn the next step in the first thirty seconds.';
+    objections = [{ id:'time', label:'Time', difficulty:'easy',
+      hint:'Don\'t pitch ' + sell + ' yet — earn the right to keep talking with one sharp, relevant hook.',
+      line:'I\'m flat out — thirty seconds, go.',
+      ackQuestion:'Fine, that\'s actually not the usual spiel. Say more.',
+      pass:'Alright, that\'s more interesting than the last ten calls I got. You\'ve got five minutes.',
+      weak:'Still sounds like every other rep. Thanks but no thanks.',
+      fold:'If you\'re offering a discount just text me and I\'ll look at it later.' }];
+  } else if (key === 'discovery') {
+    name = 'Morgan Ellis'; initials = 'M'; avatarColor = '#7c6af7';
+    role = isB2B ? 'Procurement Lead' : 'Customer'; company = isB2B ? ind.charAt(0).toUpperCase() + ind.slice(1) + ' Corp' : '';
+    opener = 'Sure, I\'ve got ten minutes. Tell me about ' + sell + '.';
+    close = 'The questions you asked actually helped me think about what we need. This could work.';
+    objective = 'Ask more than you tell. Surface what actually matters before you say a word about product.';
+    objections = [{ id:'disc', label:'Discovery', difficulty:'easy',
+      hint:'Resist the urge to pitch. Ask what\'s not working now before you position anything.',
+      line:'Look, just tell me what ' + sell + ' does. I\'ll decide if it\'s relevant.',
+      ackQuestion:'I appreciate the questions — but can you just give me the pitch and I\'ll tell you if it fits?',
+      pass:'Actually, those questions were useful. You clearly understand what we\'re dealing with.',
+      weak:'This feels like a lot of questions before you\'ve told me anything. Get to the point.',
+      fold:'Just send me a brochure, I don\'t have time for twenty questions.' }];
+  } else if (key === 'reflex') {
+    name = 'Vince Carter'; initials = 'V'; avatarColor = '#ff4444';
+    role = isB2B ? 'Negotiator' : 'Hard customer'; company = isB2B ? ind.charAt(0).toUpperCase() + ind.slice(1) + ' Holdings' : '';
+    opener = 'Look, I\'ll be straight with you — I\'ve seen ' + sell + ' before and I\'m not convinced. Convince me.';
+    close = '...Alright. You came back calm every time. I can work with that. Let\'s talk numbers.';
+    objective = 'Stay calm under rapid-fire pressure. Don\'t fold, don\'t fight.';
+    objections = [{ id:'push', label:'Pushback', difficulty:'hard',
+      hint:'They\'re testing your composure. Don\'t match their aggression — redirect with a question.',
+      line:'Your competitor does the same thing for half the price. Why would I pick you?',
+      ackQuestion:'Don\'t give me marketing lines. Tell me one concrete reason I shouldn\'t go elsewhere.',
+      pass:'Alright. That\'s a real answer, not a script. I respect that.',
+      weak:'That\'s the same thing everyone says. Give me something real.',
+      fold:'Fine, match their price and we\'ll talk.' }];
+  } else if (key === 'cold-open') {
+    name = 'Eleanor Vance'; initials = 'E'; avatarColor = '#00e5ff';
+    role = isB2B ? 'CEO' : 'Busy professional'; company = isB2B ? ind.charAt(0).toUpperCase() + ind.slice(1) + ' Dynamics' : '';
+    opener = 'Yeah. You\'ve got about ten seconds before I hang up. What is it?';
+    close = '...That\'s the first time a cold call\'s caught my attention in months. Fine, send me something.';
+    objective = 'Win the right to keep talking in the first ten seconds.';
+    objections = [{ id:'open', label:'Cold Open', difficulty:'med',
+      hint:'Don\'t pitch ' + sell + ' — earn the next ten seconds with one insight about their world.',
+      line:'Not interested. We\'re all set.',
+      ackQuestion:'Everyone says that. Why would I care about ' + sell + ' right now?',
+      pass:'Hm. That\'s actually a different angle. Go on — you\'ve got a couple more minutes.',
+      weak:'Still sounds like a sales call. Good luck.',
+      fold:'If you\'re giving it free for a trial I\'ll think about it.' }];
+  } else { // value-trans
+    name = 'Olivia Chen'; initials = 'O'; avatarColor = '#ffd000';
+    role = isB2B ? 'CFO' : 'Savvy buyer'; company = isB2B ? ind.charAt(0).toUpperCase() + ind.slice(1) + ' Group' : '';
+    opener = 'You\'ve told me what ' + sell + ' does. Tell me what it\'s actually worth — in real terms.';
+    close = 'That\'s the clearest value case I\'ve heard. Alright — let\'s make it happen.';
+    objective = 'Turn features into outcomes that matter to this specific buyer.';
+    objections = [{ id:'val', label:'Value', difficulty:'med',
+      hint:'Every feature needs a "so what." Tie each capability directly to their world and their outcomes.',
+      line:'Look, everyone says their product is valuable. What does it actually do for us, specifically?',
+      ackQuestion:'I need numbers, not adjectives. What\'s the actual return on ' + sell + '?',
+      pass:'Right — that\'s the kind of specific outcome I can take to a decision. Good.',
+      weak:'That\'s still pretty vague. Give me a concrete number I can put in a spreadsheet.',
+      fold:'If you can guarantee that in writing I\'ll consider it.' }];
+  }
+
+  return {
+    persona: { name: name, initials: initials, role: role, company: company,
+               backstory: 'A practice prospect tailored to selling ' + sell + '.', avatarColor: avatarColor },
+    product: sell,
+    opener: opener, close: close, objective: objective, objections: objections
+  };
+}
 
 function buildModules() {
   var grid = document.getElementById('module-grid');
   grid.innerHTML = '';
   var mods = [];
+  // Priority: challenges they picked first
   for (var c = 0; c < intakeData.challenge.length; c++) {
     var ch = intakeData.challenge[c];
     if (CHALLENGE_MODULES[ch]) mods.push(CHALLENGE_MODULES[ch]);
   }
+  // Fill to 4 with context modules that address how they sell
+  var coldFirst = intakeData.how && (intakeData.how.indexOf('Cold Call') !== -1 || intakeData.how.indexOf('Email') !== -1);
+  var ctxOrdered = coldFirst
+    ? [CONTEXT_MODULES[2], CONTEXT_MODULES[0], CONTEXT_MODULES[3], CONTEXT_MODULES[1]] // cold-open first
+    : CONTEXT_MODULES.slice();
   var ci = 0;
-  while (mods.length < 4 && ci < CONTEXT_MODULES.length) {
+  while (mods.length < 4 && ci < ctxOrdered.length) {
     var exists = false;
-    for (var m = 0; m < mods.length; m++) { if (mods[m].t === CONTEXT_MODULES[ci].t) exists = true; }
-    if (!exists) mods.push(CONTEXT_MODULES[ci]);
+    for (var m = 0; m < mods.length; m++) { if (mods[m].key === ctxOrdered[ci].key) exists = true; }
+    if (!exists) mods.push(ctxOrdered[ci]);
     ci++;
   }
   mods = mods.slice(0, 4);
+
+  var sell = intakeData.sell || 'your product';
+  var subhead = document.getElementById('plan-subhead');
+  if (subhead) subhead.textContent = 'Built around selling ' + sell + '. Start anywhere.';
+
   for (var i = 0; i < mods.length; i++) {
     var mo = mods[i];
-    var card = document.createElement('div');
-    card.className = 'module-card';
     var dl = mo.diff === 'easy' ? 'BEGINNER' : (mo.diff === 'med' ? 'INTERMEDIATE' : 'ADVANCED');
+    var grade = completedPractice[mo.key];
+    var tierColors = { A:'#00d68f', B:'#ffd000', C:'#ff6b35', F:'#ff4444' };
+    var gradeHtml = grade ? '<span class="module-grade" style="color:' + (tierColors[grade]||'#fff') + '">' + grade + '</span>' : '';
+    var card = document.createElement('div');
+    card.className = 'module-card' + (grade ? ' completed' : '');
     card.innerHTML =
-      '<span class="diff-tag ' + mo.diff + '">' + dl + '</span>' +
+      '<div style="display:flex;align-items:center;gap:6px;">' +
+        '<span class="diff-tag ' + mo.diff + '">' + dl + '</span>' + gradeHtml +
+      '</div>' +
+      '<div class="module-product">' + sell.toUpperCase() + '</div>' +
       '<h4>' + mo.t + '</h4>' +
-      '<p>' + mo.d + '</p>' +
-      '<button class="btn btn-primary" style="margin-top:6px;" onclick="showLevelBrief(1)">Start →</button>';
+      '<p>' + moduleDesc(mo.key, sell) + '</p>' +
+      '<button class="btn btn-primary" style="margin-top:6px;" onclick="showPracticeBrief(\'' + mo.key + '\', \'' + escapeAttr(mo.t) + '\')">Start →</button>';
     grid.appendChild(card);
   }
+}
+
+function escapeAttr(s) { return s.replace(/'/g, '\\\''); }
+
+// Show the brief screen for a practice module (not a campaign level).
+function showPracticeBrief(moduleKey, moduleTitle) {
+  practiceMode = true;
+  practiceModuleKey = moduleKey;
+  var scenario = buildPracticeScenario(moduleKey);
+  activeScenario = scenario;  // pre-set so startSession doesn't overwrite it
+
+  var p = scenario.persona;
+  document.getElementById('brief-lvl').textContent = 'PRACTICE';
+  document.getElementById('brief-tag').textContent = moduleTitle.toUpperCase().replace(/"/g,'');
+  document.getElementById('brief-topbar-title').textContent = 'Practice Brief';
+  document.getElementById('brief-story').innerHTML =
+    'You\'re selling ' + emphParts(scenario.product) + '.<br><br>' +
+    'You\'re up against ' + boldName(p.name) + ' — ' + p.role + (p.company ? ' at ' + p.company : '') + '. ' +
+    moduleDesc(moduleKey, scenario.product);
+
+  var goalWrap = document.getElementById('brief-goals');
+  goalWrap.innerHTML = '';
+  addGoal(goalWrap, scenario.objective);
+  for (var g = 0; g < scenario.objections.length; g++) {
+    addGoal(goalWrap, 'Handle the ' + scenario.objections[g].label.toLowerCase() + ' objection without folding');
+  }
+
+  var stepper = document.getElementById('brief-stepper');
+  stepper.innerHTML = '';
+  var steps = ['Opener'];
+  for (var s = 0; s < scenario.objections.length; s++) steps.push(scenario.objections[s].label);
+  steps.push('Close');
+  for (var k = 0; k < steps.length; k++) {
+    var node = document.createElement('div');
+    node.className = 'step-node';
+    node.innerHTML = '<div class="step-circle ' + (k===0?'':'future') + '">' + (k+1) + '</div><span class="step-label">' + escapeHtml(steps[k]) + '</span>';
+    stepper.appendChild(node);
+    if (k < steps.length - 1) { var conn = document.createElement('div'); conn.className = 'step-conn'; stepper.appendChild(conn); }
+  }
+
+  var rows = document.getElementById('brief-scoring-rows');
+  rows.innerHTML = '';
+  addScoreRow(rows, 'a', 'Handled every objection with discovery + strong value tied to their world');
+  addScoreRow(rows, 'b', 'Held the line and made a solid case on the key objection');
+  addScoreRow(rows, 'c', 'Survived but responses were generic or vague');
+  addScoreRow(rows, 'f', 'Folded — caved, discounted, or ran from the objection');
+
+  showScreen('screen-level-brief');
 }
 
 /* ============================================================
