@@ -387,6 +387,12 @@ details.scoring[open] summary::before { content: '▾ '; }
 .waveform .wbar:nth-child(4) { animation-delay: 0.45s; }
 .waveform .wbar:nth-child(5) { animation-delay: 0.6s; }
 @keyframes wave { 0%,100% { height: 8px; } 50% { height: 34px; } }
+.waveform.listening .wbar { animation: wave 0.5s ease-in-out infinite; background: var(--primary); }
+.waveform.listening .wbar:nth-child(1) { animation-delay: 0s; }
+.waveform.listening .wbar:nth-child(2) { animation-delay: 0.1s; }
+.waveform.listening .wbar:nth-child(3) { animation-delay: 0.2s; }
+.waveform.listening .wbar:nth-child(4) { animation-delay: 0.1s; }
+.waveform.listening .wbar:nth-child(5) { animation-delay: 0s; }
 .record-btn {
   width: 64px; height: 64px; border-radius: 50%; background: var(--danger); color: #fff; font-size: 24px;
   display: flex; align-items: center; justify-content: center; transition: all 0.25s ease;
@@ -401,10 +407,17 @@ details.scoring[open] summary::before { content: '▾ '; }
   background: var(--surface-raised); border: 1.5px solid var(--border); color: var(--text);
 }
 .voice-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
-.voice-transcript { width: 100%; margin-top: 12px; }
-.voice-transcript summary { font-size: 13px; color: var(--text-muted); cursor: pointer; list-style: none; }
-.voice-transcript summary::-webkit-details-marker { display: none; }
-.transcript-body { margin-top: 14px; display: flex; flex-direction: column; gap: 12px; text-align: left; }
+.voice-transcript-live {
+  width: 100%; max-height: 210px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 12px 12px 4px; border-radius: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  text-align: left; scroll-behavior: smooth;
+}
+.voice-transcript-live:empty::after { content: 'Call transcript will appear here…'; font-size: 13px; color: var(--text-dim); display: block; text-align: center; padding: 12px 0; }
+.voice-stage-header { display: flex; align-items: center; gap: 14px; width: 100%; }
+.voice-stage-header .prospect-name { font-size: 17px; }
+.voice-timer-badge { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-left: auto; font-variant-numeric: tabular-nums; }
 
 /* ---------- Slack popup ---------- */
 .slack-popup {
@@ -880,25 +893,25 @@ details.scoring[open] summary::before { content: '▾ '; }
 
   <!-- VOICE MODE -->
   <div id="voice-mode" class="voice-stage" style="display:none;">
-    <div class="avatar avatar-lg" id="vp-avatar" style="background:var(--orange);">M</div>
-    <div>
-      <div class="prospect-name" id="vp-prospect-name" style="font-size:20px;">Mike Donnelly</div>
-      <div class="prospect-role" id="vp-prospect-role">Owner · Mike's Local</div>
+    <div class="voice-stage-header">
+      <div class="avatar avatar-lg" id="vp-avatar" style="background:var(--orange);">M</div>
+      <div>
+        <div class="prospect-name" id="vp-prospect-name">Mike Donnelly</div>
+        <div class="prospect-role" id="vp-prospect-role">Owner · Mike's Local</div>
+      </div>
+      <div class="voice-timer-badge" id="voice-timer">00:00</div>
     </div>
-    <div class="topbar-meta" id="voice-timer">00:00</div>
+    <div class="section-pills-row" id="voice-pills"></div>
     <div class="voice-status" id="voice-status">Connecting…</div>
     <div class="waveform" id="voice-wave"><div class="wbar"></div><div class="wbar"></div><div class="wbar"></div><div class="wbar"></div><div class="wbar"></div></div>
+    <div class="voice-transcript-live" id="voice-transcript-body"></div>
     <button class="record-btn" id="record-btn" onclick="toggleRecord()">🎙</button>
-    <div class="tiny-muted" id="record-hint">Click to speak</div>
+    <div class="tiny-muted" id="record-hint">Tap to speak your reply</div>
     <div class="voice-input-row" id="voice-input-row" style="display:none;">
-      <div class="voice-input-wrap"><textarea class="voice-input" id="voice-input" rows="1" placeholder="What you say…" onkeydown="voiceKeydown(event)" oninput="autoGrow(this)"></textarea></div>
+      <div class="voice-input-wrap"><textarea class="voice-input" id="voice-input" rows="1" placeholder="Type what you'd say…" onkeydown="voiceKeydown(event)" oninput="autoGrow(this)"></textarea></div>
       <button class="send-btn" onclick="sendVoiceMessage()">↑</button>
     </div>
     <button class="end-session-btn" onclick="endSession()" style="align-self:center;">End call</button>
-    <details class="voice-transcript">
-      <summary>▸ Transcript</summary>
-      <div class="transcript-body" id="voice-transcript-body"></div>
-    </details>
   </div>
 </section>
 
@@ -2132,14 +2145,16 @@ function startSession() {
   var per = activeScenario.persona;
   setProspectIdentity(per);
 
-  var pills = document.getElementById('rp-pills');
-  pills.innerHTML = '';
-  // one pill per objection
-  for (var pz = 0; pz < activeScenario.objections.length; pz++) {
-    var pill = document.createElement('div');
-    pill.className = 'spill' + (pz === 0 ? ' active' : '');
-    pills.appendChild(pill);
-  }
+  ['rp-pills', 'voice-pills'].forEach(function(pid) {
+    var pc = document.getElementById(pid);
+    if (!pc) return;
+    pc.innerHTML = '';
+    for (var pz = 0; pz < activeScenario.objections.length; pz++) {
+      var pill = document.createElement('div');
+      pill.className = 'spill' + (pz === 0 ? ' active' : '');
+      pc.appendChild(pill);
+    }
+  });
 
   document.getElementById('text-mode').style.display = (mode === 'text') ? 'flex' : 'none';
   document.getElementById('voice-mode').style.display = (mode === 'voice') ? 'flex' : 'none';
@@ -2166,10 +2181,12 @@ function setProspectIdentity(per) {
   document.getElementById('vp-prospect-role').textContent = per.role + ' · ' + per.company;
 }
 function updateSectionPills() {
-  var pills = document.querySelectorAll('#rp-pills .spill');
-  for (var i = 0; i < pills.length; i++) {
-    pills[i].classList.toggle('active', i <= objIndex);
-  }
+  ['rp-pills', 'voice-pills'].forEach(function(pid) {
+    var pills = document.querySelectorAll('#' + pid + ' .spill');
+    for (var i = 0; i < pills.length; i++) {
+      pills[i].classList.toggle('active', i <= objIndex);
+    }
+  });
 }
 
 function startTimer() {
@@ -2352,7 +2369,7 @@ function resolveObjection(text, sayFn, after) {
   if (r === 'discovery' || r === 'value') {
     objResults[objIndex] = r;   // 'discovery' (best) or 'value' (solid)
     weakStreak = 0;
-    advanceAfterObjection(sayFn, obj.pass);
+    advanceAfterObjection(sayFn, obj.pass, after);
     return;
   }
   // neutral / weak
@@ -2365,7 +2382,7 @@ function resolveObjection(text, sayFn, after) {
   if (weakStreak >= 3) {
     // They held but never landed it — count as a weak hold and move on.
     objResults[objIndex] = 'weak';
-    advanceAfterObjection(sayFn, obj.pass);
+    advanceAfterObjection(sayFn, obj.pass, after);
     return;
   }
   // Escalate instead of repeating the same line verbatim — feels more human.
@@ -2376,23 +2393,24 @@ function resolveObjection(text, sayFn, after) {
   sayFn(line, 1100, function() { if (after) after(); });
 }
 
-function advanceAfterObjection(sayFn, passLine) {
+function advanceAfterObjection(sayFn, passLine, afterPrompt) {
   objIndex++;
   if (objIndex >= activeScenario.objections.length) {
-    // All objections handled — the prospect throws a buying signal and the rep
-    // gets one last turn to LOCK the next step. That's what we grade the close on.
+    // All objections handled — prospect throws buying signal, rep locks the next step.
     awaitingObjectionReply = false;
     updateSectionPills();
     var closeAsk = CLOSE_ASKS[currentLevel] || "Alright, you've convinced me. So — what happens next?";
     sayFn(passLine, 1100, function() {
-      sayFn(closeAsk, 1300, function() { awaitingClose = true; });
+      sayFn(closeAsk, 1300, function() {
+        awaitingClose = true;
+        if (afterPrompt) afterPrompt();
+      });
     });
   } else {
     awaitingObjectionReply = false;
     updateSectionPills();
-    // Acknowledge with the pass line, then raise the next objection.
     sayFn(passLine, 1100, function() {
-      raiseObjection(null, sayFn, function(){});
+      raiseObjection(null, sayFn, afterPrompt || function(){});
     });
   }
 }
@@ -2508,14 +2526,24 @@ function closeConfirm() { document.getElementById('confirm-overlay').classList.r
 function startVoice() {
   document.getElementById('voice-transcript-body').innerHTML = '';
   document.getElementById('voice-input-row').style.display = 'none';
-  var status = document.getElementById('voice-status');
   var wave = document.getElementById('voice-wave');
+  var status = document.getElementById('voice-status');
   status.textContent = 'Calling…';
-  wave.classList.remove('speaking');
+  wave.classList.remove('speaking', 'listening');
   setTimeout(function() {
     status.textContent = 'Connected';
     setTimeout(function() {
-      voiceProspectSpeak(activeScenario.opener, function() { convoStage = 1; promptUserVoice(); });
+      voiceProspectSpeak(activeScenario.opener, function() {
+        convoStage = 1;
+        promptUserVoice();
+        // Coach intro ping — same timing as text mode.
+        if (!coachIntroShown) {
+          coachIntroShown = true;
+          setTimeout(function() {
+            if (!sessionEnded) showSlackPopup('intro');
+          }, 1000);
+        }
+      });
     }, 800);
   }, 1200);
 }
@@ -2523,40 +2551,67 @@ function startVoice() {
 function voiceProspectSpeak(text, cb) {
   var status = document.getElementById('voice-status');
   var wave = document.getElementById('voice-wave');
-  status.textContent = activeScenario.persona.name + ' is speaking…';
+  var firstName = activeScenario ? activeScenario.persona.name.split(' ')[0] : 'Prospect';
+  status.textContent = firstName + ' is speaking…';
+  wave.classList.remove('listening');
   wave.classList.add('speaking');
   addTranscript('prospect', text);
+  scrollVoiceTranscript();
+  // Duration roughly proportional to text length — feels like real speech.
+  var words = text.split(/\s+/).length;
+  var dur = Math.max(1400, Math.min(words * 58, 3600));
   setTimeout(function() {
     wave.classList.remove('speaking');
     if (cb) cb();
-  }, 1600);
+  }, dur);
+}
+
+// sayFn wrapper matching the engine signature (text, delay, cb).
+function voiceSay(text, delay, cb) {
+  setTimeout(function() {
+    voiceProspectSpeak(text, function() { if (cb) cb(); });
+  }, Math.min(delay || 700, 800));
 }
 
 function promptUserVoice() {
   if (sessionEnded) return;
-  document.getElementById('voice-status').textContent = 'Your turn.';
+  var status;
+  if (awaitingClose)     { status = 'Lock the next step ↗'; }
+  else if (convoStage === 1) { status = 'Respond to their opener'; }
+  else if (weakStreak > 0)   { status = 'They pushed back — go again'; }
+  else                       { status = 'Handle the objection'; }
+  document.getElementById('voice-status').textContent = status;
   document.getElementById('voice-input-row').style.display = 'flex';
+  document.getElementById('voice-input').focus();
 }
 
 function addTranscript(who, text) {
   var body = document.getElementById('voice-transcript-body');
-  var per = activeScenario ? activeScenario.persona : { initials:'M', avatarColor:'var(--orange)' };
+  var per = activeScenario ? activeScenario.persona : { initials:'?', avatarColor:'var(--primary)' };
   var div = document.createElement('div');
   div.className = 'msg ' + (who === 'prospect' ? 'prospect' : 'user');
   if (who === 'prospect') {
-    div.innerHTML = '<div class="avatar" style="background:' + per.avatarColor + ';width:28px;height:28px;font-size:12px;">' + per.initials + '</div><div class="bubble" style="font-size:14px;">' + escapeHtml(text) + '</div>';
+    div.innerHTML = '<div class="avatar" style="background:' + per.avatarColor + ';width:28px;height:28px;font-size:12px;flex-shrink:0;">' + per.initials + '</div><div class="bubble" style="font-size:14px;">' + escapeHtml(text) + '</div>';
   } else {
     div.innerHTML = '<div class="bubble" style="font-size:14px;">🎙 ' + escapeHtml(text) + '</div>';
   }
   body.appendChild(div);
+  scrollVoiceTranscript();
+}
+
+function scrollVoiceTranscript() {
+  var body = document.getElementById('voice-transcript-body');
+  setTimeout(function() { body.scrollTop = body.scrollHeight; }, 40);
 }
 
 function toggleRecord() {
   recording = !recording;
   var btn = document.getElementById('record-btn');
   var hint = document.getElementById('record-hint');
+  var wave = document.getElementById('voice-wave');
   btn.classList.toggle('active', recording);
-  hint.textContent = recording ? 'Speaking… click to stop' : 'Click to speak';
+  hint.textContent = recording ? 'Speaking… tap to stop' : 'Tap to speak your reply';
+  wave.classList.toggle('listening', recording);
   if (recording) {
     document.getElementById('voice-input-row').style.display = 'flex';
     document.getElementById('voice-input').focus();
@@ -2571,45 +2626,29 @@ function sendVoiceMessage() {
   autoGrow(input);
   recording = false;
   document.getElementById('record-btn').classList.remove('active');
-  document.getElementById('record-hint').textContent = 'Click to speak';
+  document.getElementById('record-hint').textContent = 'Tap to speak your reply';
   document.getElementById('voice-input-row').style.display = 'none';
+  document.getElementById('voice-wave').classList.remove('listening');
   addTranscript('You', text);
   handleVoiceTurn(text);
-}
-
-// Voice say-wrapper matching prospectSay signature (text, delay, cb).
-// Does NOT auto-prompt — the engine decides when the user's turn is.
-function voiceSay(text, delay, cb) {
-  setTimeout(function() { voiceProspectSpeak(text, function() { if (cb) cb(); }); }, 700);
 }
 
 function voiceKeydown(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendVoiceMessage(); }
 }
 
+// Voice mode uses the same data-driven engine as text — voiceSay is the sayFn,
+// promptUserVoice (stateful, infers context) is the afterPrompt.
 function handleVoiceTurn(text) {
-  var next = function(t, cb) { setTimeout(function() { voiceMikeSpeak(t, cb); }, 700); };
-  if (convoStage === 1) {
-    if (isQuestion(text)) {
-      next("Yeah honestly it's the lemon — it's tart without being too sugary. Half my regulars are off the soft drinks these days, so something like that actually moves. Anyway — I'm keen to give it a crack. What are we looking at per case?", function() { convoStage = 2; promptUserVoice(); });
-    } else {
-      next("Yeah, fair enough. Look, I'm keen to give it a go. What are we looking at in terms of pricing? How much per case?", function() { convoStage = 2; promptUserVoice(); });
-    }
-  } else if (convoStage === 2) {
-    next("Right. Any chance you could do a bit of a deal for us? We're a small store, just trying it out.", function() { convoStage = 3; promptUserVoice(); });
-  } else if (convoStage === 3) {
-    var r = detectResponse(text);
-    if (r === 'fail') next("Oh sweet, yeah that works for me. Cheers.", function() { finishSession('fail'); });
-    else if (r === 'discovery') next("Good question. Honestly the margins have to work and I need something that actually sells. My customers are pretty health-conscious these days.", function() { convoStage = 4; promptUserVoice(); });
-    else if (r === 'value') next("I get that but honestly every rep says their product's worth it. What makes yours different for a store like mine?", function() { convoStage = 5; promptUserVoice(); });
-    else next("Come on, everyone gives a first-order sweetener. So can you sort me out or not?", function() { convoStage = 3; promptUserVoice(); });
-  } else if (convoStage === 4) {
-    if (detectResponse(text) === 'fail') { next("Oh sweet, yeah that works for me. Cheers.", function() { finishSession('fail'); }); return; }
-    next("Yeah fair point. Alright look, if the first order moves well I'll keep it going. Send me through the details.", function() { finishSession('discovery'); });
-  } else if (convoStage === 5) {
-    if (detectResponse(text) === 'fail') { next("Oh sweet, yeah that works for me. Cheers.", function() { finishSession('fail'); }); return; }
-    next("Alright, I'll give it a try. Let's do a small first order.", function() { finishSession('value'); });
+  if (awaitingClose) {
+    resolveClose(text, voiceSay);
+    return;
   }
+  if (convoStage === 1) {
+    raiseObjection(text, voiceSay, promptUserVoice);
+    return;
+  }
+  resolveObjection(text, voiceSay, promptUserVoice);
 }
 
 /* ============================================================
@@ -2617,7 +2656,7 @@ function handleVoiceTurn(text) {
 ============================================================ */
 function endSession() {
   if (sessionEnded) return;
-  finishSession('neutral');
+  finishSession();
 }
 
 var SCORE_DATA = {
