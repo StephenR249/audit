@@ -1777,6 +1777,184 @@ var SCENARIOS = {
   }
 };
 
+// Generic fallback react lines when no per-objection ack is available.
+var DISCOVERY_REACTS = [
+  "Right — that's exactly the right question to be asking.",
+  "Good question. I hadn't framed it that way.",
+  "You're getting to the real issue there.",
+  "Okay — that's a better angle than I usually get.",
+  "Fair. That's what actually matters here.",
+  "Hm. That's the question I was hoping you'd ask.",
+  "You're asking the right thing. Give me a second.",
+  "Fair point. You've done your homework on this."
+];
+var VALUE_REACTS = [
+  "Okay. Fair point.",
+  "Alright — I hear you.",
+  "That's... actually a decent argument.",
+  "Hmm. More substantive than I was expecting.",
+  "Not what I wanted to hear, but I take your point.",
+  "Right. I can see where you're going with that.",
+  "Fair enough. That's better than most reps give me.",
+  "Alright, you've thought about this properly."
+];
+
+// Per-level, per-objection acknowledgment lines.
+// d = discovery react (rep asked a sharp question), v = value react (rep held the line / made a case).
+// Indexed by level number, then objection index (0-based).
+var OBJECTION_ACKS = {
+  1: [
+    {d:"Look, margins on specialty drinks aren't huge. If it moves fast enough, the numbers work.",
+     v:"Fair enough. If the value's actually there, I shouldn't expect a discount just for trying it."}
+  ],
+  2: [
+    {d:"Coffee's the lifeblood of this place — anything that affects that, yes, it matters.",
+     v:"Alright, that's relevant. You've got a bit more than two minutes."}
+  ],
+  3: [
+    {d:"She signs off on anything over a couple of grand. Needs the numbers to stack up clearly.",
+     v:"Yeah... that's actually how she'd want it framed."}
+  ],
+  4: [
+    {d:"Honestly, last time we benchmarked was — I'm not even sure. It's been a while.",
+     v:"I suppose we've just assumed they were still the best option. Fair."}
+  ],
+  5: [
+    {d:"He's time-poor. Anything that doesn't connect directly to the firm's work won't even get a minute.",
+     v:"Okay, that's actually specific to a firm like ours. Fair."}
+  ],
+  6: [
+    {d:"She cares most about equipment being clean between sessions — member complaints are her nightmare.",
+     v:"Right, membership retention is the real metric. I get that."},
+    {d:"The last lot were expensive and average. It's about what you actually get for the spend.",
+     v:"If it keeps members happy, that's the equation. Fair."}
+  ],
+  7: [
+    {d:"Foot traffic is everything. Lunch crowd mostly — that's our make or break.",
+     v:"If it genuinely drives covers, that's what matters. Go on."},
+    {d:"If I spend it, I need to see it come back within a month or two — not six.",
+     v:"A few extra tables a week would cover it. That's not a hard sum."}
+  ],
+  8: [
+    {d:"She's focused on total supplier cost and compliance. Those are the two things she'll push on.",
+     v:"Yeah, that's how you'd need to frame it for her to take it seriously."},
+    {d:"The plastic thing has come up with a couple of customers. Nothing serious yet, but it's there.",
+     v:"I hadn't fully mapped the regulation timeline. That does change the urgency."}
+  ],
+  9: [
+    {d:"I run a lot of jobs out of the ute. If something went wrong I'd need to be covered fast.",
+     v:"If there's a genuine gap I didn't know about, that's a different conversation."},
+    {d:"One bad job uninsured would be... yeah, not good. A lot worse than a higher premium.",
+     v:"One bad job would cost way more than the difference in premium. Fair."}
+  ],
+  10: [
+    {d:"She's focused on operational risk. Anything without a clear business case won't make the agenda.",
+     v:"Right, that's the framing that actually lands upstairs."},
+    {d:"She'd want a one-paragraph business case — outcome, cost, risk mitigation. That's it.",
+     v:"That's a clean pitch. She'd actually understand that."}
+  ],
+  11: [
+    {d:"Across three sites, even a dollar a case adds up fast. What are we actually talking in margin impact?",
+     v:"If the sell-through is genuinely higher, the unit cost matters less. Show me the data."},
+    {d:"They're reliable enough. But they've never tried to grow my margin — just hold theirs.",
+     v:"Sell-through data is the only thing that actually matters on this comparison."}
+  ],
+  12: [
+    {d:"Q3 is the push we've been building toward. If this actually maps to that window...",
+     v:"If the timing is genuinely different and not just a rehash, that's a different conversation."},
+    {d:"Missing Q3 basically means waiting until Q1. That's a real cost.",
+     v:"Yeah, a quarter is actually a long time in our space. I feel that."}
+  ],
+  13: [
+    {d:"Finance lives by the headline number, ops by uptime, and I'm trying to keep both happy simultaneously.",
+     v:"If you've got an answer for all three, that's actually something I can work with."},
+    {d:"Finance will put the two monthly numbers side by side and ask why one is higher.",
+     v:"TCO is what I should've been benchmarking from the start. Fair point."}
+  ],
+  14: [
+    {d:"What we're missing is hard to articulate. It's more a feeling of 'this works, don't change it'.",
+     v:"He doesn't give us that, no. And I've noticed the gap — I just haven't pushed it."},
+    {d:"Last migration took six months and cost us two team members. That's the benchmark I'm carrying.",
+     v:"A phased migration with your team doing the heavy lifting changes the risk profile considerably."}
+  ],
+  15: [
+    {d:"Honestly? I think I'm waiting for something to feel more certain. I'm not sure what that looks like.",
+     v:"There is a real cost to waiting. I know that. I just... default to delay."},
+    {d:"My previous equipment went down twice in the first year. That's what I'm carrying into every conversation.",
+     v:"A loaner during downtime and that uptime record — that's a different story than most suppliers."}
+  ],
+  16: [
+    {d:"Mission-critical means it saves more than it costs, this year. That's the bar. Everything else is noise.",
+     v:"If it genuinely saves more than it costs in the current year, that's a budget conversation not a freeze."},
+    {d:"The board wants payback period and a source they can verify. A slide isn't enough.",
+     v:"Nine months payback with a comparable client reference — that's the format I need."}
+  ],
+  17: [
+    {d:"Throughput is the one thing all three of them actually care about. If you can frame it there, maybe.",
+     v:"Framing it around throughput is actually clever — each team hears what they need."},
+    {d:"Last project that failed had my name on it. That's the lens I see every new project through now.",
+     v:"A piloted rollout with a clear rollback path — that's the structure that turns a no into a maybe."}
+  ],
+  18: [
+    {d:"Three days of downtime cost us a client. What changed structurally — not in policy, in the system?",
+     v:"Owning it without excuses is a start. A structural change is what I actually need to hear."},
+    {d:"I'm not sure I can justify paying a premium to the people who dropped us before.",
+     v:"A discount would feel like compensation, not confidence. I hear that point."}
+  ],
+  19: [
+    {d:"I need a time-to-hire and a company name I can call. Something verifiable, not a case study PDF.",
+     v:"A named placement with verifiable data — okay, that's not marketing."},
+    {d:"Every agency has a process slide. What's structurally different about how yours actually works?",
+     v:"If the vetting is genuinely different, not just claimed — that's an actual distinction."}
+  ],
+  20: [
+    {d:"The brochure doesn't tell me where the edge cases are. That's what I'm actually trying to find.",
+     v:"A real reframe of the category is worth more than a feature list to me."},
+    {d:"On a feature grid they're identical. Tell me what's different when things actually go wrong.",
+     v:"Time-to-insight maps directly to what I'm trying to do. That's a real axis."}
+  ],
+  21: [
+    {d:"Volume discounts are standard in this industry. What's the actual reasoning for holding at list?",
+     v:"Not countering the anchor — I wasn't expecting that move."},
+    {d:"What's the actual downtime cost if one of my three suppliers fails to deliver on a critical run?",
+     v:"One stoppage from a cheap supplier would wipe six months of savings. I've done that math."},
+    {d:"Best price meaning fully loaded — lead time, reliability, and support all included?",
+     v:"Lower scrap and guaranteed lead times — that justifies a premium without pencil-sharpening."}
+  ],
+  22: [
+    {d:"We run high-matrix samples. That's exactly where detection specs tend to inflate beyond reality.",
+     v:"An honest answer with the caveats flagged — that's what I want, not a polished claim."},
+    {d:"Procurement wants a TCO breakdown. The lab manager wants training hours and an implementation timeline.",
+     v:"A training package and a TCO breakdown — those are the two actual blockers."},
+    {d:"Cost per valid result is the metric I care about. Not the sticker price on the instrument.",
+     v:"Cost per valid result actually being lower — yes, that's the right scientific argument to make."}
+  ],
+  23: [
+    {d:"You're asking the right questions now. That's what I was waiting to hear.",
+     v:"You're thinking about our operation, not just your product. That's a start."},
+    {d:"We had a system change three years ago that took a year to stabilise. That's my benchmark for risk.",
+     v:"Phased, with the outcomes I named as milestones — that's the right structure."},
+    {d:"A week isn't about thinking. It's about not wanting to be wrong. I know that about myself.",
+     v:"There's no real objection left. I'm aware of that."}
+  ],
+  24: [
+    {d:"The failures we've approved all had one thing in common — no structured exit if things went wrong.",
+     v:"Milestone gates and staged commitment — that's board language for 'we're not fully locked in'."},
+    {d:"The proposal we have looks lower on paper. Five-year total outcome is where I'd want to compare.",
+     v:"Total return over the term — that's the argument that changes how we frame the comparison."},
+    {d:"Fiduciary duty means we can't approve capital without a defined, defensible return.",
+     v:"A defined payback that beats our hurdle rate — yes, that's the language the board responds to."}
+  ],
+  25: [
+    {d:"I've heard that read on my business before. What makes yours accurate rather than just well-researched?",
+     v:"That's a sharper read than most. You've clearly done more than Google the company."},
+    {d:"Three transformations, three different vendors. I know exactly where the gaps tend to open up.",
+     v:"An outcome they genuinely can't give me — if you can name it precisely, that matters."},
+    {d:"Price and risk together — that's the twin barrier for any transformation at this scale.",
+     v:"Risk-adjusted return with staged commitments, and you held the price — that's a different posture."}
+  ]
+};
+
 // Per-level "See what an A looks like" — a model approach tailored to each scenario.
 var A_TIER_EXAMPLES = {
   1:"\"Before we talk price — what's actually moving off your shelves right now, and what margin do you need it to hit?\"\n\nDiscover first. Then tie the lemon's sell-through to his regulars, hold your number, and close on a small first order. Discovery → value on HIS terms → hold → lock the next step.",
@@ -2009,7 +2187,7 @@ function renderLevelMap() {
   var doneCount = 0;
   for (var dc = 1; dc <= 25; dc++) { if (completedLevels[dc]) doneCount++; }
   if (isPro) {
-    meta.textContent = doneCount > 0 ? (doneCount + ' of 25 cleared') : 'All 25 levels unlocked';
+    meta.textContent = doneCount > 0 ? (doneCount + ' of 25 cleared') : 'Complete Level 1 to begin your climb';
   } else {
     meta.textContent = doneCount + ' of 10 cleared';
   }
@@ -2024,17 +2202,18 @@ function renderLevelMap() {
     var card = document.createElement('div');
     var stateClass = '', stateIcon = '';
     if (isPro) {
-      // Pro: nothing is locked. Keep done/current for progress feel.
+      // Pro sees all 25 levels (no blur) but must still progress sequentially.
       if (lv.state === 'done') { stateClass = 'done'; stateIcon = '✅'; }
       else if (lv.state === 'current') { stateClass = 'current'; stateIcon = '▶'; }
-      else { stateClass = ''; stateIcon = ''; }
+      else { stateClass = 'locked'; stateIcon = '🔒'; }
     } else {
       if (lv.state === 'done') { stateClass = 'done'; stateIcon = '✅'; }
       else if (lv.state === 'current') { stateClass = 'current'; stateIcon = '🔓'; }
       else { stateClass = 'locked'; stateIcon = '🔒'; }
     }
     card.className = 'level-card ' + stateClass;
-    var blurClass = (stateClass === 'locked') ? ' blurred' : '';
+    // Free-tier locked levels are blurred; Pro locked levels are visible but unclickable.
+    var blurClass = (!isPro && stateClass === 'locked') ? ' blurred' : '';
     var tagHtml = (lv.pro && isPro)
       ? '<span class="mini-tag pro">PRO</span>'
       : '<span class="mini-tag">' + lv.tag + '</span>';
@@ -2058,7 +2237,7 @@ function renderLevelMap() {
         gradeHtml +
       '</div>';
     (function(lvl) {
-      if (!isPro && lvl.state === 'locked') { card.onclick = function() {}; }
+      if (stateClass === 'locked') { card.onclick = function() {}; }
       else { card.onclick = function() { showLevelBrief(lvl.id); }; }
     })(lv);
     grid.appendChild(card);
@@ -2525,7 +2704,15 @@ function resolveObjection(text, sayFn, after) {
   if (r === 'discovery' || r === 'value') {
     objResults[objIndex] = r;   // 'discovery' (best) or 'value' (solid)
     weakStreak = 0;
-    advanceAfterObjection(sayFn, obj.pass, after);
+    // Prospect acknowledges what was said before moving to the pass line.
+    var levelAcks = !practiceMode && OBJECTION_ACKS[currentLevel];
+    var objAcks = levelAcks && levelAcks[objIndex];
+    var reactLine = (r === 'discovery')
+      ? ((objAcks && objAcks.d) || DISCOVERY_REACTS[objIndex % DISCOVERY_REACTS.length])
+      : ((objAcks && objAcks.v) || VALUE_REACTS[objIndex % VALUE_REACTS.length]);
+    sayFn(reactLine, 900, function() {
+      advanceAfterObjection(sayFn, obj.pass, after);
+    });
     return;
   }
   // neutral / weak
@@ -2847,20 +3034,37 @@ function computeResult() {
   var avg = Math.round(pts / n);
   var engaged = disc + val;          // objections where they actually made a case
 
-  var tier, score;
-  if (folded) { tier = 'F'; score = 38; }
-  else if (engaged === 0) { tier = 'F'; score = 42; }   // pure non-engagement = fail
-  else if (avg >= 90) { tier = 'A'; score = avg; }
-  else if (avg >= 74) { tier = 'B'; score = avg; }
-  else if (avg >= 62) { tier = 'C'; score = avg; }
-  else { tier = 'F'; score = Math.max(avg, 44); }
-
-  // The close gates the top grade: you can't earn an A if you won the buyer
-  // and then failed to lock a concrete next step. No locked close → cap at B.
-  var weakClose = (closeResult === 'weak');
+  // Close state (needed for rubric before tier decision)
   var lockedClose = (closeResult === 'locked');
-  var cappedByClose = false;
-  if (tier === 'A' && weakClose) { tier = 'B'; score = Math.min(score, 88); cappedByClose = true; }
+  var weakClose = (closeResult === 'weak');
+
+  // Rubric scores derived from actual performance — always consistent with display.
+  // Weak holds get partial credit (0.52x) for value/obj/rapport — they held but didn't land it.
+  var effValue = engaged + weak * 0.52;
+  var discRubric = disc > 0 ? Math.round(disc / n * 20) : 0;
+  var valueRubric = effValue > 0 ? Math.round((effValue / n) * 25) : 0;
+  var objRubric = folded ? 0 : (effValue > 0 ? Math.round((effValue / n) * 25) : 0);
+  var rapportRubric = (folded || (engaged === 0 && weak === 0))
+    ? (folded ? 5 : 8)
+    : Math.min(8 + Math.round(((engaged + weak * 0.65) / n) * 7), 15);
+  var closeRubricNum = 0;  // set after tier is decided below
+
+  // Overall score = rubric sum; thresholds: A≥93, B≥85, C≥80, F<80
+  var rubricTotal = discRubric + valueRubric + objRubric + rapportRubric;
+  var tentativeTotal = rubricTotal + (lockedClose ? 15 : weakClose ? 6 : 12);
+  var tier, score;
+  if (folded) { tier = 'F'; closeRubricNum = 0; }
+  else if (engaged === 0) { tier = 'F'; closeRubricNum = 0; }  // all-weak = auto fail
+  else if (tentativeTotal >= 93) { tier = 'A'; }
+  else if (tentativeTotal >= 85) { tier = 'B'; }
+  else if (tentativeTotal >= 80) { tier = 'C'; }
+  else { tier = 'F'; }
+  if (tier !== 'F') { closeRubricNum = lockedClose ? 15 : weakClose ? 6 : 12; }
+  score = rubricTotal + closeRubricNum;
+  if (tier === 'F' && !folded) score = Math.max(score, 38);
+
+  // cappedByClose: nailed every objection but fumbled the close — for messaging only.
+  var cappedByClose = weakClose && tier === 'B' && disc === n && n > 0;
 
   var color = { A:'#00d68f', B:'#ffd000', C:'#ff6b35', F:'#ff4444' }[tier];
   var pass = (tier !== 'F');
@@ -2875,20 +3079,14 @@ function computeResult() {
   else if (folded) { heading = "You dropped the price."; body = "The second you gave ground, the product lost value in " + name + "'s eyes. Hold the line and make the case instead."; }
   else { heading = "You never made the case."; body = "You didn't engage — no real value, no questions. " + name + " gave you nothing to work with because you gave them nothing. Go again, and lead."; }
 
-  // Close row reflects whether they actually locked a next step.
-  var closeCell, closeOk;
-  if (!pass) { closeCell = "0/15"; closeOk = false; }
-  else if (lockedClose) { closeCell = "14/15"; closeOk = true; }
-  else if (weakClose) { closeCell = "6/15"; closeOk = false; }
-  else { closeCell = "12/15"; closeOk = true; }  // voice / not reached — don't punish
-
-  // Rubric, derived from what actually happened.
+  // Rubric derived from actual performance data — always sums correctly to displayed score.
+  var closeOk = pass && !weakClose;
   var rubric = [
-    ["Discovery Questions", disc > 0 ? (disc >= Math.ceil(n/2) ? "18/20" : "11/20") : "3/20", disc > 0],
-    ["Value Demonstration", (val + disc) > 0 ? ((val + disc) >= Math.ceil(n/2) ? "22/25" : "13/25") : "5/25", (val + disc) > 0],
-    ["Objection Handling", folded ? "0/25" : (engaged >= Math.ceil(n/2) ? "23/25" : "12/25"), !folded && engaged > 0],
-    ["Rapport", engaged > 0 ? "13/15" : "8/15", engaged > 0],
-    ["Close", closeCell, closeOk]
+    ["Discovery Questions", discRubric + "/20", disc > 0],
+    ["Value Demonstration", valueRubric + "/25", (val + disc) > 0],
+    ["Objection Handling", objRubric + "/25", !folded && engaged > 0],
+    ["Rapport", rapportRubric + "/15", engaged > 0],
+    ["Close", closeRubricNum + "/15", closeOk]
   ];
 
   return { tier: tier, score: score, color: color, heading: heading, body: body, rubric: rubric, pass: pass,
