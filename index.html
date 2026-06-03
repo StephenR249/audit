@@ -474,7 +474,8 @@ details.scoring[open] summary::before { content: '▾ '; }
 .coach-bullet { font-size: 14px; line-height: 1.5; color: var(--text-muted); padding-left: 16px; position: relative; }
 .coach-bullet::before { content: ''; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); }
 .coach-bullet b { color: var(--text); font-weight: 600; }
-.coach-locked .coach-bullets { filter: blur(5px); opacity: 0.5; user-select: none; }
+/* Free users get their FIRST insight in full; the rest are blurred behind the unlock. */
+.coach-locked .coach-item.locked-insight { filter: blur(5px); opacity: 0.5; user-select: none; pointer-events: none; }
 .coach-item { padding: 14px 16px; border-radius: 12px; background: var(--surface-raised); border: 1px solid var(--border); }
 .coach-tag { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 0.8px; padding: 3px 8px; border-radius: 6px; margin-bottom: 8px; }
 .coach-tag.tag-fix { background: var(--danger-subtle); color: #ff7a7a; }
@@ -483,15 +484,12 @@ details.scoring[open] summary::before { content: '▾ '; }
 .coach-item-head { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
 .coach-item-note { font-size: 13.5px; line-height: 1.55; color: var(--text-muted); }
 .coach-lock-overlay {
-  position: absolute; inset: 0; top: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
-  background: linear-gradient(transparent, var(--surface) 60%);
+  margin-top: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  padding: 16px; border-radius: 12px; background: var(--surface-raised); border: 1px dashed var(--border-bright);
 }
-.coach-lock-overlay .lockicon { font-size: 24px; }
+.coach-lock-overlay .lockicon { font-size: 22px; }
+.coach-lock-note { font-size: 13px; color: var(--text-muted); text-align: center; }
 .score-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-.daily-limit-note {
-  width: 100%; max-width: 440px; padding: 16px; border-radius: 14px; background: var(--orange-subtle);
-  border: 1px solid rgba(255,107,53,0.25); font-size: 14px; color: #ffb694; display: flex; flex-direction: column; gap: 10px; align-items: center;
-}
 
 /* ---------- Upgrade modal ---------- */
 .modal-overlay {
@@ -960,13 +958,9 @@ details.scoring[open] summary::before { content: '▾ '; }
       <div class="coach-bullets" id="coach-bullets"></div>
       <div class="coach-lock-overlay" id="coach-lock" style="display:none;">
         <div class="lockicon">🔒</div>
+        <div class="coach-lock-note" id="coach-lock-note">That's your first insight free. Unlock the AI coach to see the rest on every call.</div>
         <button class="btn btn-primary" onclick="openUpgrade()">Unlock AI Coach</button>
       </div>
-    </div>
-
-    <div class="daily-limit-note" id="daily-note" style="display:none;">
-      <div>You're done for today. Come back tomorrow — or keep going now.</div>
-      <button class="btn btn-primary" onclick="openUpgrade()">Remove daily limit →</button>
     </div>
 
     <div class="score-btns" id="score-btns"></div>
@@ -1072,7 +1066,6 @@ details.scoring[open] summary::before { content: '▾ '; }
       </div>
       <div class="onb-step">
         <div class="onb-q">Preferences</div>
-        <div class="toggle-row"><span class="tl">Sound effects</span><div class="switch on" id="sw-sound" onclick="toggleSwitch('sw-sound')"></div></div>
         <div class="toggle-row"><span class="tl">Coach proactively offers hints when I'm stuck</span><div class="switch on" id="sw-proactive" onclick="toggleSwitch('sw-proactive')"></div></div>
       </div>
       <button class="btn btn-primary btn-lg" onclick="finishOnboarding()">Finish setup →</button>
@@ -1181,14 +1174,23 @@ details.scoring[open] summary::before { content: '▾ '; }
 /* ============================================================
    DATA — keyword detection helpers shared by all objections
 ============================================================ */
-// Generic fold/cave detector: discounting, caving, surrendering on price.
-var FOLD_WORDS = ['discount','% off','%off','reduce the price','lower the price','cheaper','special price','knock off','cut the price','come down on price','do you a deal','sort you out','drop the price','give you a deal','match their price','beat their price','slash','for free','no charge','waive the','throw in for free'];
+// Generic fold/cave detector: AFFIRMATIVE discounting / caving on price.
+// (Negated forms like "I won't discount" are handled separately as holding the line.)
+var FOLD_WORDS = ['discount','% off','%off','reduce the price','lower the price','knock off','cut the price','come down on price','come down on the price','do you a deal','drop the price','give you a deal','match their price','beat their price','slash the price','for free','no charge','waive the','throw in for free','throw it in','sharpen my pencil','sharpen the pencil','meet you in the middle','meet in the middle','better price','lower price','cut you a deal','special price','make it cheaper','go cheaper','do it cheaper','cheaper for you'];
+// Negators: if one of these sits just before a fold phrase, the rep is HOLDING, not caving.
+var NEGATORS = ['not','no','never','wont','will not','cant','cannot','dont','isnt','arent','without','instead of','rather than','refuse','refusing','avoid','wouldnt','not going to','not gonna','no need to','theres no','theres not'];
+// Cost-of-ownership / hold-the-line reframes — making the value case instead of dropping price.
+var HOLD_REFRAMES = ['pays for itself','costs you more','costs more','cost you more','over the year','per year','long run','down the line','total cost','cost of ownership','up front but','more expensive to','penny wise','worth every','value is there','what it pays back','return outweighs','cheaper now but'];
 // Discovery = asking, surfacing needs, qualifying.
-var DISCOVERY_WORDS = ['what matters','what do you','what would','what are your','how do your','who are your','what kind','tell me about','what are you looking','what\'s important','what does','can i ask','help me understand','walk me through','how are you currently','what\'s driving','what\'s your','why is that','what would it mean','how much is it costing','what happens if','if you don\'t','out of curiosity','what\'s the','how long have'];
+var DISCOVERY_WORDS = ['what matters','what do you','what would','what are your','how do your','who are your','what kind','tell me about','talk me through','what are you looking','what\'s important','what does','can i ask','help me understand','walk me through','how are you currently','what\'s driving','what\'s your','why is that','what would it mean','how much is it costing','what happens if','if you don\'t','out of curiosity','what\'s the','how long have','where is','where are you','letting you down','how do you handle','how are you handling','what\'s the cost','what\'s the real cost','what\'s holding'];
+// Question intent words — a genuine, on-topic question counts as discovery even
+// without a whitelisted opener (fixes false "vague" verdicts on good questions).
+var DISCOVERY_INTENT = ['you','your','currently','today','now','handle','use','using','setup','set-up','process','matter','important','looking','need','goal','priority','spend','lose','losing','miss','missing','risk','happens','working','works','cost','costs','problem','challenge','pain','issue','wrong','team','currently'];
 // Value = tying to outcomes, proof, ROI, differentiation.
-var VALUE_WORDS = ['because','the reason','what you get','what that means','return','roi','results','proven','data','margin','outcome','saves you','make you','grow','case study','other clients','for example','specifically','track record','guarantee','results-based','we\'ve seen','customers like you','the difference is'];
+var VALUE_WORDS = ['because','the reason','what you get','what that means','return','roi','results','result','proven','proof','verify','verifiable','data','margin','revenue','outcome','saves you','save you','saved','make you','makes you','grow','growth','case study','other clients','clients like you','firms like yours','companies like yours','for example','specifically','track record','guarantee','results-based','we\'ve seen','customers like you','the difference is','structural difference','sets us apart','where we separate','maps to','maps straight','here\'s why','that\'s why','which means','so that you','so you can','this pays','pays back','calculated','named placement'];
 // Close = locking a concrete next step / commitment at the end.
-var CLOSE_WORDS = ['next step','book','schedule','calendar','diary','set up a','set up the','set you up','put time','find a time','put a time','when works','what day','this week','next week','tomorrow','monday','tuesday','wednesday','thursday','friday','at 3','3pm','trial','pilot','first order','small order','get started','get you started','kick off','kick it off','lock in','lock it in','lock this in','put you down','demo','follow-up call','i\'ll send','i will send','send the contract','send over','send you the','paperwork','agreement','sign','onboard','get the ball rolling','proposal','deposit','deliver','come measure','come by','let\'s do it','let\'s start','shall we'];
+// (Matched on word boundaries — "design" no longer counts as "sign".)
+var CLOSE_WORDS = ['next step','book','schedule','calendar','diary','set up a','set up the','set you up','put time','find a time','put a time','when works','what day','this week','next week','tomorrow','monday','tuesday','wednesday','thursday','friday','at 3','3pm','trial','pilot','first order','small order','get started','get you started','kick off','kick it off','lock in','lock it in','lock this in','put you down','demo','follow-up call','i\'ll send','i will send','send the contract','send over','send you the','paperwork','agreement','sign you up','sign the','sign-off','onboard','get the ball rolling','proposal','deposit','come measure','let\'s do it','let\'s start','shall we','get it moving','move forward','send the paperwork'];
 
 // When the rep keeps stalling, the prospect escalates rather than repeating itself.
 var WEAK_ESCALATIONS = [
@@ -1889,9 +1891,10 @@ var proactiveFired = {};         // objIndex -> bool
 var awaitingClose = false;       // objections cleared, waiting for rep to lock the next step
 var closeResult = null;          // 'locked' | 'weak' | null (e.g. voice / never reached)
 var coachIntroShown = false;     // only ping the coach intro once per session
+var engineHistory = [];          // stack of full engine snapshots, one per rep turn (for Undo)
 
 // --- User profile (persisted) ---
-var userProfile = { name:'', nickname:'', accent:'#7c6af7', prefs:{ sound:true, proactive:true } };
+var userProfile = { name:'', nickname:'', accent:'#7c6af7', prefs:{ proactive:true } };
 var completedLevels = {}; // { levelId: tier } e.g. { 1: 'A', 2: 'B' }
 var selectedPlanKey = 'popular';
 
@@ -1934,7 +1937,6 @@ function loadProfile() {
         userProfile.nickname = p.nickname || '';
         userProfile.accent = p.accent || '#7c6af7';
         if (p.prefs) {
-          userProfile.prefs.sound = p.prefs.sound !== false;
           userProfile.prefs.proactive = p.prefs.proactive !== false;
         }
       }
@@ -1949,9 +1951,6 @@ function applyAccent(color) {
   for (var i = 0; i < ACCENTS.length; i++) { if (ACCENTS[i].color === color) glow = ACCENTS[i].glow; }
   document.documentElement.style.setProperty('--primary', color);
   document.documentElement.style.setProperty('--primary-glow', glow);
-}
-function applyMotionPref() {
-  document.documentElement.style.scrollBehavior = userProfile.prefs.motion ? 'auto' : '';
 }
 function applyProState() {
   document.getElementById('nav-pro-badge').style.display = isPro ? 'inline-flex' : 'none';
@@ -1978,8 +1977,26 @@ function showScreen(id) {
 /* ============================================================
    LEVEL MAP
 ============================================================ */
+// Recompute each level's state from completedLevels. A level is 'done' once
+// passed; the next un-passed level is 'current' (unlocked). Everything past the
+// frontier is 'locked' (free, ≤10) or 'pro' (>10). This is the ONLY source of
+// truth for progression — completing a level here is what unlocks the next one.
+function syncLevelStates() {
+  var maxDone = 0;
+  for (var id = 1; id <= 25; id++) { if (completedLevels[id]) maxDone = id; }
+  var frontier = Math.min(maxDone + 1, 25);   // next level to unlock
+  for (var i = 0; i < LEVELS.length; i++) {
+    var lv = LEVELS[i];
+    if (completedLevels[lv.id]) { lv.state = 'done'; }
+    else if (lv.id <= frontier) { lv.state = 'current'; }   // playable frontier
+    else if (lv.id > 10) { lv.state = 'pro'; }
+    else { lv.state = 'locked'; }
+  }
+}
+
 function renderLevelMap() {
   applyProState();
+  syncLevelStates();
   // Greeting line (uses nickname once set)
   var greet = document.getElementById('level-greeting');
   if (userProfile.nickname) {
@@ -1989,7 +2006,13 @@ function renderLevelMap() {
     greet.style.display = 'none';
   }
   var meta = document.getElementById('level-map-meta');
-  meta.textContent = isPro ? 'All 25 levels unlocked' : 'Level 1 of 25';
+  var doneCount = 0;
+  for (var dc = 1; dc <= 25; dc++) { if (completedLevels[dc]) doneCount++; }
+  if (isPro) {
+    meta.textContent = doneCount > 0 ? (doneCount + ' of 25 cleared') : 'All 25 levels unlocked';
+  } else {
+    meta.textContent = doneCount + ' of 10 cleared';
+  }
 
   var grid = document.getElementById('level-grid');
   grid.innerHTML = '';
@@ -2152,6 +2175,7 @@ function toggleMode(m) {
 ============================================================ */
 function startSession() {
   sessionEnded = false;
+  clearPendingTimers();
   convoStage = 0;
   chatMessages = [];
   recording = false;
@@ -2168,6 +2192,7 @@ function startSession() {
   awaitingClose = false;
   closeResult = null;
   coachIntroShown = false;
+  engineHistory = [];
 
   var lv = null;
   for (var i = 0; i < LEVELS.length; i++) { if (LEVELS[i].id === currentLevel) lv = LEVELS[i]; }
@@ -2287,14 +2312,22 @@ function showTyping(show) {
   }
 }
 
+var pendingTimers = [];
+function trackTimer(id) { pendingTimers.push(id); return id; }
+function clearPendingTimers() {
+  for (var i = 0; i < pendingTimers.length; i++) clearTimeout(pendingTimers[i]);
+  pendingTimers = [];
+}
+
 function prospectSay(text, delay, cb) {
   showTyping(true);
-  setTimeout(function() {
+  trackTimer(setTimeout(function() {
+    if (sessionEnded) { showTyping(false); return; }   // don't queue lines after the call ends
     showTyping(false);
     chatMessages.push({ role: 'prospect', text: text });
     renderChat();
     if (cb) cb();
-  }, delay);
+  }, delay));
 }
 
 // convoStage convention (text + voice share it):
@@ -2314,14 +2347,74 @@ function prospectOpens() {
   });
 }
 
+// ---- Language helpers: word-boundary matching + negation handling ----
+// Normalise: lowercase, strip apostrophes so "won't" == "wont", collapse spaces.
+function normText(text) {
+  return (' ' + text.toLowerCase().replace(/[''`]/g, '') + ' ').replace(/\s+/g, ' ');
+}
+// Boundary-aware phrase search. Returns the index of the phrase in `norm`, or -1.
+// `norm` must already be normalised (apostrophes stripped, padded with spaces).
+// Word boundaries are only enforced on sides that begin/end with a word char,
+// so "sign" won't match inside "design" but "% off" still matches in "10% off".
+function phraseIndex(norm, phrase) {
+  var p = phrase.replace(/[''`]/g, '');
+  var esc = p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  var pre  = /^[a-z0-9]/i.test(p) ? '(^|[^a-z0-9])' : '()';
+  var post = /[a-z0-9]$/i.test(p) ? '([^a-z0-9]|$)' : '';
+  var re = new RegExp(pre + esc + post, 'i');
+  var m = re.exec(norm);
+  return m ? (m.index + m[1].length) : -1;
+}
+function hasPhrase(norm, phrase) { return phraseIndex(norm, phrase) !== -1; }
+// Is the fold phrase at `idx` preceded (within ~30 chars) by a negator?
+function negatedBefore(norm, idx) {
+  var pre = norm.slice(Math.max(0, idx - 32), idx);
+  for (var i = 0; i < NEGATORS.length; i++) {
+    if (hasPhrase(' ' + pre + ' ', NEGATORS[i])) return true;
+  }
+  return false;
+}
+// Did the rep affirmatively cave on price? (fold phrase present AND not negated)
+function isAffirmativeFold(norm) {
+  for (var i = 0; i < FOLD_WORDS.length; i++) {
+    var idx = phraseIndex(norm, FOLD_WORDS[i]);
+    if (idx !== -1 && !negatedBefore(norm, idx)) return true;
+  }
+  return false;
+}
+// Did the rep explicitly hold the line? (refused to discount, or reframed on cost/value)
+function heldTheLine(norm) {
+  var i, idx;
+  for (i = 0; i < FOLD_WORDS.length; i++) {
+    idx = phraseIndex(norm, FOLD_WORDS[i]);
+    if (idx !== -1 && negatedBefore(norm, idx)) return true;   // "I won't discount"
+  }
+  for (i = 0; i < HOLD_REFRAMES.length; i++) { if (hasPhrase(norm, HOLD_REFRAMES[i])) return true; }
+  return false;
+}
+// A real, on-topic question = discovery, even without a whitelisted opener.
+function isOnTopicQuestion(text, norm) {
+  if (!isQuestion(text)) return false;
+  for (var i = 0; i < DISCOVERY_INTENT.length; i++) { if (hasPhrase(norm, DISCOVERY_INTENT[i])) return true; }
+  return false;
+}
+
 // Classify the rep's reply against the active objection.
 // Returns: 'fold' | 'discovery' | 'value' | 'neutral'
 function detectResponse(text) {
-  var t = ' ' + text.toLowerCase() + ' ';
+  var norm = normText(text);
   var i;
-  for (i = 0; i < FOLD_WORDS.length; i++) { if (t.indexOf(FOLD_WORDS[i]) !== -1) return 'fold'; }
-  for (i = 0; i < DISCOVERY_WORDS.length; i++) { if (t.indexOf(DISCOVERY_WORDS[i]) !== -1) return 'discovery'; }
-  for (i = 0; i < VALUE_WORDS.length; i++) { if (t.indexOf(VALUE_WORDS[i]) !== -1) return 'value'; }
+  // 1) Affirmative caving on price.
+  if (isAffirmativeFold(norm)) return 'fold';
+  // 2) Discovery — whitelisted openers OR a genuine on-topic question.
+  for (i = 0; i < DISCOVERY_WORDS.length; i++) { if (hasPhrase(norm, DISCOVERY_WORDS[i])) return 'discovery'; }
+  if (isOnTopicQuestion(text, norm)) return 'discovery';
+  // 3) Value / holding the line — value phrases, cost reframes, or refusing to discount.
+  for (i = 0; i < VALUE_WORDS.length; i++) { if (hasPhrase(norm, VALUE_WORDS[i])) return 'value'; }
+  if (heldTheLine(norm)) return 'value';
+  // A concrete number, percentage or dollar figure is a proof point = value.
+  if (/\d\s?%/.test(norm) || /[$£€]\s?\d/.test(norm) || /\btco\b/.test(norm) ||
+      /\b\d+\s?(x|percent|times|days|weeks|months|hours|k|m)\b/.test(norm)) return 'value';
   return 'neutral';
 }
 
@@ -2345,8 +2438,31 @@ function sendChatMessage() {
   if (!text || sessionEnded) return;
   input.value = '';
   autoGrow(input);
+  snapshotEngine();      // capture full state BEFORE this turn so Undo can restore it
   pushUser(text);
   handleUserTurn(text);
+}
+
+// Capture the entire engine run-state so Undo can restore it cleanly — not just
+// pop messages. msgCount is the message count BEFORE this turn's lines are added.
+function snapshotEngine() {
+  engineHistory.push({
+    convoStage: convoStage,
+    objIndex: objIndex,
+    objResults: objResults.slice(),
+    weakStreak: weakStreak,
+    awaitingObjectionReply: awaitingObjectionReply,
+    awaitingClose: awaitingClose,
+    closeResult: closeResult,
+    proactiveFired: JSON.parse(JSON.stringify(proactiveFired || {})),
+    msgCount: chatMessages.length,
+    transCount: voiceTranscriptCount()
+  });
+}
+// Voice keeps its own transcript DOM; count rows so Undo can trim them too.
+function voiceTranscriptCount() {
+  var body = document.getElementById('voice-transcript-body');
+  return body ? body.children.length : 0;
 }
 
 // ---- Data-driven turn engine (TEXT) ----
@@ -2365,12 +2481,13 @@ function handleUserTurn(text) {
   resolveObjection(text, prospectSay, function(){});
 }
 
-// Did the rep lock a concrete next step?
+// Did the rep lock a concrete next step? (word-boundary matched — no more
+// "design"→"sign" or "deliver results"→close false positives)
 function detectClose(text) {
-  var t = ' ' + text.toLowerCase() + ' ';
-  for (var i = 0; i < CLOSE_WORDS.length; i++) { if (t.indexOf(CLOSE_WORDS[i]) !== -1) return 'locked'; }
-  // A question that proposes timing also counts as a close attempt.
-  if (isQuestion(text) && /(when|what time|what day|next|how about|could we|shall we|can we)/.test(t)) return 'locked';
+  var norm = normText(text);
+  for (var i = 0; i < CLOSE_WORDS.length; i++) { if (hasPhrase(norm, CLOSE_WORDS[i])) return 'locked'; }
+  // A question that proposes a concrete time/next step also counts as a close.
+  if (isQuestion(text) && /\b(when|what time|what day|next week|how about|could we|shall we|can we|are you free|works for you)\b/.test(norm)) return 'locked';
   return 'weak';
 }
 
@@ -2438,7 +2555,7 @@ function advanceAfterObjection(sayFn, passLine, afterPrompt) {
     // All objections handled — prospect throws buying signal, rep locks the next step.
     awaitingObjectionReply = false;
     updateSectionPills();
-    var closeAsk = CLOSE_ASKS[currentLevel] || "Alright, you've convinced me. So — what happens next?";
+    var closeAsk = activeScenario.closeAsk || (!practiceMode && CLOSE_ASKS[currentLevel]) || "Alright, you've convinced me. So — what happens next?";
     sayFn(passLine, 1100, function() {
       sayFn(closeAsk, 1300, function() {
         awaitingClose = true;
@@ -2490,21 +2607,29 @@ function useLifeline(type) {
       proactiveFired = {};
       awaitingClose = false;
       closeResult = null;
+      engineHistory = [];
       updateSectionPills();
       renderChat();
       prospectOpens();
     });
   } else if (type === 'undo') {
-    if (chatMessages.length < 2) return;
-    var removed = 0;
-    while (chatMessages.length && removed < 2) {
-      var last = chatMessages[chatMessages.length - 1];
-      chatMessages.pop();
-      removed++;
-      if (last.role === 'user') break;
-    }
-    convoStage = Math.max(1, convoStage - 1);
-    awaitingClose = false;
+    // Restore the full engine snapshot from before the last rep turn — rolls back
+    // objIndex, objResults, weakStreak and all flags, not just the messages.
+    if (engineHistory.length === 0) return;
+    var snap = engineHistory.pop();
+    convoStage = snap.convoStage;
+    objIndex = snap.objIndex;
+    objResults = snap.objResults.slice();
+    weakStreak = snap.weakStreak;
+    awaitingObjectionReply = snap.awaitingObjectionReply;
+    awaitingClose = snap.awaitingClose;
+    closeResult = snap.closeResult;
+    proactiveFired = snap.proactiveFired;
+    chatMessages = chatMessages.slice(0, snap.msgCount);
+    // Trim any voice transcript rows added after the snapshot point too.
+    var body = document.getElementById('voice-transcript-body');
+    if (body) { while (body.children.length > snap.transCount) body.removeChild(body.lastChild); }
+    updateSectionPills();
     renderChat();
   }
 }
@@ -2588,6 +2713,7 @@ function startVoice() {
 }
 
 function voiceProspectSpeak(text, cb) {
+  if (sessionEnded) return;
   var status = document.getElementById('voice-status');
   var wave = document.getElementById('voice-wave');
   var firstName = activeScenario ? activeScenario.persona.name.split(' ')[0] : 'Prospect';
@@ -2599,17 +2725,17 @@ function voiceProspectSpeak(text, cb) {
   // Duration roughly proportional to text length — feels like real speech.
   var words = text.split(/\s+/).length;
   var dur = Math.max(1400, Math.min(words * 58, 3600));
-  setTimeout(function() {
+  trackTimer(setTimeout(function() {
     wave.classList.remove('speaking');
     if (cb) cb();
-  }, dur);
+  }, dur));
 }
 
 // sayFn wrapper matching the engine signature (text, delay, cb).
 function voiceSay(text, delay, cb) {
-  setTimeout(function() {
+  trackTimer(setTimeout(function() {
     voiceProspectSpeak(text, function() { if (cb) cb(); });
-  }, Math.min(delay || 700, 800));
+  }, Math.min(delay || 700, 800)));
 }
 
 function promptUserVoice() {
@@ -2668,6 +2794,7 @@ function sendVoiceMessage() {
   document.getElementById('record-hint').textContent = 'Tap to speak your reply';
   document.getElementById('voice-input-row').style.display = 'none';
   document.getElementById('voice-wave').classList.remove('listening');
+  snapshotEngine();      // keep Undo state consistent with text mode
   addTranscript('You', text);
   handleVoiceTurn(text);
 }
@@ -2697,37 +2824,6 @@ function endSession() {
   if (sessionEnded) return;
   finishSession();
 }
-
-var SCORE_DATA = {
-  fail: {
-    tier: 'F', score: 38, color: '#ff4444',
-    heading: "You dropped the price.",
-    body: "The moment you said yes to a discount, the deal lost value. Not just the margin — Mike's perception of the product. Let's go again.",
-    rubric: [["Discovery Questions","0/20",false],["Value Demonstration","8/25",false],["Price Handling","0/25",false],["Rapport","12/15",true],["Close","0/15",false]],
-    pass: false
-  },
-  discovery: {
-    tier: 'A', score: 92, color: '#00d68f',
-    heading: "You held the line.",
-    body: "You found out what Mike actually cared about, then connected your product to it. That's the move.",
-    rubric: [["Discovery Questions","18/20",true],["Value Demonstration","23/25",true],["Price Handling","24/25",true],["Rapport","14/15",true],["Close","13/15",true]],
-    pass: true
-  },
-  value: {
-    tier: 'B', score: 78, color: '#ffd000',
-    heading: "Solid. But Mike had more to give.",
-    body: "You held the price and made a good case. Next level: ask what Mike's customers actually want. That answer sells itself.",
-    rubric: [["Discovery Questions","9/20",false],["Value Demonstration","21/25",true],["Price Handling","22/25",true],["Rapport","13/15",true],["Close","13/15",true]],
-    pass: true
-  },
-  neutral: {
-    tier: 'C', score: 64, color: '#ff6b35',
-    heading: "You survived. Barely.",
-    body: "You didn't drop the price, but 'it's worth it' isn't a reason. Mike needed specifics.",
-    rubric: [["Discovery Questions","6/20",false],["Value Demonstration","14/25",false],["Price Handling","20/25",true],["Rapport","12/15",true],["Close","12/15",true]],
-    pass: true
-  }
-};
 
 /* ============================================================
    SCORING — analyses each objection result, not just the last line
@@ -2759,21 +2855,27 @@ function computeResult() {
   else if (avg >= 62) { tier = 'C'; score = avg; }
   else { tier = 'F'; score = Math.max(avg, 44); }
 
+  // The close gates the top grade: you can't earn an A if you won the buyer
+  // and then failed to lock a concrete next step. No locked close → cap at B.
+  var weakClose = (closeResult === 'weak');
+  var lockedClose = (closeResult === 'locked');
+  var cappedByClose = false;
+  if (tier === 'A' && weakClose) { tier = 'B'; score = Math.min(score, 88); cappedByClose = true; }
+
   var color = { A:'#00d68f', B:'#ffd000', C:'#ff6b35', F:'#ff4444' }[tier];
   var pass = (tier !== 'F');
 
   // Dynamic headline / body.
   var name = activeScenario.persona.name.split(' ')[0];
   var heading, body;
-  if (tier === 'A') { heading = "You held the line."; body = "You found out what " + name + " actually cared about, then tied your value straight to it. That's the move."; }
+  if (cappedByClose) { heading = "You won them — then let the close slip."; body = "You handled " + name + " well, but never locked a concrete next step. A win you don't close is a B. Always end on a time, a trial, or an order."; }
+  else if (tier === 'A') { heading = "You held the line."; body = "You found out what " + name + " actually cared about, tied your value straight to it, and locked the next step. That's the move."; }
   else if (tier === 'B') { heading = "Solid. There was more on the table."; body = "You made a real case and held firm. Next level: ask what " + name + " values before you pitch — that's what turns a B into an A."; }
   else if (tier === 'C') { heading = "You survived. Barely."; body = "You didn't cave, but parts of this were vague. " + name + " needed specifics, not 'it's worth it'."; }
   else if (folded) { heading = "You dropped the price."; body = "The second you gave ground, the product lost value in " + name + "'s eyes. Hold the line and make the case instead."; }
-  else { heading = "You never made the case."; body = "You didn't engage — no real value, no questions. " + name + " gave you nothing to work with because you gave him nothing. Go again, and lead."; }
+  else { heading = "You never made the case."; body = "You didn't engage — no real value, no questions. " + name + " gave you nothing to work with because you gave them nothing. Go again, and lead."; }
 
   // Close row reflects whether they actually locked a next step.
-  var lockedClose = (closeResult === 'locked');
-  var weakClose = (closeResult === 'weak');
   var closeCell, closeOk;
   if (!pass) { closeCell = "0/15"; closeOk = false; }
   else if (lockedClose) { closeCell = "14/15"; closeOk = true; }
@@ -2791,7 +2893,7 @@ function computeResult() {
 
   return { tier: tier, score: score, color: color, heading: heading, body: body, rubric: rubric, pass: pass,
            folded: folded, disc: disc, val: val, weak: weak, engaged: engaged, n: n,
-           closeResult: closeResult };
+           closeResult: closeResult, cappedByClose: cappedByClose };
 }
 
 /* ---- Dynamic AI coach feedback: raw, specific, per objection ---- */
@@ -2837,6 +2939,7 @@ function finishSession() {
   if (sessionEnded) return;
   sessionEnded = true;
   clearInterval(timerInterval);
+  clearPendingTimers();
   var data = computeResult();
 
   var badge = document.getElementById('tier-badge');
@@ -2860,20 +2963,29 @@ function finishSession() {
   var coachBullets = document.getElementById('coach-bullets');
   var coachLock = document.getElementById('coach-lock');
   // Coach feedback shows on EVERY result now (including fails — that's when
-  // you need it most). Free users see it blurred behind the unlock.
+  // you need it most). Free users get the FIRST insight free to build the habit;
+  // the rest are blurred behind the unlock.
   coachCard.style.display = 'block';
   coachBullets.innerHTML = '';
   var fb = buildCoachFeedback(data);
   for (var b = 0; b < fb.length; b++) {
     var dd = document.createElement('div');
-    dd.className = 'coach-item';
+    dd.className = 'coach-item' + (!isPro && b >= 1 ? ' locked-insight' : '');
     dd.innerHTML = '<span class="coach-tag tag-' + fb[b].tag.replace(/\s/g,'').toLowerCase() + '">' + fb[b].tag + '</span>' +
                    '<div class="coach-item-head">' + fb[b].headline + '</div>' +
                    '<div class="coach-item-note">' + fb[b].note + '</div>';
     coachBullets.appendChild(dd);
   }
-  if (isPro) { coachCard.classList.remove('coach-locked'); coachLock.style.display = 'none'; }
-  else { coachCard.classList.add('coach-locked'); coachLock.style.display = 'flex'; }
+  if (isPro) {
+    coachCard.classList.remove('coach-locked'); coachLock.style.display = 'none';
+  } else {
+    coachCard.classList.add('coach-locked'); coachLock.style.display = 'flex';
+    var lockNote = document.getElementById('coach-lock-note');
+    var moreCount = Math.max(0, fb.length - 1);
+    if (lockNote) lockNote.textContent = moreCount > 0
+      ? ("That's your first insight free. Unlock the AI coach for " + moreCount + " more on this call — and every call.")
+      : "Unlock the AI coach for deeper feedback on every call.";
+  }
 
   // Track completion with grade
   if (data.pass) {
@@ -2887,15 +2999,13 @@ function finishSession() {
   }
 
   var btns = document.getElementById('score-btns');
-  var dailyNote = document.getElementById('daily-note');
   btns.innerHTML = '';
   var seeABtn = document.createElement('button');
-  seeABtn.className = 'btn btn-ghost'; seeABtn.textContent = 'See what A looks like';
+  seeABtn.className = 'btn btn-ghost'; seeABtn.textContent = 'See what an A looks like';
   seeABtn.onclick = showATierExample;
 
   if (practiceMode) {
     // Practice mode: Back to plan + Try again (no "Next level")
-    dailyNote.style.display = 'none';
     var backBtn = document.createElement('button');
     backBtn.className = 'btn btn-ghost'; backBtn.textContent = '← Back to plan';
     backBtn.onclick = function() {
@@ -2923,20 +3033,24 @@ function finishSession() {
     tryAgainCampaign.className = 'btn btn-ghost'; tryAgainCampaign.textContent = 'Try again →';
     tryAgainCampaign.onclick = (function(l) { return function() { showLevelBrief(l); }; })(currentLevel);
     if (data.pass) {
-      if (!isPro) {
-        dailyNote.style.display = 'flex';
-        var nxt = document.createElement('button');
-        nxt.className = 'btn btn-primary'; nxt.textContent = 'Next level →'; nxt.disabled = true;
-        btns.appendChild(nxt); btns.appendChild(tryAgainCampaign); btns.appendChild(seeABtn);
+      var nextLevel = Math.min(currentLevel + 1, 25);
+      var hitFreeWall = (!isPro && currentLevel >= 10);   // cleared the last free level
+      var nextBtn = document.createElement('button');
+      nextBtn.className = 'btn btn-primary';
+      if (hitFreeWall) {
+        // The real paywall: free progression ends after Level 10.
+        nextBtn.textContent = 'Unlock all 25 →';
+        nextBtn.onclick = function() { openUpgrade('level10'); };
+      } else if (currentLevel >= 25) {
+        // Campaign complete — no next level.
+        nextBtn.textContent = 'Back to map →';
+        nextBtn.onclick = function() { showScreen('screen-level-map'); renderLevelMap(); };
       } else {
-        dailyNote.style.display = 'none';
-        var nxt2 = document.createElement('button');
-        nxt2.className = 'btn btn-primary'; nxt2.textContent = 'Next level →';
-        nxt2.onclick = (function(l) { return function() { showLevelBrief(Math.min(l + 1, 25)); }; })(currentLevel);
-        btns.appendChild(nxt2); btns.appendChild(tryAgainCampaign); btns.appendChild(seeABtn);
+        nextBtn.textContent = 'Next level →';
+        nextBtn.onclick = (function(l) { return function() { showLevelBrief(l); }; })(nextLevel);
       }
+      btns.appendChild(nextBtn); btns.appendChild(tryAgainCampaign); btns.appendChild(seeABtn);
     } else {
-      dailyNote.style.display = 'none';
       tryAgainCampaign.className = 'btn btn-primary';
       btns.appendChild(tryAgainCampaign); btns.appendChild(seeABtn);
     }
@@ -2951,7 +3065,8 @@ function finishSession() {
   }
 
   // Finishing Level 10 is the moment we reveal there's more — and that it's Pro.
-  if (data.pass && currentLevel === 10) {
+  // (Campaign only — practice sessions leave currentLevel stale.)
+  if (data.pass && !practiceMode && currentLevel === 10 && !isPro) {
     setTimeout(function() { openUpgrade('level10'); }, 1900);
   }
 }
@@ -2970,11 +3085,37 @@ function animateScore(target) {
   }, 24);
 }
 
+// Per-module model answers for Practice mode, built around the rep's own product.
+function practiceATierExample(key, sell) {
+  var s = sell || 'your product';
+  var EX = {
+    'hold-the-line': "\"Before we touch the number — what would " + s + " need to do to be clearly worth it for you?\" … then: \"I'm not going to discount it, because the value's real: [their outcome, in their words]. At your volume that pays for itself inside [timeframe].\"\n\nDiscover what 'worth it' means → hold the price → prove the return → lock a small first step.",
+    'the-gatekeeper': "\"You'd know better than me what actually reaches her desk. We just helped a team like yours cut [specific pain] — is that the kind of thing she'd want flagged?\"\n\nTreat the gatekeeper as the key, not the obstacle. Be specific, be human, give her a reason to champion you.",
+    'not-right-now': "\"'Not right now' usually means something's unspoken — is it budget, priorities, or something about " + s + " itself?\" … then make the cost of waiting concrete and lock a date so it doesn't just drift.",
+    'find-the-buyer': "\"Makes sense it's her call. What does she need to see to say yes — and could we get her on a quick call so I make your case for you?\"\n\nDon't try to close the champion. Arm them, then get a path to the real decision-maker.",
+    'the-ask': "\"Sounds like there's nothing actually missing — so let's get it moving. I'll send the paperwork today and we start [date]. Work for you?\"\n\nThey're ready. Stop re-pitching. Make one clean, low-friction ask and lock the next step.",
+    'first-30': "\"Thirty seconds, fair enough — one line: teams like yours use " + s + " to [sharp, specific outcome]. Worth two proper minutes, or have I got the wrong person?\"\n\nDon't pitch yet. Earn the next step with one relevant hook, then ask for it.",
+    'discovery': "\"Before I tell you anything about " + s + " — talk me through how you handle [their job] today. Where does it cost you the most?\"\n\nAsk before you pitch. Surface the real pain, then aim your value straight at it.",
+    'reflex': "\"Fair challenge. One concrete reason, no script: [specific proof tied to their world]. Want me to show you how that plays out for you?\"\n\nStay calm under pressure. Don't match aggression, don't fold — redirect with a question and a proof point.",
+    'cold-open': "\"Ten seconds, I'll earn the rest: most [their role]s I speak to are losing [specific] — that's why I called about " + s + ". Worth another minute?\"\n\nWin the right to keep talking with one insight about their world, not a pitch.",
+    'value-trans': "\"Forget the feature list — here's what " + s + " is actually worth to you: [outcome] means [number] back, verifiable against a client like you. Want the figure your board can defend?\"\n\nEvery feature needs a 'so what.' Tie each one to a number that matters to this buyer."
+  };
+  return EX[key] || EX['hold-the-line'];
+}
+
 function showATierExample() {
   var ct = document.getElementById('confirm-text');
-  var example = A_TIER_EXAMPLES[currentLevel] || A_TIER_EXAMPLES[1];
-  var lvlName = LEVEL_NAMES[currentLevel] ? (' · ' + LEVEL_NAMES[currentLevel]) : '';
-  ct.textContent = "What an A looks like — Level " + currentLevel + lvlName + ":\n\n" + example;
+  var example, label;
+  if (practiceMode && practiceModuleKey) {
+    var modTitles = { 'hold-the-line':'Hold the Line','the-gatekeeper':'The Gatekeeper','not-right-now':'"Not Right Now"','find-the-buyer':'Find the Buyer','the-ask':'The Ask','first-30':'First 30 Seconds','discovery':'Discovery Drills','reflex':'Objection Reflex','cold-open':'The Cold Open','value-trans':'Value Translation' };
+    example = practiceATierExample(practiceModuleKey, intakeData.sell);
+    label = "What an A looks like — " + (modTitles[practiceModuleKey] || 'Practice');
+  } else {
+    example = A_TIER_EXAMPLES[currentLevel] || A_TIER_EXAMPLES[1];
+    var lvlName = LEVEL_NAMES[currentLevel] ? (' · ' + LEVEL_NAMES[currentLevel]) : '';
+    label = "What an A looks like — Level " + currentLevel + lvlName;
+  }
+  ct.textContent = label + ":\n\n" + example;
   ct.style.whiteSpace = 'pre-line';
   ct.style.textAlign = 'left';
   document.getElementById('confirm-overlay').classList.add('show');
@@ -3193,7 +3334,7 @@ function buildPracticeScenario(key) {
       weak:'I get it, but the number is still the number. Can you sharpen your pencil at all?',
       fold:'Yeah alright, if you can cut it a bit I\'ll pull the trigger today.' }];
   } else if (key === 'the-gatekeeper') {
-    name = 'Janet Cole'; initials = 'J'; avatarColor = '#ffd000';
+    name = 'Gail Foster'; initials = 'G'; avatarColor = '#ffd000';
     role = 'Executive Assistant'; company = isB2B ? ind.charAt(0).toUpperCase() + ind.slice(1) + ' Partners' : 'The Office';
     opener = 'Good morning. Before I put you through — can I ask what this is regarding?';
     close = 'You know what, you actually sound like you know what you\'re talking about. Let me see if she\'s free.';
@@ -3206,7 +3347,7 @@ function buildPracticeScenario(key) {
       weak:'I appreciate it, but I really can\'t just put everyone through. Can you send an email?',
       fold:'Best leave your number and I\'ll pass it on. Probably won\'t hear back though.' }];
   } else if (key === 'not-right-now') {
-    name = 'Sam Okafor'; initials = 'S'; avatarColor = '#00d68f';
+    name = 'Wes Connor'; initials = 'W'; avatarColor = '#00d68f';
     role = isB2B ? 'General Manager' : 'Customer'; company = isB2B ? 'Meridian ' + ind.charAt(0).toUpperCase() + ind.slice(1) : '';
     opener = 'Yeah look, ' + sell + ' looks good — I just can\'t move on anything right now. Quarter\'s hectic.';
     close = 'You\'re right, I\'ve been putting this off. Let\'s lock something in — what does next Tuesday look like?';
@@ -3219,7 +3360,7 @@ function buildPracticeScenario(key) {
       weak:'I\'ll call you when things settle down. Shouldn\'t be long.',
       fold:'If you do a deal for waiting I\'ll think about it later.' }];
   } else if (key === 'find-the-buyer') {
-    name = 'Tom Avery'; initials = 'T'; avatarColor = '#7c6af7';
+    name = 'Brad Nolan'; initials = 'B'; avatarColor = '#7c6af7';
     role = isB2B ? 'Team Lead' : 'Store Manager'; company = isB2B ? ind.charAt(0).toUpperCase() + ind.slice(1) + ' Group' : '';
     opener = 'Yeah look, ' + sell + ' sounds useful — but I\'d have to get sign-off before anything happens.';
     close = 'Right, if you can come in and speak to Denise directly that\'d actually be the best way. Let me set it up.';
@@ -3245,7 +3386,7 @@ function buildPracticeScenario(key) {
       weak:'Yeah, I just need a bit more time. Nothing specific — just my process.',
       fold:'Maybe if you threw in a discount it\'d make the decision easier.' }];
   } else if (key === 'first-30') {
-    name = 'Dana Reyes'; initials = 'D'; avatarColor = '#ff4d8d';
+    name = 'Toni Frost'; initials = 'T'; avatarColor = '#ff4d8d';
     role = isB2B ? 'Business Owner' : 'Shopper'; company = isB2B ? ind.charAt(0).toUpperCase() + ind.slice(1) + ' Solutions' : '';
     opener = 'Yeah, g\'day. Look I\'ve got thirty seconds — what\'s this about?';
     close = 'You know what, you actually sound worth a proper chat. Come back to me Thursday.';
@@ -3271,7 +3412,7 @@ function buildPracticeScenario(key) {
       weak:'This feels like a lot of questions before you\'ve told me anything. Get to the point.',
       fold:'Just send me a brochure, I don\'t have time for twenty questions.' }];
   } else if (key === 'reflex') {
-    name = 'Vince Carter'; initials = 'V'; avatarColor = '#ff4444';
+    name = 'Dom Russo'; initials = 'D'; avatarColor = '#ff4444';
     role = isB2B ? 'Negotiator' : 'Hard customer'; company = isB2B ? ind.charAt(0).toUpperCase() + ind.slice(1) + ' Holdings' : '';
     opener = 'Look, I\'ll be straight with you — I\'ve seen ' + sell + ' before and I\'m not convinced. Convince me.';
     close = '...Alright. You came back calm every time. I can work with that. Let\'s talk numbers.';
@@ -3284,7 +3425,7 @@ function buildPracticeScenario(key) {
       weak:'That\'s the same thing everyone says. Give me something real.',
       fold:'Fine, match their price and we\'ll talk.' }];
   } else if (key === 'cold-open') {
-    name = 'Eleanor Vance'; initials = 'E'; avatarColor = '#00e5ff';
+    name = 'Priscilla Wynn'; initials = 'P'; avatarColor = '#00e5ff';
     role = isB2B ? 'CEO' : 'Busy professional'; company = isB2B ? ind.charAt(0).toUpperCase() + ind.slice(1) + ' Dynamics' : '';
     opener = 'Yeah. You\'ve got about ten seconds before I hang up. What is it?';
     close = '...That\'s the first time a cold call\'s caught my attention in months. Fine, send me something.';
@@ -3297,7 +3438,7 @@ function buildPracticeScenario(key) {
       weak:'Still sounds like a sales call. Good luck.',
       fold:'If you\'re giving it free for a trial I\'ll think about it.' }];
   } else { // value-trans
-    name = 'Olivia Chen'; initials = 'O'; avatarColor = '#ffd000';
+    name = 'Fiona Walsh'; initials = 'F'; avatarColor = '#ffd000';
     role = isB2B ? 'CFO' : 'Savvy buyer'; company = isB2B ? ind.charAt(0).toUpperCase() + ind.slice(1) + ' Group' : '';
     opener = 'You\'ve told me what ' + sell + ' does. Tell me what it\'s actually worth — in real terms.';
     close = 'That\'s the clearest value case I\'ve heard. Alright — let\'s make it happen.';
@@ -3315,7 +3456,8 @@ function buildPracticeScenario(key) {
     persona: { name: name, initials: initials, role: role, company: company,
                backstory: 'A practice prospect tailored to selling ' + sell + '.', avatarColor: avatarColor },
     product: sell,
-    opener: opener, close: close, objective: objective, objections: objections
+    opener: opener, close: close, objective: objective, objections: objections,
+    closeAsk: "Okay — you've got my attention. So what's the next step here?"
   };
 }
 
@@ -3333,14 +3475,18 @@ function buildModules() {
   var ctxOrdered = coldFirst
     ? [CONTEXT_MODULES[2], CONTEXT_MODULES[0], CONTEXT_MODULES[3], CONTEXT_MODULES[1]] // cold-open first
     : CONTEXT_MODULES.slice();
+  function hasMod(key) { for (var m = 0; m < mods.length; m++) { if (mods[m].key === key) return true; } return false; }
   var ci = 0;
   while (mods.length < 4 && ci < ctxOrdered.length) {
-    var exists = false;
-    for (var m = 0; m < mods.length; m++) { if (mods[m].key === ctxOrdered[ci].key) exists = true; }
-    if (!exists) mods.push(ctxOrdered[ci]);
+    if (!hasMod(ctxOrdered[ci].key)) mods.push(ctxOrdered[ci]);
     ci++;
   }
   mods = mods.slice(0, 4);
+  // Cold-callers should always get The Cold Open, even if they picked 4+
+  // challenges that filled every slot — swap it into the last slot.
+  if (coldFirst && !hasMod('cold-open') && mods.length === 4) {
+    mods[3] = CONTEXT_MODULES[2];
+  }
 
   var sell = intakeData.sell || 'your product';
   var subhead = document.getElementById('plan-subhead');
@@ -3444,19 +3590,6 @@ function openUpgrade(reveal) {
 }
 function closeUpgrade() {
   document.getElementById('upgrade-modal').classList.remove('show');
-  var pi = document.getElementById('pay-inline');
-  if (pi) pi.classList.remove('show');
-}
-function showPayInline() {
-  document.getElementById('pay-inline').classList.add('show');
-  document.getElementById('pay-email').focus();
-}
-function notifyMe() {
-  var email = document.getElementById('pay-email').value.trim();
-  if (!email || email.indexOf('@') === -1) { flashToast('Enter a valid email.'); return; }
-  flashToast("You're on the list. We'll reach out soon.");
-  document.getElementById('pay-email').value = '';
-  setTimeout(closeUpgrade, 800);
 }
 
 /* ============================================================
@@ -3465,6 +3598,9 @@ function notifyMe() {
 var returnToScreenAfterPay = 'screen-level-map';
 
 function choosePlan(planKey) {
+  // Remember where the upgrade was launched from so the checkout back button
+  // returns there (score screen, level map, etc.) instead of always the map.
+  if (currentScreen && currentScreen !== 'screen-payment') returnToScreenAfterPay = currentScreen;
   selectedPlanKey = planKey;
   var plan = PLANS[planKey] || PLANS.popular;
   // Populate the checkout summary.
@@ -3561,7 +3697,6 @@ function toggleSwitch(id) {
 function finishOnboarding() {
   userProfile.name = document.getElementById('onb-name').value.trim();
   userProfile.nickname = document.getElementById('onb-nick').value.trim() || userProfile.name.split(' ')[0] || 'champ';
-  userProfile.prefs.sound = document.getElementById('sw-sound').classList.contains('on');
   userProfile.prefs.proactive = document.getElementById('sw-proactive').classList.contains('on');
   applyAccent(userProfile.accent);
   saveProfile();
@@ -3839,7 +3974,6 @@ window.addEventListener('DOMContentLoaded', function() {
   applyAccent(userProfile.accent);
   renderSwatches();
   // Reflect saved prefs in the onboarding toggles.
-  document.getElementById('sw-sound').classList.toggle('on', userProfile.prefs.sound);
   document.getElementById('sw-proactive').classList.toggle('on', userProfile.prefs.proactive);
   if (userProfile.name) document.getElementById('onb-name').value = userProfile.name;
   if (userProfile.nickname) document.getElementById('onb-nick').value = userProfile.nickname;
