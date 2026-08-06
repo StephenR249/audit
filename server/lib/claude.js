@@ -31,13 +31,14 @@ function clamp(value, max) {
 // Build the system prompt that turns Claude into a specific buyer.
 // Persona/product come from the client (the game already has this data per
 // level). It's role-play, not a trust boundary, so we sanitise lengths only.
-export function buildSystemPrompt(persona, product, stage) {
+export function buildSystemPrompt(persona, product, stage, directive) {
   const name = clamp(persona?.name, 80) || 'the prospect';
   const role = clamp(persona?.role, 120) || 'a decision-maker';
   const company = clamp(persona?.company, 120) || 'their company';
   const personality =
     clamp(persona?.personality, 400) || 'busy, direct, and mildly skeptical';
   const productText = clamp(product, 300) || 'a product or service';
+  const directiveText = clamp(directive, 400);
 
   const stageNote =
     {
@@ -62,7 +63,11 @@ export function buildSystemPrompt(persona, product, stage) {
     '',
     'Never break character. Never say you are an AI. Never coach, grade, or',
     'evaluate the salesperson, and never write stage directions or narration —',
-    'only speak as the buyer would speak out loud.'
+    'only speak as the buyer would speak out loud.',
+    // A per-turn directive from the game engine keeps the reply aligned with the
+    // deterministic scoring (which already judged the rep's last line). Follow it
+    // as the *intent* of this reply, but phrase it entirely in your own voice.
+    directiveText ? `\nFor THIS reply specifically: ${directiveText}` : ''
   ]
     .filter(Boolean)
     .join('\n');
@@ -70,8 +75,8 @@ export function buildSystemPrompt(persona, product, stage) {
 
 // Map the game's transcript to the Anthropic messages format and run one turn.
 // Returns { reply, usage, refused, stop_reason }.
-export async function runTurn({ persona, product, stage, messages }) {
-  const system = buildSystemPrompt(persona, product, stage);
+export async function runTurn({ persona, product, stage, directive, messages }) {
+  const system = buildSystemPrompt(persona, product, stage, directive);
 
   // rep -> user, prospect -> assistant. Drop blanks, clamp length, cap history.
   let apiMessages = (Array.isArray(messages) ? messages : [])

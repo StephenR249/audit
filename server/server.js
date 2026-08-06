@@ -44,7 +44,7 @@ app.get('/api/health', (_req, res) => {
 //         messages:[{role:'rep'|'prospect', text:string}] }
 // Reply: { reply:string, refused:boolean }
 app.post('/api/turn', rateLimit, async (req, res) => {
-  const { persona, product, stage, messages } = req.body || {};
+  const { persona, product, stage, directive, messages } = req.body || {};
 
   if (!Array.isArray(messages)) {
     return res
@@ -53,7 +53,7 @@ app.post('/api/turn', rateLimit, async (req, res) => {
   }
 
   try {
-    const result = await runTurn({ persona, product, stage, messages });
+    const result = await runTurn({ persona, product, stage, directive, messages });
     recordUsage(req.clientIp, result.usage);
     res.json({ reply: result.reply, refused: !!result.refused });
   } catch (err) {
