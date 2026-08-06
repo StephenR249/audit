@@ -1,0 +1,20 @@
+{
+  "name": "pitchgym-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Server-side Claude integration for PitchGym — the /api/turn endpoint that role-plays the prospect. Keeps the API key off the client and enforces rate + token limits.",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2"
+  }
+}
