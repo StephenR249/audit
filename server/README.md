@@ -81,11 +81,16 @@ curl http://localhost:3000/api/health
 `refused` is `true` on the rare occasion Claude's safety layer declines — the
 server still returns an in-character deflection so the UI never breaks.
 
-**Example**
+**Example** (mint a token, then call):
 
 ```bash
+TOKEN=$(curl -sX POST http://localhost:3000/api/auth/session \
+  -H 'content-type: application/json' -d '{"deviceId":"demo"}' \
+  | sed -E 's/.*"token":"([^"]+)".*/\1/')
+
 curl -sX POST http://localhost:3000/api/turn \
   -H 'content-type: application/json' \
+  -H "authorization: Bearer $TOKEN" \
   -d '{
     "persona": { "name": "Dana", "role": "VP Ops", "personality": "blunt, skeptical" },
     "product": "AI route optimization",
@@ -93,6 +98,8 @@ curl -sX POST http://localhost:3000/api/turn \
     "messages": [{ "role": "rep", "text": "What does a bad route cost you today?" }]
   }'
 ```
+
+Without the token, `/api/turn` returns `401`.
 
 ---
 
@@ -126,11 +133,32 @@ backend is up.
 
 ---
 
+## Auth gate
+
+`/api/turn` requires `Authorization: Bearer <token>`. Tokens are HMAC-signed
+(HS256), stateless (no DB), and carry a `sub` (the user) plus an expiry.
+
+- `POST /api/auth/session` mints a token. Body: `{ deviceId?, email?, signupCode? }`.
+  The frontend keeps a stable `deviceId` in localStorage and exchanges it for a
+  token automatically, re-minting on expiry or a 401.
+- Rate limiting **and** the token budget key on the token's user, so limits
+  follow a person across IPs instead of being shared by everyone behind one NAT.
+- Set `SIGNUP_CODE` to require a code before anyone can mint a session — a simple
+  way to lock the API to invited users until real login lands.
+
+**Honest scope:** this *binds* identity, it doesn't yet *verify* it — an
+anonymous device session mints freely unless you set `SIGNUP_CODE`. It's the
+production shape (signed sessions, bearer auth, per-user budget) with a drop-in
+slot for real login: replace `issueSession()` in `lib/auth.js` with your OAuth /
+magic-link callback and everything downstream keeps working. Set `AUTH_SECRET`
+to a long random value in production (`openssl rand -hex 32`).
+
 ## What's built in
 
 - **Key stays server-side** — the browser never holds `ANTHROPIC_API_KEY`.
-- **Per-IP rate limiting** — sliding-window requests/minute (`lib/rateLimit.js`).
-- **Per-IP token budget** — rolling 30-day cap so one client can't run up the bill.
+- **Bearer-token auth gate** — signed sessions, per-user (`lib/auth.js`).
+- **Per-user rate limiting** — sliding-window requests/minute (`lib/rateLimit.js`).
+- **Per-user token budget** — rolling 30-day cap so one account can't run up the bill.
 - **Refusal handling** — `stop_reason: "refusal"` is caught and softened.
 - **History + payload caps** — bounded conversation resend and 256 KB body limit.
 - **Persona prompt caching** — `cache_control` on the system prompt for cheaper
@@ -141,8 +169,9 @@ backend is up.
 1. **Move rate limiting to Redis.** The in-memory limiter resets on restart and
    is per-process — it won't hold across multiple instances behind a load
    balancer. The logic in `lib/rateLimit.js` ports directly to a shared store.
-2. **Add auth.** Right now anyone can call `/api/turn`. Gate it behind your
-   login (JWT/session) so usage ties to a real user, and budget per user not per IP.
+2. **Verify identity.** The auth gate is in place (signed sessions, per-user
+   budget), but it doesn't yet *verify* who someone is — swap `issueSession()`
+   for a real OAuth / magic-link callback so a `sub` maps to a confirmed account.
 3. **Tighten CORS** to your real frontend origin via `CORS_ORIGIN`.
 4. **Pin the SDK version.** `package.json` uses `"latest"` for convenience;
    pin an exact version for reproducible builds.

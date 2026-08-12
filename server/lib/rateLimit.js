@@ -26,13 +26,21 @@ export function clientIp(req) {
   return req.ip || req.socket?.remoteAddress || 'unknown';
 }
 
+// The bucket key: a logged-in user when we have one (so budget follows the user
+// across IPs), else the IP (for public routes like session-minting). requireAuth
+// runs before this middleware on protected routes and sets req.userId.
+export function rateKey(req) {
+  return req.userId ? 'u:' + req.userId : 'ip:' + clientIp(req);
+}
+
 // Express middleware. Rejects with 429 when either limit is exceeded.
 export function rateLimit(req, res, next) {
-  const ip = clientIp(req);
+  const key = rateKey(req);
+  req.rateKey = key;
   const now = Date.now();
 
   // 1) Sliding-window request rate
-  const recent = (hits.get(ip) || []).filter((t) => now - t < WINDOW_MS);
+  const recent = (hits.get(key) || []).filter((t) => now - t < WINDOW_MS);
   if (recent.length >= MAX_REQ_PER_MIN) {
     res.set('Retry-After', '60');
     return res
@@ -40,29 +48,29 @@ export function rateLimit(req, res, next) {
       .json({ error: 'rate_limited', message: 'Too many requests — slow down a moment.' });
   }
   recent.push(now);
-  hits.set(ip, recent);
+  hits.set(key, recent);
 
   // 2) Rolling token budget
-  const b = budgets.get(ip);
+  const b = budgets.get(key);
   if (b && now < b.resetAt && b.tokens >= MONTHLY_TOKEN_BUDGET) {
     res.set('Retry-After', String(Math.ceil((b.resetAt - now) / 1000)));
     return res
       .status(429)
-      .json({ error: 'budget_exceeded', message: 'Monthly usage cap reached for this client.' });
+      .json({ error: 'budget_exceeded', message: 'Monthly usage cap reached for this account.' });
   }
 
-  req.clientIp = ip;
   next();
 }
 
-// Call after a successful Claude turn to charge the client's budget.
-export function recordUsage(ip, usage) {
+// Call after a successful Claude turn to charge the account's budget.
+// `key` is req.rateKey (set by the rateLimit middleware).
+export function recordUsage(key, usage) {
   const now = Date.now();
   const tokens = (usage?.input_tokens || 0) + (usage?.output_tokens || 0);
-  let b = budgets.get(ip);
+  let b = budgets.get(key);
   if (!b || now >= b.resetAt) b = { tokens: 0, resetAt: now + MONTH_MS };
   b.tokens += tokens;
-  budgets.set(ip, b);
+  budgets.set(key, b);
 }
 
 // Periodically drop stale entries so the maps don't grow unbounded.

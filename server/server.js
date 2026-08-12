@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 
 import { runTurn } from './lib/claude.js';
 import { rateLimit, recordUsage } from './lib/rateLimit.js';
+import { requireAuth, issueSession } from './lib/auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -33,17 +34,22 @@ app.use(express.json({ limit: '256kb' }));
 // which is fine for local dev but tighten it for production.
 app.use(cors({ origin: process.env.CORS_ORIGIN || true }));
 
-// --- Health check -------------------------------------------
+// --- Health check (public) ----------------------------------
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, model: process.env.PITCHGYM_MODEL || 'claude-opus-5' });
 });
+
+// --- Auth: mint a session token (public, IP-rate-limited) ----
+// Swap issueSession for your real login callback (OAuth / magic link) later;
+// the rest of the app already keys budget + limits on the token's user.
+app.post('/api/auth/session', rateLimit, issueSession);
 
 // --- The one real endpoint ----------------------------------
 // Body: { persona:{name,role,company,personality}, product:string,
 //         stage?:'opening'|'objection'|'close',
 //         messages:[{role:'rep'|'prospect', text:string}] }
 // Reply: { reply:string, refused:boolean }
-app.post('/api/turn', rateLimit, async (req, res) => {
+app.post('/api/turn', requireAuth, rateLimit, async (req, res) => {
   const { persona, product, stage, directive, messages } = req.body || {};
 
   if (!Array.isArray(messages)) {
@@ -54,7 +60,7 @@ app.post('/api/turn', rateLimit, async (req, res) => {
 
   try {
     const result = await runTurn({ persona, product, stage, directive, messages });
-    recordUsage(req.clientIp, result.usage);
+    recordUsage(req.rateKey, result.usage);
     res.json({ reply: result.reply, refused: !!result.refused });
   } catch (err) {
     // Anthropic SDK errors carry a numeric `status`. Surface 429 as 429 so the

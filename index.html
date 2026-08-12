@@ -2749,12 +2749,86 @@ var PITCHGYM_API = (typeof window !== 'undefined' && window.PITCHGYM_API) || '';
 var llmEnabled = false;
 var sayEpoch = 0;   // bumped on start / retry / undo to invalidate in-flight calls
 
+/* ---- Auth: signed session token, budget binds to the user ----
+   The backend gates /api/turn behind a bearer token. We keep a stable
+   device id in localStorage and exchange it for a token; the token is
+   re-minted transparently on expiry or a 401. If minting fails (e.g. the
+   deployment requires a signup code we don't have), the LLM stays off and
+   the app runs on the scripted engine. */
+var authToken = null;
+
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+function getDeviceId() {
+  var id = lsGet('pitchgym_device');
+  if (!id) {
+    id = (window.crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : ('d-' + Date.now() + '-' + Math.floor(Math.random() * 1e9));
+    lsSet('pitchgym_device', id);
+  }
+  return id;
+}
+
+// Decode a JWT's exp claim (seconds) without verifying — just to know when to refresh.
+function tokenExp(token) {
+  try {
+    var p = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    while (p.length % 4) p += '=';
+    return JSON.parse(atob(p)).exp || 0;
+  } catch (e) { return 0; }
+}
+
+function mintSession() {
+  var body = { deviceId: getDeviceId() };
+  if (window.PITCHGYM_SIGNUP_CODE) body.signupCode = window.PITCHGYM_SIGNUP_CODE;
+  return fetch(PITCHGYM_API + '/api/auth/session', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body)
+  }).then(function(r) {
+    if (!r.ok) throw new Error('auth ' + r.status);
+    return r.json();
+  }).then(function(d) {
+    authToken = d.token;
+    lsSet('pitchgym_token', authToken);
+    return authToken;
+  });
+}
+
+// Resolve to a valid token, minting or refreshing as needed.
+function ensureSession() {
+  if (!authToken) authToken = lsGet('pitchgym_token');
+  var now = Math.floor(Date.now() / 1000);
+  if (authToken && tokenExp(authToken) > now + 60) return Promise.resolve(authToken);
+  return mintSession();
+}
+
+// One authenticated /api/turn call. Errors carry .status so callers can react.
+function postTurn(payload, token) {
+  return fetch(PITCHGYM_API + '/api/turn', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'authorization': 'Bearer ' + token },
+    body: JSON.stringify(payload)
+  }).then(function(r) {
+    if (!r.ok) { var e = new Error('http ' + r.status); e.status = r.status; throw e; }
+    return r.json();
+  }).then(function(d) {
+    return (d && typeof d.reply === 'string' && d.reply.trim()) ? d.reply.trim() : '';
+  });
+}
+
 (function detectBackend() {
   try {
     fetch(PITCHGYM_API + '/api/health')
       .then(function(r) { return r.ok ? r.json() : null; })
-      .then(function(d) { if (d && d.ok) llmEnabled = true; })
-      .catch(function() { /* no backend — stay on the scripted engine */ });
+      .then(function(d) {
+        // Only enable the LLM prospect once we can both reach the backend AND
+        // hold a session — otherwise stay on the scripted engine.
+        if (d && d.ok) return ensureSession().then(function() { llmEnabled = true; });
+      })
+      .catch(function() { /* no backend / auth closed — scripted engine */ });
   } catch (e) {}
 })();
 
@@ -2772,15 +2846,14 @@ function fetchProspectLine(opts) {
       return { role: (m.role === 'prospect' ? 'prospect' : 'rep'), text: m.text };
     })
   };
-  return fetch(PITCHGYM_API + '/api/turn', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(payload)
-  }).then(function(r) {
-    if (!r.ok) throw new Error('http ' + r.status);
-    return r.json();
-  }).then(function(d) {
-    return (d && typeof d.reply === 'string' && d.reply.trim()) ? d.reply.trim() : '';
+  return ensureSession().then(function(token) {
+    return postTurn(payload, token).catch(function(err) {
+      // Token rejected (expired/rotated secret) — mint a fresh one and retry once.
+      if (err && err.status === 401) {
+        return mintSession().then(function(t) { return postTurn(payload, t); });
+      }
+      throw err;
+    });
   });
 }
 
